@@ -6,6 +6,10 @@
 
 set -euo pipefail
 
+# ─── Self-integrity pre-flight check ──────────────────────
+SELF_HASH=$(sha256sum "${BASH_SOURCE[0]}" | awk '{print $1}')
+echo "Deploying from: ${BASH_SOURCE[0]} (sha256: ${SELF_HASH})"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PKG_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROTOCOLS_SRC="$PKG_ROOT/protocols"
@@ -17,6 +21,7 @@ PROTO_FILES=(
     completion_protocol.md
     delegation_protocol.md
     handoff_protocol.md
+    implementation_protocol.md
     review_protocol.md
 )
 
