@@ -1,0 +1,91 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "<MODEL_CTO>",
+        "fallbacks": ["ollama/ornith:35b"]
+      }
+    },
+    "list": [
+      {
+        "default": true,
+        "id": "cto",
+        "name": "CTO / Architect",
+        "identity": {
+          "emoji": "🏗️",
+          "name": "CTO"
+        },
+        "model": "<MODEL_CTO>",
+        "workspace": "<WORKSPACE_PATH>",
+        "tools": {
+          "allow": [
+            "group:fs",
+            "web_search",
+            "web_fetch",
+            "sessions_list",
+            "session_status",
+            "memory_search",
+            "memory_get",
+            "exec",
+            "process"
+          ],
+          "deny": [
+            "write",
+            "edit",
+            "apply_patch"
+          ]
+        }
+      },
+      {
+        "default": false,
+        "id": "implementer",
+        "name": "Code Implementer",
+        "identity": {
+          "emoji": "💻",
+          "name": "Implementer"
+        },
+        "model": "<MODEL_IMPLEMENTER>",
+        "workspace": "<WORKSPACE_PATH>",
+        "tools": {
+          "allow": [
+            "group:fs",
+            "group:runtime",
+            "group:web",
+            "group:sessions",
+            "group:memory"
+          ],
+          "profile": "coding"
+        }
+      },
+      {
+        "default": false,
+        "id": "reviewer",
+        "name": "Senior Code Reviewer",
+        "identity": {
+          "emoji": "🔍",
+          "name": "Reviewer"
+        },
+        "model": "<MODEL_REVIEWER>",
+        "workspace": "<WORKSPACE_PATH>",
+        "tools": {
+          "allow": [
+            "group:fs",
+            "web_search",
+            "web_fetch",
+            "exec",
+            "process",
+            "sessions_list",
+            "session_status",
+            "memory_search",
+            "memory_get"
+          ],
+          "deny": [
+            "write",
+            "edit",
+            "apply_patch"
+          ]
+        }
+      }
+    ]
+  }
+}

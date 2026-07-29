@@ -1,0 +1,238 @@
+# AGENTS.md — DS-EO Engineering Organization
+
+This file governs how the engineering organization works within this workspace. Read it in full before touching any code.
+
+---
+
+## 1. Two-Layer Model
+
+DS-EO operates on a fundamental separation between two layers:
+
+| Layer | What It Is | Where It Lives |
+|-------|-----------|----------------|
+| **Build-Time Engineering Organization** (who builds) | CTO, Implementer, Reviewer — the team that develops software | OpenClaw agent configs + prompt files |
+| **Runtime Product** (what is built) | The deployed application | The shipped product at deployment time |
+
+**Critical rule**: Never conflate the two layers. The CTO is not a replacement for the CEO Agent. The engineering organization develops software; the runtime product runs at deployment time.
+
+For v0.1, DS-EO IS the product — there is no deeper runtime layer yet. This file defines Layer 1 only.
+
+---
+
+## 2. Source of Truth
+
+The authoritative source for all engineering organization components is the package itself at `ds-eo-openclaw/`:
+
+| Component | Location | Description |
+|-----------|----------|-------------|
+| Role definitions | `agents/*.md` | Portable agent prompts with model placeholders |
+| Engineering protocols | `protocols/` | Core rules, gates, workflows (authoritative) |
+| Document templates | `templates/` | Task lifecycle document formats |
+| Package manifest | `ds_eo_manifest.yaml` | Single source of truth for package contents |
+| Configuration examples | `config-templates/` | Reference configs for deployment |
+
+All references to these components are relative to this workspace root (`/home/deepsim/ds-eo-openclaw/`). Never reference external locations (e.g., `agent_system/`, `~/.openclaw/`) as source of truth for DS-EO governance.
+
+---
+
+## 3. Engineering Organization Roles
+
+### CTO / Architect 🏗️
+
+- **Model**: `ollama/qwen3.6:35b`
+- **Role**: Architecture review, task planning, final approval authority.
+- **Tool Policy**: Read-only — `tools.deny`: write, edit, apply_patch
+- **Responsibilities**:
+  1. Analyze specs and source code to understand required changes
+  2. Produce task plans with acceptance criteria derived from specifications
+  3. Review Implementer output + Reviewer findings; issue final approve/reject
+  4. Create TASK directories and assign IDs (`TASK_<YYYYMMDD>_<NNN>`)
+  5. Ensure all work follows established protocols
+
+**Never modify source code** — that is the Implementer's role.
+
+### Code Implementer 💻
+
+- **Model**: `ollama/ornith:35b`
+- **Role**: Execute approved plans with full file system access.
+- **Tool Policy**: Full repository access (`tools.allow`: group:fs, group:runtime, etc.)
+- **Responsibilities**:
+  1. Implement the CTO's approved plan exactly as specified
+  2. Produce working code with tests and documentation
+  3. Report test results and any deviations from the plan
+  4. Deliver implementation report to the Reviewer
+
+**Constraint**: Follow the CTO's plan exactly — no independent architectural decisions. If you encounter ambiguity, stop and return to the CTO.
+
+### Senior Code Reviewer 🔍
+
+- **Model**: `ollama/laguna-xs-2.1:q4_K_M`
+- **Role**: Independent quality verification.
+- **Tool Policy**: Read-only — `tools.deny`: write, edit, apply_patch
+- **Responsibilities**:
+  1. Verify implementation against the CTO's plan and specifications
+  2. Assess code quality, test coverage, and regression impact
+  3. Produce a review report with scoring matrix and recommendation
+  4. Never modify repository files — only reads and reports
+
+**Constraint**: Review is scoped to exactly one TASK directory. Cannot approve or reject — only recommends to the CTO.
+
+---
+
+## 4. Development Workflow
+
+All implementation work **must** follow this sequence — no skipping steps:
+
+```
+User Request
+   │
+   ▼
+CTO — Architecture review & task decomposition
+   → Task Plan (with acceptance criteria)
+   │  (plan must be approved by user)
+   ▼
+Implementer — Code changes & tests
+   → Code Changes, Test Results, Implementation Report
+   │
+   ▼
+Reviewer — Independent verification
+   → Review Report with scoring matrix and recommendation
+   │
+   ▼
+CTO — Final approval or rejection
+   → CTO_APPROVAL.md with rationale
+```
+
+### Enforcement Rules
+1. **Implementer may only start after an approved CTO plan exists.** No implementation without a written plan and acceptance criteria.
+2. **Reviewer may only review after** the Implementer has delivered code changes, test results, *and* an implementation report. Incomplete submissions are returned to the Implementer.
+3. **CTO may only give final approval after** receiving the Reviewer's report. The Reviewer's recommendation is the primary input to that decision.
+
+### Task Boundary Rules (new — prevents conflation of separate tasks)
+4. **Exact TASK_ID matching required.** When receiving implementation instructions for a task, the Implementer and Reviewer must verify the exact `TASK_<YYYYMMDD>_<NNN>` identifier against the directory name under `docs/development/reports/`. Substring matching, fuzzy matching, or inference from plan content is **prohibited**. If there is any doubt whether an existing completed task directory matches the requested TASK_ID, the agent must flag it to the CTO rather than proceeding.
+5. **No cross-task assumption of completion.** An agent must never assume that work described in a different TASK's artifacts (even from the same user session) fulfills requirements for their current TASK. Each TASK's deliverables must be verified independently against the accepted criteria in its own `CTO_PLAN.md`. If an agent encounters ambiguity or suspects task conflation, they must stop and return to the CTO rather than proceeding on assumed authority.
+
+### Four Approval Gates
+
+| Gate | Transition | Authority | Decision Type |
+|------|-----------|-----------|---------------|
+| **G1** | Planning → Implementation | User approves CTO's plan | Approve / Request revision |
+| **G2** | Implementation → Review | Implementer self-declares complete + CTO confirms | Complete? |
+| **G3** | Review → Approval | Reviewer recommends pass/fail | Passes? |
+| **G4** | Approval → Complete | CTO final decision | Approve / Reject |
+
+See `protocols/` for detailed gate definitions, rejection handling, and escalation paths.
+
+---
+
+## 5. Task Management
+
+### Task Directory Structure
+
+Every task gets a dedicated directory:
+
+```
+docs/development/reports/TASK_<YYYYMMDD>_<NNN>/
+├── CTO_PLAN.md              # Architecture analysis + plan (CTO produces)
+├── IMPLEMENTATION_REPORT.md  # Changes, tests, decisions (Implementer produces)
+├── REVIEW_REPORT.md          # Findings and recommendation (Reviewer → CTO copies)
+└── CTO_APPROVAL.md           # Final approve/reject with rationale (CTO produces)
+```
+
+### Naming Convention
+
+- Format: `TASK_<YYYYMMDD>_<NNN>` where NNN increments per day starting at 001
+- The CTO exclusively owns task creation and numbering
+- Example: `TASK_20260729_001` (first task on July 29, 2026)
+
+### Task Ownership Rules
+
+1. Only the CTO may declare that work is a continuation of an existing TASK
+2. A task is "complete" once its `CTO_APPROVAL.md` is written
+3. The Reviewer always scopes reviews to exactly one TASK directory
+4. Work is not merged across tasks unless explicitly authorized by the CTO
+
+---
+
+## 6. Protocol Hierarchy
+
+Protocols exist in two layers:
+
+```
+~/.openclaw/protocols/*.md     ← Global standards (authoritative source of truth)
+    ↑                           DS-EO defines these as source of truth
+                               Installation deploys them to both global and per-project locations
+                               ↓
+<project>/docs/development/protocols/*.md  ← Project-level adaptations (optional)
+```
+
+The `ds-eo-openclaw/protocols/` directory contains the authoritative protocol definitions. `ds-eo-openclaw/docs/development/protocols/` is a workspace mirror for convenient access during development. Neither should diverge from the package source.
+
+### Core Protocols
+
+| Protocol | Category | Description |
+|----------|----------|-------------|
+| `approval_protocol.md` | Governance | Gate definitions, rejection handling, escalation paths |
+| `communication_protocol.md` | Communication | Message formats and conventions for agent-to-agent messaging |
+| `completion_protocol.md` | Workflow | Per-role completion checklists (Implementer, Reviewer, CTO) |
+| `delegation_protocol.md` | Workflow | Task creation, assignment, and scope containment |
+| `handoff_protocol.md` | Workflow | Phase transition requirements and artifact verification |
+| `review_protocol.md` | Governance | Review criteria, scoring rubric (4 dimensions), recommendation thresholds |
+
+---
+
+## 7. Architecture Preservation Rules
+
+- No unauthorized refactoring of existing package files without CTO approval
+- No feature additions beyond the approved plan scope
+- All architectural changes require a formal CTO proposal **and** user approval
+- The Reviewer must verify specification compliance before any implementation is considered complete
+- If the Implementer hits ambiguity, **stop and return to the CTO** — do not make architectural decisions independently
+
+---
+
+## 8. Development Directory Structure (Canonical)
+
+```
+ds-eo-openclaw/
+├── AGENTS.md                    ← This file (workspace governance)
+├── ds_eo_manifest.yaml          ← Package manifest (source of truth)
+│
+├── agents/                      ← Role definitions (portable prompts)
+├── protocols/                   ← Engineering protocols (core rules)
+├── templates/                   ← Document templates
+├── config-templates/            ← Reference configurations
+├── scripts/                     ← Installation helpers
+├── tests/                       ← Verification and compliance tests
+├── examples/                    ← Usage examples
+├── docs/
+│   ├── reports/                 ← Task history
+│   │   └── TASK_<YYYYMMDD>_<NNN>/  ← One dir per task
+│   ├── development/
+│   │   └── protocols/           ← Workspace mirror of package protocols
+│   ├── COMPATIBILITY.md
+│   ├── CONTRIBUTING.md
+│   └── MIGRATION_GUIDE.md
+├── README.md
+├── ARCHITECTURE.md
+├── INSTALLATION.md
+└── CHANGELOG.md
+```
+
+---
+
+## 9. Universal Project Rules
+
+- Read AGENTS.md before starting work (this file)
+- Read the CTO's plan and acceptance criteria before implementing
+- Follow the architecture — do not deviate without CTO approval
+- Do not create unnecessary files
+- Do not change unrelated modules
+- Implement one specification at a time
+- Add tests for all new functionality
+- Update documentation to reflect changes
+- Explain design decisions in reports and commit messages
+
+---
+
+*DS-EO OpenClaw Edition v0.1 — Engineering Organization Layer*

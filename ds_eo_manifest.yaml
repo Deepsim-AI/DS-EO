@@ -1,0 +1,196 @@
+# ds_eo_manifest.yaml — DS-EO OpenClaw Edition Package Manifest
+# This is the single source of truth for what DS-EO is and contains.
+
+package:
+  name: "ds-eo-openclaw"                    # Package identifier
+  title: "DeepSim Engineering Organization — OpenClaw Edition"  # Display name
+  version: "0.2.0"
+  description: >
+    Extractable engineering organization framework for OpenClaw.
+    Provides agent roles, protocols, and workflows to transform
+    AI agent platforms into disciplined software engineering teams.
+  license: "MIT"                              # License identifier
+  author: "DeepSim"                           # Package author/maintainer
+
+openclaw:                                    # OpenClaw-specific metadata
+  minimum_version: "2026.7.1"               # Minimum supported OpenClaw version
+  target_config: "~/.openclaw/openclaw.json"  # Config file to merge into
+
+roles:                                       # Engineering organization roles
+  - id: "cto"
+    name: "CTO / Architect"
+    emoji: "🏗️"
+    prompt_file: "agents/cto.md"
+    description: "Architecture, planning, and final approval authority."
+    model_placeholder: "<MODEL_CTO>"         # User fills this in during install
+    tool_profile: "generic"                  # Generic tool access profile
+    default_model: "ollama/qwen3.6:35b"      # Default suggestion; user may override
+
+  - id: "implementer"
+    name: "Code Implementer"
+    emoji: "💻"
+    prompt_file: "agents/implementer.md"
+    description: "Execution agent — executes approved plans and produces working code."
+    model_placeholder: "<MODEL_IMPLEMENTER>"
+    tool_profile: "coding"
+    default_model: "ollama/ornith:35b"
+
+  - id: "reviewer"
+    name: "Senior Code Reviewer"
+    emoji: "🔍"
+    prompt_file: "agents/reviewer.md"
+    description: "Independent verification agent — unbiased quality assessment."
+    model_placeholder: "<MODEL_REVIEWER>"
+    tool_profile: "generic"
+    default_model: "ollama/laguna-xs-2.1:q4_K_M"
+
+  - id: "pm"
+    name: "Project Manager"
+    emoji: "📋"
+    prompt_file: "agents/pm.md"
+    description: "Process oversight — task lifecycle, status tracking, release management."
+    default_model: "ollama/qwen3.6:35b"       # Same model family as CTO; identity is in persona, not model
+    tool_profile: "generic"                    # Read + write to docs/ and reports/ only — no git operations
+
+protocols:                                   # Engineering protocols included
+  - id: "approval_protocol"
+    file: "protocols/approval_protocol.md"
+    category: "governance"                   # governance | communication | workflow
+    level: "core"                            # core (mandatory) | extension (optional)
+    gates: ["G1", "G2", "G3", "G4"]         # Which gates this protocol defines
+
+  - id: "communication_protocol"
+    file: "protocols/communication_protocol.md"
+    category: "communication"
+    level: "core"
+
+  - id: "completion_protocol"
+    file: "protocols/completion_protocol.md"
+    category: "workflow"
+    level: "core"
+    roles: ["CTO", "Implementer", "Reviewer"]
+
+  - id: "delegation_protocol"
+    file: "protocols/delegation_protocol.md"
+    category: "workflow"
+    level: "core"
+
+  - id: "handoff_protocol"
+    file: "protocols/handoff_protocol.md"
+    category: "workflow"
+    level: "core"
+
+  - id: "review_protocol"
+    file: "protocols/review_protocol.md"
+    category: "governance"
+    level: "core"
+    scoring_dimensions:
+      - name: "Specification Compliance"
+        weight: 40
+      - name: "Code Quality"
+        weight: 25
+      - name: "Architecture Adherence"
+        weight: 25
+      - name: "Test Coverage & Regression"
+        weight: 10
+
+  - id: "release_management_protocol"
+    file: "protocols/release_management_protocol.md"
+    category: "workflow"
+    level: "core"
+    roles: ["PM"]
+
+templates:                                  # Document templates included
+  - id: "task"
+    file: "templates/task.md"
+    purpose: "Task directory structure and naming convention"
+
+  - id: "report"
+    file: "templates/report_template.md"
+    purpose: "Implementation report format"
+
+  - id: "review_report"
+    file: "templates/review_report_template.md"
+    purpose: "Review report format"
+
+  - id: "spec"
+    file: "templates/spec_template.md"
+    purpose: "Specification document format"
+
+  - id: "cto_approval"
+    file: "templates/cto_approval_template.md"
+    purpose: "CTO final approval memo format"
+
+installation:                               # Installation metadata
+  steps:
+    - step: 1
+      name: "Backup existing config"
+      script: "scripts/backup_openclaw_config.sh"
+      required: true
+
+    - step: 2
+      name: "Generate agent config entries"
+      description: "Creates openclaw.json agents.list[] entries with user-specified models"
+      script: "scripts/generate_openclaw_config.sh"
+      interactive: true                     # Requires user input for model names
+      required: true
+
+    - step: 3
+      name: "Merge agent config into openclaw.json"
+      description: "Safely merges agents.list[] entries, preserving existing entries"
+      script: "scripts/generate_openclaw_config.sh --merge"
+      backup_before_merge: true
+      required: true
+
+    - step: 4
+      name: "Deploy protocols globally"
+      description: "Copies protocol files to ~/.openclaw/protocols/"
+      script: "scripts/deploy_protocols.sh --target ~/.openclaw/protocols/"
+      backup_before_deploy: true
+      required: true
+
+    - step: 5
+      name: "Deploy protocols per-project"
+      description: "Copies protocol files to project workspace"
+      script: "scripts/deploy_protocols.sh --target <PROJECT_PATH>/docs/development/protocols/"
+      backup_before_deploy: true
+      required: false                     # Optional for multi-project setups
+
+    - step: 6
+      name: "Deploy agent prompts per-project"
+      description: "Copies agent prompt files to workspace docs/prompts/"
+      script: "scripts/deploy_agents.sh --target <PROJECT_PATH>/docs/prompts/"
+      required: true
+
+    - step: 7
+      name: "Verify installation"
+      script: "scripts/verify_installation.sh"
+      rollback_on_failure: true
+      required: true
+
+dependencies:                              # External dependencies (none for v0.1)
+  openclaw:
+    minimum_version: "2026.7.1"
+    tools_needed:
+      - "group:fs"                          # File system access
+      - "exec"                              # Shell execution (for scripts)
+
+  systems: []                               # No external system dependencies
+
+compliance:                                # Compliance and validation metadata
+  test_suite: "tests/"
+  verification_checks:
+    - check: "manifest_valid"              # ds_eo_manifest.yaml is valid YAML
+      test: "test_manifest_schema.py"
+
+    - check: "all_agents_present"          # All 3 role files exist and are non-empty
+      test: "test_protocol_extraction.py"
+
+    - check: "all_templates_present"       # All templates have required sections
+      test: "test_template_completeness.py"
+
+    - check: "config_merge_safe"           # Merged config is valid JSON
+      test: "test_config_merge_safety.py"
+
+    - check: "installation_flow"           # End-to-end install works on clean host
+      test: "test_installation_flow.sh"

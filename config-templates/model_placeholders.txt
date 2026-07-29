@@ -1,0 +1,27 @@
+# DS-EO Model Placeholder Conventions
+
+## Placeholders Used in Package
+
+| Placeholder | Default Value | Description | Where It Appears |
+|-------------|--------------|-------------|-----------------|
+| `<MODEL_CTO>` | `ollama/qwen3.6:35b` | CTO model name | agents/cto.md, config templates, manifest |
+| `<MODEL_IMPLEMENTER>` | `ollama/ornith:35b` | Implementer model name | agents/implementer.md, config templates, manifest |
+| `<MODEL_REVIEWER>` | `ollama/laguna-xs-2.1:q4_K_M` | Reviewer model name | agents/reviewer.md, config templates, manifest |
+| `<WORKSPACE_PATH>` | User-specified (e.g., `/home/deepsim/agent_system`) | Project workspace path | Config templates only — never in prompts or protocols |
+
+## Naming Convention for Model Values
+
+Model values follow the OpenClaw provider/model pattern:
+
+```
+<provider>/<model_name>:<tag>
+```
+
+Examples:
+- `ollama/qwen3.6:35b`
+- `ollama/ornith:35b`
+- `ollama/laguna-xs-2.1:q4_K_M`
+
+## How Placeholders Are Replaced
+
+During installation, the installer prompts for each placeholder value and replaces it in all relevant files (config templates, agent configs). The prompt files (`agents/*.md`) keep placeholders as documentation only — they are not consumed by OpenClaw at runtime.
