@@ -72,3 +72,10 @@ Were there any deviations from the CTO's plan? If so:
 | [Description of deviation] | Why it was necessary | CTO approval reference (if applicable) |
 
 If no deviations: "No deviations from the approved plan."
+
+---
+
+## Handoff Message
+
+Use `scripts/generate_handoff_message.sh impl-complete <task-dir>` to produce the standard
+completion message for this task, or compose a manual H-02 template.

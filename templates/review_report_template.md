@@ -90,3 +90,10 @@
 ## Detailed Findings
 
 [Any additional findings, observations, or context not captured above.]
+
+---
+
+## Handoff Message
+
+After writing this report, use `scripts/generate_handoff_message.sh review-result <task-dir>` 
+to produce the standard review completion message for CTO review.
