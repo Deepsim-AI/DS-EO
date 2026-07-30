@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PKG_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 AGENTS_SRC="$PKG_ROOT/agents"
 
-AGENT_FILES=(cto.md implementer.md reviewer.md)
+AGENT_FILES=(cto.md implementer.md pm.md reviewer.md)
 
 show_help() {
     echo "Usage: deploy_agents.sh --target <path>"

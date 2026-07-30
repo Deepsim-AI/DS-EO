@@ -36,7 +36,7 @@ AGENTS_OK=$(python3 -c "
 import json, sys
 config = json.load(open('$CONFIG_FILE'))
 agents = [a.get('id','') for a in config.get('agents',{}).get('list',[])]
-required = ['cto','implementer','reviewer']
+required = ['cto','implementer','pm','reviewer']
 missing = [r for r in required if r not in agents]
 if missing:
     print('MISSING:' + ','.join(missing))
@@ -45,7 +45,7 @@ else:
 " 2>/dev/null || echo "ERROR")
 
 if [[ "$AGENTS_OK" == "OK" ]]; then
-    check_pass "All 3 DS-EO agents present in openclaw.json"
+    check_pass "All 4 DS-EO agents present in openclaw.json"
 elif [[ "$AGENTS_OK" == ERROR* ]]; then
     check_fail "Could not verify agent presence (config error)"
 else
@@ -125,7 +125,7 @@ fi
 
 # ─── Check 6: All agent prompt files present in package ──────────
 
-AGENT_FILES=(cto.md implementer.md reviewer.md)
+AGENT_FILES=(cto.md implementer.md pm.md reviewer.md)
 AGENTS_OK=true
 
 for af in "${AGENT_FILES[@]}"; do
@@ -142,7 +142,7 @@ for af in "${AGENT_FILES[@]}"; do
 done
 
 if [ "$AGENTS_OK" = true ]; then
-    check_pass "All 3 agent prompts present and non-empty in package"
+    check_pass "All 4 agent prompts present and non-empty in package"
 fi
 
 # ─── Check 7: All template files present ──────────────────────────

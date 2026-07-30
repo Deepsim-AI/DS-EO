@@ -94,6 +94,14 @@ class TestConfigMergeSafety(unittest.TestCase):
                 "model": "ollama/laguna-xs-2.1:q4_K_M",
                 "workspace": "/test/workspace",
                 "tools": {"allow": ["group:fs"], "deny": ["write"]}
+            },
+            {
+                "default": False,
+                "id": "pm",
+                "name": "Project Manager",
+                "model": "ollama/qwen3.6:35b",
+                "workspace": "/test/workspace",
+                "tools": {"allow": ["group:fs"], "deny": ["write"]}
             }
         ]
 
@@ -143,7 +151,7 @@ class TestConfigMergeSafety(unittest.TestCase):
         """All 3 DS-EO agents are in the merged config."""
         config = self._get_merged_config()
         agent_ids = [a["id"] for a in config.get("agents", {}).get("list", [])]
-        expected = {"cto", "implementer", "reviewer"}
+        expected = {"cto", "implementer", "pm", "reviewer"}
         self.assertEqual(set(agent_ids), expected | {"existing-agent"})
 
     def test_existing_agent_preserved(self):

@@ -22,6 +22,7 @@ PROTO_FILES=(
     delegation_protocol.md
     handoff_protocol.md
     implementation_protocol.md
+    release_management_protocol.md
     review_protocol.md
 )
 

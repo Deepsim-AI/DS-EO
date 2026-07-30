@@ -32,6 +32,10 @@ if [[ "${1:-}" == "--generate" ]]; then
     read -r -p "  Reviewer model [ollama/laguna-xs-2.1:q4_K_M]: " rev_model
     rev_model="${rev_model:-ollama/laguna-xs-2.1:q4_K_M}"
 
+    # PM Model
+    read -r -p "  PM model [ollama/qwen3.6:35b]: " pm_model
+    pm_model="${pm_model:-ollama/qwen3.6:35b}"
+
     echo ""
     echo "Workspace path: $WORKSPACE"
     echo ""
@@ -40,7 +44,7 @@ if [[ "${1:-}" == "--generate" ]]; then
     if [[ "$cto_model" == ollama/* ]] || [[ "$impl_model" == ollama/* ]] || [[ "$rev_model" == ollama/* ]]; then
         echo "Checking Ollama model availability..."
         if command -v ollama &>/dev/null; then
-            for model in "$cto_model" "$impl_model" "$rev_model"; do
+            for model in "$cto_model" "$impl_model" "$rev_model" "$pm_model"; do
                 if ollama list 2>/dev/null | grep -q "$(basename "$model")"; then
                     echo "  ✓ $model — available"
                 else
@@ -63,7 +67,7 @@ agents = [
         'name': 'CTO / Architect',
         'identity': {'emoji': '\U0001f3d7\ufe0f', 'name': 'CTO'},
         'model': sys.argv[1],
-        'workspace': sys.argv[4],
+        'workspace': sys.argv[5],
         'tools': {
             'allow': ['group:fs','web_search','web_fetch','sessions_list','session_status','memory_search','memory_get','exec','process'],
             'deny': ['write','edit','apply_patch']
@@ -75,7 +79,7 @@ agents = [
         'name': 'Code Implementer',
         'identity': {'emoji': '\U0001f4bb', 'name': 'Implementer'},
         'model': sys.argv[2],
-        'workspace': sys.argv[4],
+        'workspace': sys.argv[5],
         'tools': {
             'allow': ['group:fs','group:runtime','group:web','group:sessions','group:memory'],
             'profile': 'coding'
@@ -87,17 +91,29 @@ agents = [
         'name': 'Senior Code Reviewer',
         'identity': {'emoji': '\U0001f50d', 'name': 'Reviewer'},
         'model': sys.argv[3],
-        'workspace': sys.argv[4],
+        'workspace': sys.argv[5],
         'tools': {
             'allow': ['group:fs','web_search','web_fetch','exec','process','sessions_list','session_status','memory_search','memory_get'],
             'deny': ['write','edit','apply_patch']
+        }
+    },
+    {
+        'default': False,
+        'id': 'pm',
+        'name': 'Project Manager',
+        'identity': {'emoji': '\U0001f4cb', 'name': 'PM'},
+        'model': sys.argv[4],
+        'workspace': sys.argv[5],
+        'tools': {
+            'allow': ['group:fs','web_search','web_fetch'],
+            'deny': ['write','edit','apply_patch','exec','process']
         }
     }
 ]
 
 output = json.dumps(agents, indent=2)
 sys.stdout.write(output + '\n')
-" "$cto_model" "$impl_model" "$rev_model" "$WORKSPACE" > "$PKG_ROOT/agents_list.json"
+" "$cto_model" "$impl_model" "$rev_model" "$pm_model" "$WORKSPACE" > "$PKG_ROOT/agents_list.json"
 
     echo "✓ Agent config written to: $PKG_ROOT/agents_list.json"
     echo ""

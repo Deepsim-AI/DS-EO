@@ -55,11 +55,11 @@ class TestManifestSchema(unittest.TestCase):
 
     def test_roles_count(self):
         roles = self.manifest.get("roles", [])
-        self.assertEqual(len(roles), 3, f"Expected exactly 3 roles, got {len(roles)}")
+        self.assertEqual(len(roles), 4, f"Expected exactly 4 roles, got {len(roles)}")
 
     def test_role_ids_present(self):
         role_ids = {r["id"] for r in self.manifest.get("roles", [])}
-        expected = {"cto", "implementer", "reviewer"}
+        expected = {"cto", "implementer", "pm", "reviewer"}
         self.assertEqual(role_ids, expected, f"Role IDs: got {role_ids}, expected {expected}")
 
     def test_each_role_has_required_fields(self):
@@ -78,7 +78,7 @@ class TestManifestSchema(unittest.TestCase):
 
     def test_protocols_count(self):
         protocols = self.manifest.get("protocols", [])
-        self.assertEqual(len(protocols), 6, f"Expected exactly 6 protocols, got {len(protocols)}")
+        self.assertEqual(len(protocols), 7, f"Expected exactly 7 protocols, got {len(protocols)}")
 
     def test_each_protocol_has_file_and_category(self):
         for proto in self.manifest.get("protocols", []):
