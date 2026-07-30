@@ -8,6 +8,8 @@
 **Implementer**: [Agent name/model]
 **Date Completed**: YYYY-MM-DD  
 
+## Summary
+
 [Brief description of what was implemented and why.]
 
 ---
