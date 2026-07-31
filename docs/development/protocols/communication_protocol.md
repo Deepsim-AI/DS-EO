@@ -44,14 +44,14 @@ Required fields:
 }
 ```
 
-### 3. Task Stalled (`PM_STALLED`)
+### 3. Task Stalled (`TASK_STALLED`)
 
 Sent by: PM → CTO / relevant parties (escalation)  
 Required fields:
 
 ```json
 {
-  "type": "PM_STALLED",
+  "type": "TASK_STALLED",
   "taskId": "TASK_<YYYYMMDD>_<NNN>",
   "currentPhase": "<phase name where stall occurred>",
   "lastActivity": "<timestamp of last artifact update>",
@@ -186,7 +186,7 @@ Required fields:
 - **When**: Task has not progressed within expected timeframe.
 - **To**: CTO (for technical resolution).
 - **Content**: Current phase, last activity timestamp, stall reason.
-- **Format**: `PM_STALLED` message type.
+- **Format**: `TASK_STALLED` message type.
 
 ---
 
@@ -240,7 +240,7 @@ docs/development/reports/TASK_<id>/
 ## Rules
 
 1. All task-related communication must reference a `taskId`.
-2. Messages MUST use the standardized handoff message templates (H-01 through H-05). Detailed content goes into artifact files; the handoff message is a structured summary that links to them. Use `scripts/generate_handoff_message.sh` for automated generation when artifacts are present.
+2. Messages should be concise; detailed content goes into artifact files, not chat messages.
 3. The Implementer never initiates a DELEGATE message — it only receives them from CTO.
 4. Chat artifacts must include the full path to any file-based deliverable.
 5. PM communicates process state only — technical content flows through Implementer → CTO channels.
@@ -254,141 +254,3 @@ docs/development/reports/TASK_<id>/
 - `handoff_protocol.md` — Transition requirements between phases
 - `review_protocol.md` — Review criteria and scoring
 - `approval_protocol.md` — Approval gate rules
-
----
-
-## Handoff Message Templates
-
-All handoff messages MUST follow one of these templates. Ad-hoc message composition is prohibited. Use `scripts/generate_handoff_message.sh` for automated generation when artifacts are present.
-
-### H-01: CTO → Implementer (Task Delegation)
-```
-TASK_<id> — CTO PLAN APPROVED. You may now begin implementation.
-
-Title: <title from CTO_PLAN.md>
-Source plan: docs/development/reports/TASK_<id>/CTO_PLAN.md
-(All N work items, M acceptance criteria)
-
-What to do:
-  1. <work item 1>
-  2. <work item 2>
-  ...
-
-Constraints:
-  - <constraint 1>
-  - <constraint 2>
-  ...
-
-After completion: submit IMPLEMENTATION_REPORT.md with test results and git diff for Reviewer.
-
-Task boundary confirmation:
-  This is a NEW TASK (<id>). NOT related to [list other tasks if applicable].
-```
-
-### H-02: Implementer → Reviewer (Implementation Complete)
-```
-TASK_<id> — Implementation complete. Requesting review.
-
-Implementer: <agent name/model>
-Report: docs/development/reports/TASK_<id>/IMPLEMENTATION_REPORT.md
-
-Changes summary:
-  - Modified: <file paths>
-  - Created:  <file paths>
-  - Deleted:  <file paths>
-
-Test results:
-  Passed: <test names or N/A>
-  Failed: <test names with reason, or none>
-
-git diff scope: N file(s) changed across M dir(s)
-
-Reviewer action required:
-  - Verify all acceptance criteria in CTO_PLAN.md are met
-  - Confirm git diff matches reported changes
-  - Review IMPLEMENTATION_REPORT.md at the path above
-  - Submit REVIEW_REPORT.md with recommendation
-
-Task boundary confirmation:
-  This work is scoped to TASK_<id> only. No related tasks were modified.
-```
-
-### H-03: Reviewer → CTO (Review Complete)
-```
-TASK_<id> — Review complete. Recommendation submitted.
-
-Reviewer: <agent name/model>
-Report: docs/development/reports/TASK_<id>/REVIEW_REPORT.md
-
-Scoring:
-  Spec compliance:   X/5 (<details>)
-  Code quality:      X/5 (<details>)
-  Architecture:      X/5 (<details>)
-  Test coverage:     X/5 (<details>)
-  Overall:           X.X (weighted average)
-
-Recommendation: <APPROVE | APPROVE_WITH_COMMENTS | REQUEST_CHANGES | REJECT>
-
-Issues found:
-  [CRITICAL/HIGH/MEDIUM/LOW] <description> — <location>
-
-CTO action required:
-  - If APPROVED: write CTO_APPROVAL.md with Gate G4 decision
-  - If REQUEST_CHANGES: return to Implementer with specific issues
-  - If REJECTED: document rejection rationale in CTO_APPROVAL.md
-
-Task boundary note: Review scoped exclusively to TASK_<id> directory.
-```
-
-### H-04: CTO → User (Approval Decision)
-```
-TASK_<id> — <APPROVED | REJECTED> by CTO at Gate G4.
-
-Decision: <APPROVE | REJECT>
-Rationale: <one-paragraph summary referencing Reviewer's recommendation and spec compliance>
-
-If approved:
-  - All acceptance criteria met per REVIEW_REPORT.md
-  - No outstanding issues
-  - Task is complete — status moved to COMPLETE
-
-If rejected:
-  Issues requiring resolution:
-    1. <issue description with reference to specific artifact/section>
-    2. ...
-  
-  Resubmit after fixing these issues.
-```
-
-### H-05: Any Agent → User (Task Status Update)
-```
-TASK_<id> — STATUS: <IN_PROGRESS | BLOCKED | AWAITING_REVIEW | COMPLETE | REJECTED>
-
-<brief description of what happened and why the status changed>
-
-If BLOCKED: blocker = <description>; blocking agent = <role or "User">; expected resolution = <who/how/when>
-If COMPLETE: final deliverable(s) = <file paths>
-```
-
----
-
-## Automation
-
-Handoff messages can be generated automatically via `scripts/generate_handoff_message.sh`. When this script exists and succeeds, it MUST be used as the primary mechanism for producing handoff messages. Manual override is allowed only when artifact data is incomplete and the CTO determines a manual message is necessary.
-
-Usage:
-```bash
-generate_handoff_message.sh delegate <task-dir>            # H-01
-generate_handoff_message.sh impl-complete <task-dir>      # H-02
-generate_handoff_message.sh review-result <task-dir>       # H-03
-generate_handoff_message.sh approval <task-dir> <decision>  # H-04
-```
-
----
-
-
----
-
-**Rule 6 (new):** "Every cross-role handoff (CTO→Implementer, Implementer→Reviewer, Reviewer→CTO) MUST include a task boundary confirmation if there is any risk of conflation with other tasks. Use the format `Task boundary note:` followed by explicit scope declaration."
-
----

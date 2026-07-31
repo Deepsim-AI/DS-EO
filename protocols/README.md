@@ -21,7 +21,7 @@ Layer 2: Project Adaptations (optional)
 
 | Category | Protocols | Purpose |
 |----------|-----------|---------|
-| Governance | `approval_protocol.md`, `review_protocol.md` | Gates, scoring, decision authority |
+| Governance | `approval_protocol.md`, `review_protocol.md`, `GATE_AUTHORITY_MATRIX.md` | Gates, scoring, decision authority, gate governance |
 | Communication | `communication_protocol.md` | Message formats and conventions |
 | Workflow | `delegation_protocol.md`, `handoff_protocol.md`, `completion_protocol.md` | Task lifecycle management |
 

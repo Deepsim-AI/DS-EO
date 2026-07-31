@@ -12,21 +12,17 @@ Defines role-specific completion checklists and quality gates for each phase of 
 
 ---
 
-## Role: Implementer Completion Checklist
-
-Before declaring implementation complete (Gate G2), the Implementer must have all of the following:
+## Roles: CTO, Implementer, Reviewer, PM
 
 ### Required Artifacts
 
-- [ ] Code changes applied and committed (if applicable)
-- [ ] Tests written for new functionality
-- [ ] All existing tests still passing (no regressions)
-- [ ] `IMPLEMENTATION_REPORT.md` written to task directory with:
-  - [ ] Summary of all files modified/created/deleted
-  - [ ] Design decisions and rationale
-  - [ ] Test results (pass/fail with output for failures)
-  - [ ] Known limitations or follow-up items
-  - [ ] Reference to acceptance criteria and how each was met
+See **G2 Gate Checklist** in `approval_protocol.md` for the authoritative pre-G2 requirements.
+
+### Agent-Specific Notes
+
+- Follow existing project coding conventions
+- Document all design decisions and rationale
+- Ensure no unresolved TODOs or FIXMEs that block verification
 
 ### Quality Gate
 
@@ -44,13 +40,14 @@ Before declaring review complete, the Development Reviewer must have all of the 
 
 - [ ] `git diff` analysis against original spec
 - [ ] Regression test run on existing tests
-- [ ] `REVIEW_REPORT.md` with:
+- [ ] `REVIEW_REPORT.md` written to the task directory with:
   - [ ] Spec compliance matrix (requirement → implementation status)
   - [ ] Code quality assessment (naming, structure, patterns)
   - [ ] Architecture adherence check
   - [ ] Regression analysis (what broke, if anything)
   - [ ] Scoring rubric completed (see `review_protocol.md`)
   - [ ] Clear recommendation: APPROVE / APPROVE_WITH_COMMENTS / REQUEST_CHANGES / REJECT
+- [ ] Artifact metadata present (`agent_id`, `produced_at`)
 
 ### Quality Gate
 
@@ -89,7 +86,7 @@ After Gate G4 approval is issued, the Project Manager runs the following complet
 
 - [ ] `CTO_PLAN.md` exists in task directory
 - [ ] `IMPLEMENTATION_REPORT.md` exists in task directory
-- [ ] `REVIEW_REPORT.md` exists in task directory (copied by CTO)
+- [ ] `REVIEW_REPORT.md` exists in task directory (written by Reviewer)
 - [ ] `CTO_APPROVAL.md` exists with APPROVE decision
 - [ ] All spec requirements addressed per review report
 
@@ -105,6 +102,30 @@ After Gate G4 approval is issued, the Project Manager runs the following complet
   - [ ] Date and task ID referenced
   - [ ] Brief description of what was implemented
   - [ ] Link to CTO_APPROVAL.md or review report if relevant
+
+
+### Git Commit (Post-G4 only)
+
+After completing all administrative updates above, the PM must commit approved work to the local Git repository:
+
+- [ ] All changes from this task are staged and committed
+- [ ] Commit message references the TASK_ID (e.g., `TASK_DS_EO_XXX`)
+- [ ] Commit includes status/changelog updates and any new protocol/artifact files
+- [ ] Commit does NOT include unreviewed WIP or partial implementations
+
+**Constraint**: PM commits only after G4 approval. Never during active implementation or review phases.
+
+
+### Git Push to Remote (Post-G4 only)
+
+After completing all local commits above, the PM may push approved work to the remote GitHub repository:
+
+- [ ] User has confirmed target repository URL and branch name
+- [ ] `git push <remote> <branch>` executed with verified credentials
+- [ ] No uncommitted changes remain in working directory
+- [ ] Push includes all task artifacts, status updates, changelog, and new governance files
+
+**Constraint**: PM pushes only after explicit user confirmation of the target repository URL and branch. Never auto-push without confirmation. Credentials are read from local secrets or environment variables — never embedded in commit messages or protocol files.
 
 ### Milestone Flagging
 
@@ -151,7 +172,7 @@ Agents should use this format when announcing completion:
 
 1. A phase is not "complete" until all required artifacts exist in the task directory.
 2. Incomplete submissions are returned to the originating agent — do not proceed to the next gate.
-3. The Reviewer cannot write files; their completion is a chat artifact that the CTO copies into the task directory.
+3. The Reviewer produces `REVIEW_REPORT.md` directly (has write capability, scoped behaviorally to current task directory).
 4. Completion checklists are minimum requirements — agents should exceed them when possible.
 5. **PM completes administrative duties only after Gate G4 approval** — it does not participate in technical gates.
 

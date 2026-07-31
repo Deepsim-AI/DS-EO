@@ -3,7 +3,9 @@
     "defaults": {
       "model": {
         "primary": "<MODEL_CTO>",
-        "fallbacks": ["ollama/ornith:35b"]
+        "fallbacks": [
+          "ollama/ornith:35b"
+        ]
       }
     },
     "list": [
@@ -12,7 +14,7 @@
         "id": "cto",
         "name": "CTO / Architect",
         "identity": {
-          "emoji": "🏗️",
+          "emoji": "\ud83c\udfd7\ufe0f",
           "name": "CTO"
         },
         "model": "<MODEL_CTO>",
@@ -41,7 +43,7 @@
         "id": "implementer",
         "name": "Code Implementer",
         "identity": {
-          "emoji": "💻",
+          "emoji": "\ud83d\udcbb",
           "name": "Implementer"
         },
         "model": "<MODEL_IMPLEMENTER>",
@@ -62,7 +64,7 @@
         "id": "reviewer",
         "name": "Senior Code Reviewer",
         "identity": {
-          "emoji": "🔍",
+          "emoji": "\ud83d\udd0d",
           "name": "Reviewer"
         },
         "model": "<MODEL_REVIEWER>",
@@ -83,6 +85,29 @@
             "write",
             "edit",
             "apply_patch"
+          ]
+        }
+      },
+      {
+        "default": false,
+        "id": "pm",
+        "name": "Project Manager",
+        "identity": {
+          "emoji": "\ud83d\udccb",
+          "name": "PM"
+        },
+        "model": "<MODEL_PM>",
+        "workspace": "<WORKSPACE_PATH>",
+        "tools": {
+          "allow": [
+            "write",
+            "apply_patch",
+            "web_search",
+            "web_fetch"
+          ],
+          "deny": [
+            "exec",
+            "process"
           ]
         }
       }

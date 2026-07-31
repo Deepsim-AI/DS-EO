@@ -74,7 +74,8 @@ ds-eo-openclaw/
 ├── agents/                      # Role definitions (portable prompts)
 │   ├── cto.md                   # CTO / Architect prompt
 │   ├── implementer.md           # Code Implementer prompt
-│   └── reviewer.md              # Senior Code Reviewer prompt
+│   ├── reviewer.md              # Senior Code Reviewer prompt
+│   └── pm.md                   # Project Manager prompt
 │
 ├── protocols/                   # Engineering protocols (core rules)
 │   ├── README.md                # Protocol hierarchy guide
@@ -83,7 +84,8 @@ ds-eo-openclaw/
 │   ├── completion_protocol.md   # Per-role completion checklists
 │   ├── delegation_protocol.md   # Task creation and assignment
 │   ├── handoff_protocol.md      # Phase transition requirements
-│   └── review_protocol.md       # Review criteria and scoring rubric
+│   ├── review_protocol.md       # Review criteria and scoring rubric
+│   └── GATE_AUTHORITY_MATRIX.md # Single source of truth for gate governance
 │
 ├── templates/                   # Reusable document templates
 │   ├── task.md                  # TASK directory structure template
@@ -127,19 +129,22 @@ ds-eo-openclaw/
 | CTO / Architect | 🏗️ | Architecture, planning, final approval authority | `ollama/qwen3.6:35b` |
 | Code Implementer | 💻 | Execute approved plans, produce working code | `ollama/ornith:35b` |
 | Senior Code Reviewer | 🔍 | Independent verification and quality assessment | `ollama/laguna-xs-2.1:q4_K_M` |
+| Project Manager | 📋 | Process oversight — task lifecycle, status tracking, release management | `ollama/qwen3.6:35b` |
 
 ## Development Workflow
 
 ```
-User Request → CTO Plan (G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4)
+User Request → PM Lifecycle Coordination → CTO Plan (G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4)
 ```
 
 Four formal approval gates ensure quality at every phase transition. See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
 
 ## Roadmap
 
-- **v0.1** (current): Extract, package, and install DS-EO OpenClaw Edition
-- **v0.2**: Self-hosting — use DS-EO to develop DS-EO
+- **v0.1** (completed): Extract, package, and install DS-EO OpenClaw Edition
+- **v0.2** (completed): Protocol & governance consistency migration
+- **v1.0**: Platform abstraction layer for multi-platform editions
+- **Future**: Additional platform editions (Claude, Codex, Gemini)
 - **v1.0**: Platform abstraction layer for multi-platform editions
 - **Future**: Additional platform editions (Claude, Codex, Gemini)
 
@@ -147,6 +152,17 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
 
 MIT
 
+Copyright (c) 2026 Deepsim Intelligence Technology Inc.
+
+
+---
+
+## Project Maintainer
+
+**Dr. Shouke Wei (魏守科)**  
+Founder, Deepsim Intelligence Technology Inc.
+
+DS-EO is developed and maintained by the Deepsim AI Lab at Deepsim Intelligence Technology Inc.
 ---
 
 *Built with DS-EO OpenClaw Edition.*

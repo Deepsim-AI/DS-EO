@@ -1,0 +1,225 @@
+# DS-EO Handoff Protocol (Global Standard)
+
+**Version**: 1.0  
+**Status**: Active  
+**Scope**: All OpenClaw workspaces using DS-EO  
+
+---
+
+## Purpose
+
+Defines the explicit transition requirements between workflow phases, including artifact checklists for receiving agents and error handling for incomplete handoffs. Extends the core development workflow with actionable verification steps.
+
+---
+
+## Phase Transitions
+
+### Transition 0: PM → Open TASK (New Task Skeleton Creation)
+
+**Trigger**: New implementation request identified.
+
+**Prerequisites**:
+- [ ] Requirement or spec reference identified
+- [ ] Priority determined by user/PM
+
+**Actions**:
+1. Create `docs/development/reports/TASK_<YYYYMMDD>_<NNN>/` directory.
+2. Write `CTO_PLAN.md` placeholder with section headers and CTO instructions.
+3. Send `TASK_OPEN` message to the CTO.
+
+**Handoff Message**: PM sends a `TASK_OPEN` message:
+```json
+{
+  "type": "TASK_OPEN",
+  "taskId": "TASK_<YYYYMMDD>_<NNN>",
+  "specRef": "<path to relevant spec or requirement>",
+  "priority": "P0 | P1 | P2",
+  "notes": "<user-provided context, priority rationale>"
+}
+```
+
+**Receiving Agent Verification** (CTO checks before starting):
+1. Confirm task directory exists at expected path.
+2. Read `CTO_PLAN.md` placeholder — verify it contains section headers for CTO to fill.
+3. Identify the relevant spec or requirement referenced.
+4. Begin architectural planning work.
+
+---
+
+### Transition 0a: PM → Monitor (Stall Detection During Any Phase)
+
+**Trigger**: Task has not progressed within expected timeframe, or any agent reports a blocker.
+
+**Actions**:
+1. Check task directory for recent artifact updates.
+2. If no progress detected → send `TASK_STALLED` message to relevant parties.
+3. Document stall reason and escalate per project policy.
+
+**Handoff Message**: PM sends a `TASK_STALLED` message:
+```json
+{
+  "type": "TASK_STALLED",
+  "taskId": "TASK_<YYYYMMDD>_<NNN>",
+  "currentPhase": "<phase name where stall occurred>",
+  "lastActivity": "<timestamp of last artifact update>",
+  "reason": "<description of stall condition>"
+}
+```
+
+**Note**: PM does not resolve technical stalls — it escalates to the CTO for resolution.
+
+---
+
+### Transition 0b: PM → Close (Post-G4 Cleanup)
+
+**Trigger**: Gate G4 approval issued by CTO.
+
+**Actions**:
+1. Verify all task artifacts are present in the task directory.
+2. Update `PROJECT_STATUS.md` to reflect completed work.
+3. Add entries to `CHANGELOG.md` for user-facing changes.
+4. Flag milestone completion if applicable.
+5. Send `PM_CLOSED` message to relevant parties.
+
+**Handoff Message**: PM sends a `TASK_CLOSED` message:
+```json
+{
+  "type": "PM_CLOSED",
+  "taskId": "TASK_<YYYYMMDD>_<NNN>",
+  "closedBy": "PM",
+  "artifactsVerified": ["CTO_PLAN.md", "IMPLEMENTATION_REPORT.md", "REVIEW_REPORT.md", "CTO_APPROVAL.md"],
+  "statusUpdatesWritten": true,
+  "changelogUpdated": true
+}
+```
+
+**Note**: PM does not decide gates — it only observes and records transitions. Gate decisions remain with the CTO.
+
+---
+
+### Transition 1: CTO → Implementer (Gate G1)
+
+**Trigger**: User approves the CTO's task plan.
+
+**Prerequisites** (must all exist before handoff):
+- [ ] `docs/development/reports/TASK_<id>/` directory created
+- [ ] `CTO_PLAN.md` written with problem statement, proposed changes, acceptance criteria, and implementation instructions
+- [ ] User approval confirmed (Gate G1 cleared)
+
+**Handoff Message**: CTO sends a `DELEGATE` message to the Implementer containing:
+- Task ID and full directory path
+- Spec reference
+- Acceptance criteria
+- Constraints and boundaries
+
+**Receiving Agent Verification** (Implementer checks before starting):
+1. Confirm task directory exists at expected path
+2. Read `CTO_PLAN.md` — verify acceptance criteria are present and testable
+3. Identify the relevant spec file referenced in the plan
+4. Flag any ambiguity to CTO before beginning work
+
+---
+
+### Transition 2: Implementer → Reviewer (Gate G2)
+
+**Trigger**: Implementer reports implementation complete with test results.
+
+**Prerequisites** (must all exist before handoff):
+- [ ] Code changes applied
+- [ ] All tests run and results documented
+- [ ] `IMPLEMENTATION_REPORT.md` written to task directory
+- [ ] Report includes: files changed, design decisions, test results, known limitations
+
+**Handoff Message**: Implementer sends an `IMPL_COMPLETE` message containing:
+- Task ID
+- Full path to `IMPLEMENTATION_REPORT.md`
+- Test result summary (passed/failed)
+- Changes summary
+
+**Receiving Agent Verification** (Reviewer checks before starting):
+1. Confirm task directory exists at expected path
+2. Read `IMPLEMENTATION_REPORT.md` — verify it references the spec and acceptance criteria
+3. Run `git diff` to see actual changes vs. what was reported
+4. If report is missing or incomplete → return to Implementer with specific gap
+
+---
+
+### Transition 3: Reviewer → CTO (Gate G3)
+
+**Trigger**: Reviewer submits review findings.
+
+**Prerequisites** (must all exist before handoff):
+- [ ] `git diff` reviewed against original spec
+- [ ] Regression analysis completed
+- [ ] Scoring rubric filled out (`review_protocol.md`)
+- [ ] Recommendation issued: APPROVE / APPROVE_WITH_COMMENTS / REQUEST_CHANGES / REJECT
+
+**Handoff Method**: Reviewer produces findings as a session/chat artifact (cannot write files). CTO copies the report into `REVIEW_REPORT.md` after reviewing.
+
+**Receiving Agent Verification** (CTO checks before deciding):
+1. Confirm review report exists (chat or file)
+2. Verify Implementer's handoff path was provided and verified by Reviewer
+3. Check that recommendation is clear and justified — if not, return to Reviewer
+
+---
+
+### Transition 4: CTO → Complete/Return (Gate G4)
+
+**Trigger**: CTO issues final approval decision.
+
+**Prerequisites** (must all exist before handoff):
+- [ ] `CTO_APPROVAL.md` written with decision and rationale
+- [ ] Spec status updated (active → completed or moved accordingly)
+- [ ] Decision references Reviewer's report
+
+**Handoff Message**: CTO communicates the decision to the user. If approved, work is done. If rejected, specify what needs fixing and return to Implementer or Reviewer as appropriate.
+
+---
+
+## Error Handling: Incomplete Handoffs
+
+When a handoff fails verification (missing artifacts, incomplete reports, unclear acceptance criteria):
+
+1. **Identify the gap** — Document exactly what's missing or incomplete
+2. **Return with specifics** — Send feedback to the originating agent naming the specific issue(s)
+3. **Do not proceed** — The next phase cannot start until the handoff is complete
+4. **Log the return** — Note in the task directory if a return occurred (for process improvement)
+
+### Common Return Reasons
+
+| Returning Agent | To | Reason |
+|----------------|-----|--------|
+| CTO | Implementer | Ambiguous acceptance criteria; missing spec reference |
+| Reviewer | Implementer | Implementation report incomplete; test results missing |
+| CTO | Reviewer | No review report received; or report lacks recommendation |
+
+---
+
+## Handoff Artifact Checklist (Quick Reference)
+
+| From → To | Required Artifacts | Verification Action |
+|-----------|-------------------|---------------------|
+| PM → Open TASK | `CTO_PLAN.md` placeholder, spec ref | Read placeholder, confirm structure |
+| PM → Monitor | Stall detection report | Verify last activity timestamp |
+| PM → Close | Artifact verification, status update | Confirm all artifacts present |
+| CTO → Implementer | `CTO_PLAN.md`, user approval | Read plan, confirm criteria present |
+| Implementer → Reviewer | `IMPLEMENTATION_REPORT.md` | Run git diff, check test results |
+| Reviewer → CTO | Review report (chat/file) | Confirm recommendation exists |
+| CTO → User/Complete | `CTO_APPROVAL.md`, updated spec | Decision clear and referenced |
+
+---
+
+## Rules
+
+1. No phase may begin until the receiving agent has verified all prerequisites.
+2. Incomplete handoffs are returned — never silently accepted.
+3. The receiving agent is responsible for verification, not the sending agent.
+4. All return reasons must be specific and actionable.
+
+---
+
+## Related Protocols
+
+- `communication_protocol.md` — Message format standards
+- `delegation_protocol.md` — Task creation and assignment
+- `completion_protocol.md` — Per-role completion checklists

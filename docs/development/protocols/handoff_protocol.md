@@ -23,9 +23,8 @@ Defines the explicit transition requirements between workflow phases, including 
 - [ ] Priority determined by user/PM
 
 **Actions**:
-1. Create `docs/development/reports/TASK_<YYYYMMDD>_<NNN>/` directory.
-2. Write `CTO_PLAN.md` placeholder with section headers and CTO instructions.
-3. Send `TASK_OPEN` message to the CTO.
+1. **PM requests CTO to create the task** — PM alerts the CTO with requirement, priority, and context. The CTO creates the directory and assigns the ID (see `delegation_protocol.md` §Step 1).
+2. After CTO creates the task, PM triggers the skeleton by sending a `TASK_OPEN` message.
 
 **Handoff Message**: PM sends a `TASK_OPEN` message:
 ```json
@@ -125,10 +124,7 @@ Defines the explicit transition requirements between workflow phases, including 
 **Trigger**: Implementer reports implementation complete with test results.
 
 **Prerequisites** (must all exist before handoff):
-- [ ] Code changes applied
-- [ ] All tests run and results documented
-- [ ] `IMPLEMENTATION_REPORT.md` written to task directory
-- [ ] Report includes: files changed, design decisions, test results, known limitations
+- All items on the **G2 Gate Checklist** (see `approval_protocol.md`) verified complete
 
 **Handoff Message**: Implementer sends an `IMPL_COMPLETE` message containing:
 - Task ID
@@ -153,8 +149,9 @@ Defines the explicit transition requirements between workflow phases, including 
 - [ ] Regression analysis completed
 - [ ] Scoring rubric filled out (`review_protocol.md`)
 - [ ] Recommendation issued: APPROVE / APPROVE_WITH_COMMENTS / REQUEST_CHANGES / REJECT
+- [ ] All Phase 2 and Phase 3 artifacts carry required metadata fields (`agent_id`, `produced_at`)
 
-**Handoff Method**: Reviewer produces findings as a session/chat artifact (cannot write files). CTO copies the report into `REVIEW_REPORT.md` after reviewing.
+**Handoff Method**: Reviewer writes `REVIEW_REPORT.md` directly to the task directory. CTO no longer copies the report — it is already in place.
 
 **Receiving Agent Verification** (CTO checks before deciding):
 1. Confirm review report exists (chat or file)
@@ -162,6 +159,10 @@ Defines the explicit transition requirements between workflow phases, including 
 3. Check that recommendation is clear and justified — if not, return to Reviewer
 
 ---
+
+**Note — G3 iteration**: G3 may be entered multiple times for re-review. Each return from the Reviewer with REQUEST_CHANGES or REJECT sends the task back to Implementer for correction. The task **never re-enters G2** on a return — it loops G3 → Implementer → G3 until the Reviewer issues PASS, then proceeds to G4.
+
+### Transition 4: CTO → Complete/Return (Gate G4)---
 
 ### Transition 4: CTO → Complete/Return (Gate G4)
 

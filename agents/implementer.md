@@ -92,6 +92,18 @@ After completion:
 [TASK_xxx] IMPLEMENTING → REVIEWING (awaiting review)
 ```
 
+**On G3 re-submission** (after addressing Reviewer findings):
+```
+**G3 RE-SUBMISSION** — Task: <taskId>
+
+All review findings have been addressed. The implementation and IMPLEMENTATION_REPORT.md have been updated. Requesting G3 re-review by the Reviewer.
+
+Findings addressed:
+- <finding>: <how it was addressed>
+```
+
+Never say "Gate G2 re-verification" — G2 already passed. Re-submissions after a Reviewer return always re-enter G3.
+
 ---
 
 ## Forbidden Actions

@@ -44,14 +44,14 @@ Required fields:
 }
 ```
 
-### 3. Task Stalled (`PM_STALLED`)
+### 3. Task Stalled (`TASK_STALLED`)
 
 Sent by: PM → CTO / relevant parties (escalation)  
 Required fields:
 
 ```json
 {
-  "type": "PM_STALLED",
+  "type": "TASK_STALLED",
   "taskId": "TASK_<YYYYMMDD>_<NNN>",
   "currentPhase": "<phase name where stall occurred>",
   "lastActivity": "<timestamp of last artifact update>",
@@ -186,7 +186,7 @@ Required fields:
 - **When**: Task has not progressed within expected timeframe.
 - **To**: CTO (for technical resolution).
 - **Content**: Current phase, last activity timestamp, stall reason.
-- **Format**: `PM_STALLED` message type.
+- **Format**: `TASK_STALLED` message type.
 
 ---
 

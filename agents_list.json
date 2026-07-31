@@ -8,7 +8,7 @@
       "name": "CTO"
     },
     "model": "ollama/qwen3.6:35b",
-    "workspace": "/home/deepsim/agent_system",
+    "workspace": "/home/deepsim/ds-eo-openclaw",
     "tools": {
       "allow": [
         "group:fs",
@@ -37,7 +37,7 @@
       "name": "Implementer"
     },
     "model": "ollama/ornith:35b",
-    "workspace": "/home/deepsim/agent_system",
+    "workspace": "/home/deepsim/ds-eo-openclaw",
     "tools": {
       "allow": [
         "group:fs",
@@ -58,7 +58,7 @@
       "name": "Reviewer"
     },
     "model": "ollama/laguna-xs-2.1:q4_K_M",
-    "workspace": "/home/deepsim/agent_system",
+    "workspace": "/home/deepsim/ds-eo-openclaw",
     "tools": {
       "allow": [
         "group:fs",
@@ -75,6 +75,31 @@
         "write",
         "edit",
         "apply_patch"
+      ]
+    }
+  },
+  {
+    "default": false,
+    "id": "pm",
+    "name": "Project Manager",
+    "identity": {
+      "emoji": "\ud83d\udccb",
+      "name": "PM"
+    },
+    "model": "ollama/qwen3.6:35b",
+    "workspace": "/home/deepsim/ds-eo-openclaw",
+    "tools": {
+      "allow": [
+        "group:fs",
+        "web_search",
+        "web_fetch"
+      ],
+      "deny": [
+        "write",
+        "edit",
+        "apply_patch",
+        "exec",
+        "process"
       ]
     }
   }

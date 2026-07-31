@@ -107,7 +107,7 @@ for role in ['cto', 'implementer', 'reviewer']:
 bash scripts/deploy_protocols.sh --target ~/.openclaw/protocols/
 ```
 
-This copies all 6 protocol files from `ds-eo-openclaw/protocols/` to `~/.openclaw/protocols/`. Existing files are backed up with `.ds-eo-bak` suffix before overwriting.
+This copies all 7 protocol files (including GATE_AUTHORITY_MATRIX.md) from `ds-eo-openclaw/protocols/` to `~/.openclaw/protocols/`. Existing files are backed up with `.ds-eo-bak` suffix before overwriting.
 
 ---
 
@@ -119,7 +119,7 @@ PROJECT_PATH="/path/to/your/project"
 bash scripts/deploy_protocols.sh --target "${PROJECT_PATH}/docs/development/protocols/"
 ```
 
-Skip this step if you only want global protocols. Multi-project setups benefit from per-project deployment for customization.
+Skip this step if you only want global protocols. Multi-project setups benefit from deploying the same 7 protocol files per-project for customization.
 
 ---
 

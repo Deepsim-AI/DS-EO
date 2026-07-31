@@ -13,7 +13,13 @@ CONFIG_FILE="${DS_EO_CONFIG_FILE:-$OPENCLAW_DIR/openclaw.json}"
 # ─── Generate Mode ────────────────────────────────────────────────
 
 if [[ "${1:-}" == "--generate" ]]; then
-    WORKSPACE="${2:-/home/deepsim/agent_system}"
+    DEFAULT_WORKSPACE="/home/deepsim/agent_system"
+    if [[ -n "${2:-}" ]]; then
+        WORKSPACE="$2"
+    else
+        read -r -p "Workspace path [$DEFAULT_WORKSPACE]: " ws_input
+        WORKSPACE="${ws_input:-$DEFAULT_WORKSPACE}"
+    fi
 
     echo "DS-EO Agent Configuration Generator"
     echo ""

@@ -1,6 +1,6 @@
 # Minimal Workflow Example — From Request to Delivery
 
-This walkthrough demonstrates a complete task cycle using DS-EO on OpenClaw. It shows what happens at each phase and gate.
+This walkthrough demonstrates a complete task cycle using DS-EO on OpenClaw. It shows what happens at each phase and gate, including the Project Manager's lifecycle coordination role.
 
 ---
 
@@ -8,24 +8,43 @@ This walkthrough demonstrates a complete task cycle using DS-EO on OpenClaw. It 
 
 A user requests: "Add input validation to the configuration parser."
 
+### Workflow Overview
+
+```
+User → PM → CTO (Plan, G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4) → PM Closes
+```
+
+The Project Manager coordinates task lifecycle throughout — creating tasks, sending status messages, and closing after approval. The CTO owns all technical decisions.
+
+---
+
 ## Phase 1: Planning (CTO)
 
-### User sends request
+### User sends request to PM
+
 ```
-User → CTO Agent:
+User → PM Agent:
 "Please add input validation to the configuration parser in config/parse.py.
  The parser currently accepts any string without checking format or length.
  I need it to validate that inputs are non-empty strings ≤256 characters,
  and that numeric fields parse as valid integers."
 ```
 
+### PM creates task lifecycle and delegates to CTO
+
+The PM:
+1. Creates a new task skeleton in the project tracker
+2. Sends `TASK_OPEN` message (see `communication_protocol.md`) to CTO with user request
+3. Monitors status — does not make technical decisions
+
 ### CTO creates task and writes plan
 
 The CTO:
-1. Creates `docs/development/reports/TASK_20260728_001/` directory
-2. Reads the relevant spec (or derives one from the request)
-3. Analyzes existing code in `config/parse.py`
-4. Writes `CTO_PLAN.md`:
+1. Receives TASK_OPEN from PM
+2. Creates `docs/development/reports/TASK_20260728_001/` directory
+3. Reads the relevant spec (or derives one from the request)
+4. Analyzes existing code in `config/parse.py`
+5. Writes `CTO_PLAN.md`:
 
 ```markdown
 # CTO Implementation Plan — TASK_20260728_001
@@ -71,9 +90,15 @@ User responds: `APPROVE`
 
 ## Phase 2: Implementation (Implementer)
 
-### CTO delegates to Implementer
+### PM sends TASK_ASSIGNED to Implementer
 
-The CTO sends a delegation message referencing the plan and spec.
+The PM forwards the delegation from CTO:
+```
+PM → Implementer Agent:
+TASK_ASSIGNED — Task: TASK_20260728_001
+Plan: docs/development/reports/TASK_20260728_001/CTO_PLAN.md
+Status: In Progress
+```
 
 ### Implementer executes the plan
 
@@ -115,13 +140,25 @@ No deviations from the approved plan.
 
 ### Gate G2: Implementation Complete
 
-Implementer signals completion. CTO verifies artifacts exist and confirms.
+Implementer signals completion. CTO verifies artifacts exist and confirms. PM updates task status to "In Review".
 
 ---
 
 ## Phase 3: Review (Reviewer)
 
+### PM sends TASK_IN_REVIEW to Reviewer
+
+The PM forwards the handoff:
+```
+PM → Reviewer Agent:
+TASK_IN_REVIEW — Task: TASK_20260728_001
+Implementer Report: docs/development/reports/TASK_20260728_001/IMPLEMENTATION_REPORT.md
+Status: In Review
+```
+
 ### Reviewer inspects implementation
+
+Reviewer produces `REVIEW_REPORT.md` directly in the task directory (no CTO copy step):
 
 1. Reads `CTO_PLAN.md` to understand what was supposed to be built
 2. Runs `git diff` — compares actual changes against plan
@@ -141,11 +178,12 @@ Implementer signals completion. CTO verifies artifacts exist and confirms.
 ```
 Scoring: Overall 4.65/5, no dimension below 2 → APPROVE threshold met
 Comments: Error messages could include the field name for better debugging
+Reviewer produces REVIEW_REPORT.md directly in task directory.
 ```
 
 ### Gate G3: Review Passes
 
-CTO confirms review report is complete and recommendation is justified.
+PM updates task status to "Awaiting Approval". CTO confirms review report is complete and recommendation is justified.
 
 ---
 
@@ -181,15 +219,25 @@ The CTO reviews both reports independently:
 3. Archive task artifacts
 ```
 
+### Gate G4: Approval Complete
+
+CTO writes `CTO_APPROVAL.md`. PM updates task status to "Completed" and runs post-G4 verification checklist (see `completion_protocol.md` §Post-G4).
+
 ---
 
 ## Summary
 
-| Phase | Agent | Artifact Produced | Gate |
-|-------|-------|-------------------|------|
-| Planning | CTO | `CTO_PLAN.md` | G1 (User approves) |
-| Implementation | Implementer | `IMPLEMENTATION_REPORT.md` | G2 (Complete verified) |
-| Review | Reviewer | `REVIEW_REPORT.md` | G3 (Review passes) |
-| Approval | CTO | `CTO_APPROVAL.md` | G4 (Final approve) |
+| Phase | Agent | Artifact Produced | Gate | PM Action |
+|-------|-------|-------------------|------|-----------|
+| Planning | CTO | `CTO_PLAN.md` | G1 (User approves) | Creates task, sends TASK_OPEN to CTO |
+| Implementation | Implementer | `IMPLEMENTATION_REPORT.md` | G2 (Complete verified) | Sends TASK_ASSIGNED to Implementer |
+| Review | Reviewer | `REVIEW_REPORT.md` | G3 (Review passes) | Sends TASK_IN_REVIEW to Reviewer, updates status |
+| Approval | CTO | `CTO_APPROVAL.md` | G4 (Final approve) | Updates status to "Completed" after approval |
 
 **Total time**: Depends on implementation complexity. The workflow ensures quality at every step through formal gates and independent verification.
+
+### Full Workflow Diagram
+
+```
+User Request → PM Lifecycle Coordination → CTO Plan (G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4) → PM Post-G4 Verification
+```

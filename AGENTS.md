@@ -68,14 +68,32 @@ All references to these components are relative to this workspace root (`/home/d
 
 - **Model**: `ollama/laguna-xs-2.1:q4_K_M`
 - **Role**: Independent quality verification.
-- **Tool Policy**: Read-only — `tools.deny`: write, edit, apply_patch
+- **Tool Policy**: Read + write for review deliverables — `tools.allow`: group:fs, exec, process, write (scoped behaviorally); `tools.deny`: edit, apply_patch
 - **Responsibilities**:
   1. Verify implementation against the CTO's plan and specifications
   2. Assess code quality, test coverage, and regression impact
-  3. Produce a review report with scoring matrix and recommendation
-  4. Never modify repository files — only reads and reports
+  3. Produce `REVIEW_REPORT.md` directly in the task directory (no CTO copy step)
+  4. Never modify repository files outside of REVIEW_REPORT.md — only reads and reports
 
 **Constraint**: Review is scoped to exactly one TASK directory. Cannot approve or reject — only recommends to the CTO.
+
+**Behavioral Rule**: May only write `REVIEW_REPORT.md` in the current task directory (`docs/development/reports/TASK_<id>/`). Writing any other file is prohibited.
+
+
+### Project Manager 📋
+
+- **Model**: `ollama/qwen3.6:35b`
+- **Role**: Process oversight — task lifecycle coordination, status tracking, release management, Post-G4 completion, and Git persistence of approved work.
+- **Tool Policy**: Read + write for deliverables — `tools.allow`: group:fs, exec (git operations only), write, web_search, web_fetch; `tools.deny`: edit/apply_patch to non-designated paths, no general shell commands outside git
+- **Responsibilities**:
+  1. Detect need for new tasks and request CTO task creation
+  2. Coordinate lifecycle between all phases (pre-G1 through Post-G4)
+  3. Verify artifact integrity — metadata fields present, structure compliance
+  4. Execute Post-G4 completion checklist: update PROJECT_STATUS.md, CHANGELOG.md, send PM_CLOSED notification
+  5. Commit approved work to the local Git repository after each G4 task closure
+  6. Push approved work to GitHub after confirming target repository and branch with the user
+**Constraint**: Never make architectural decisions or approve/reject work. PM coordinates the process; CTO owns technical authority. PM commits are strictly post-G4 — never during active implementation or review phases. Remote push requires explicit user confirmation of the target repository URL and branch before executing `git push`.
+
 
 ---
 
@@ -111,6 +129,7 @@ CTO — Final approval or rejection
 ### Task Boundary Rules (new — prevents conflation of separate tasks)
 4. **Exact TASK_ID matching required.** When receiving implementation instructions for a task, the Implementer and Reviewer must verify the exact `TASK_<YYYYMMDD>_<NNN>` identifier against the directory name under `docs/development/reports/`. Substring matching, fuzzy matching, or inference from plan content is **prohibited**. If there is any doubt whether an existing completed task directory matches the requested TASK_ID, the agent must flag it to the CTO rather than proceeding.
 5. **No cross-task assumption of completion.** An agent must never assume that work described in a different TASK's artifacts (even from the same user session) fulfills requirements for their current TASK. Each TASK's deliverables must be verified independently against the accepted criteria in its own `CTO_PLAN.md`. If an agent encounters ambiguity or suspects task conflation, they must stop and return to the CTO rather than proceeding on assumed authority.
+6. **CTO must not execute Post-G4 duties.** After writing CTO_APPROVAL.md at G4, the CTO does NOT update PROJECT_STATUS.md, CHANGELOG.md, or send PM_CLOSED notifications. Those are PM responsibilities exclusively. If a session ends without a PM performing post-G4 completion, flag to the user — do not absorb the work yourself.
 
 ### Four Approval Gates
 
@@ -120,6 +139,7 @@ CTO — Final approval or rejection
 | **G2** | Implementation → Review | Implementer self-declares complete + CTO confirms | Complete? |
 | **G3** | Review → Approval | Reviewer recommends pass/fail | Passes? |
 | **G4** | Approval → Complete | CTO final decision | Approve / Reject |
+| **G5** | Complete → Closed | PM (Post-G4 admin) | PM completes: status update, changelog, PM_CLOSED notification |
 
 See `protocols/` for detailed gate definitions, rejection handling, and escalation paths.
 
@@ -135,7 +155,7 @@ Every task gets a dedicated directory:
 docs/development/reports/TASK_<YYYYMMDD>_<NNN>/
 ├── CTO_PLAN.md              # Architecture analysis + plan (CTO produces)
 ├── IMPLEMENTATION_REPORT.md  # Changes, tests, decisions (Implementer produces)
-├── REVIEW_REPORT.md          # Findings and recommendation (Reviewer → CTO copies)
+├── REVIEW_REPORT.md          # Findings and recommendation (produced by Reviewer)
 └── CTO_APPROVAL.md           # Final approve/reject with rationale (CTO produces)
 ```
 

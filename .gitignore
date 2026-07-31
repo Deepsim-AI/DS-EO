@@ -34,3 +34,12 @@ ollama_models/            # If any local model cache exists in this repo path
 
 # ─── Audit log output (generated at runtime) ─────────────
 logs/baseline_audit.log
+
+# ─── Secrets (templates are OK, actual values are not) ──
+.env
+*.env
+secrets/
+credentials/
+*.key
+*.pem
+ssh_keys/

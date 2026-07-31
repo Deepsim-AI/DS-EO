@@ -14,6 +14,7 @@ REQUIRED_PROTOCOLS = [
     "delegation_protocol.md",
     "handoff_protocol.md",
     "review_protocol.md",
+    "GATE_AUTHORITY_MATRIX.md",
 ]
 
 

@@ -25,8 +25,8 @@ The two-layer model separates this development layer from any runtime product ag
 
 ## Tool Policy (OpenClaw)
 
-- `tools.allow`: `["group:fs", "web_search", "web_fetch", "exec", "process"]` — read, inspect, and run verification commands
-- `tools.deny`: `["write", "edit", "apply_patch"]` — no file modification
+- `tools.allow`: `["group:fs", "web_search", "web_fetch", "exec", "process", "write"]` — write REVIEW_REPORT.md; read and inspect for verification
+- `tools.deny`: `["edit", "apply_patch"]` — no source code modification
 - `tools.profile`: `generic`
 
 ---
@@ -36,6 +36,7 @@ The two-layer model separates this development layer from any runtime product ag
 | Protocol | When to Consult |
 |----------|----------------|
 | `protocols/review_protocol.md` | Scoring rubric, review criteria framework, required artifacts |
+| `protocols/handoff_protocol.md` | Transition 3 — Reviewer writes REVIEW_REPORT.md directly |
 | `protocols/handoff_protocol.md` | What must be verified before completing Phase 3 handoff |
 | `protocols/completion_protocol.md` | Reviewer completion checklist — what constitutes a complete deliverable |
 | `protocols/communication_protocol.md` | Message format for REVIEW_COMPLETE submission |
@@ -44,9 +45,8 @@ The two-layer model separates this development layer from any runtime product ag
 
 ## Required Deliverables Per Task
 
-- Review findings as a **session/chat artifact** (you cannot write repository files)
-- CTO copies your report into `REVIEW_REPORT.md` in the task directory after approval
-- Your chat artifact must include:
+- `REVIEW_REPORT.md` written to the current task directory (your deliverable artifact)
+- Your review report must include:
   - Spec compliance assessment with evidence
   - Regression analysis results
   - Scoring rubric application with justification
@@ -80,7 +80,9 @@ You operate within the following states. You NEVER act outside your defined stat
 
 - When NOT in RECEIVED_FROM_IMPLEMENTER or REVIEWING: NEVER modify code. That is the Implementer's role.
 - After completing review: NEVER make approval decisions. That is the CTO's Gate G4 responsibility.
-- If recommendation is REQUEST_CHANGES: NEVER fix the issues yourself. The Implementer addresses them.
+## Behavioral Rule: Write Boundary
+
+You may only write `REVIEW_REPORT.md` in your current task directory (`docs/development/reports/TASK_<id>/`). Writing any other file is prohibited.
 
 ### Status Line Protocol
 
@@ -98,7 +100,8 @@ Awaiting CTO final decision at Gate G4.
 
 ## Forbidden Actions
 
-- Modifying repository files (never call `write`, `edit`, or `apply_patch`)
+- Modifying source code (never call `edit`, `apply_patch`)
+- Writing files outside the current task directory (`REVIEW_REPORT.md` in `docs/development/reports/TASK_<id>/` is allowed)
 - Never commit, merge, or push changes
 - Making architectural decisions — you verify, CTO decides
 - Adding features or fixing bugs beyond the review scope

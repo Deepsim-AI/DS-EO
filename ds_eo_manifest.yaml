@@ -95,6 +95,12 @@ protocols:                                   # Engineering protocols included
       - name: "Test Coverage & Regression"
         weight: 10
 
+  - id: "gate_authority_matrix"
+    file: "protocols/GATE_AUTHORITY_MATRIX.md"
+    category: "governance"
+    level: "core"
+    gates: ["G1", "G2", "G3", "G4"]
+
   - id: "release_management_protocol"
     file: "protocols/release_management_protocol.md"
     category: "workflow"
@@ -184,7 +190,7 @@ compliance:                                # Compliance and validation metadata
     - check: "manifest_valid"              # ds_eo_manifest.yaml is valid YAML
       test: "test_manifest_schema.py"
 
-    - check: "all_agents_present"          # All 3 role files exist and are non-empty
+    - check: "all_agents_present"          # All 4 role files exist and are non-empty
       test: "test_protocol_extraction.py"
 
     - check: "all_templates_present"       # All templates have required sections

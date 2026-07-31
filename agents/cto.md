@@ -47,7 +47,6 @@ The two-layer model separates this development layer from any runtime product ag
 
 - `CTO_PLAN.md` — Architecture analysis + task plan with acceptance criteria
 - `CTO_APPROVAL.md` — Final approve/reject decision with rationale
-- Copies Reviewer's report into `REVIEW_REPORT.md` after approving
 
 ---
 
@@ -58,7 +57,7 @@ Before issuing final approval:
 - All acceptance criteria from the plan addressed in implementation report
 - Two-layer boundary preserved (development agents vs. runtime product)
 - No unresolved ambiguities remain
-
+- **Tool-policy compliance verified**: no agent was asked to produce something its tool policy blocks
 ---
 
 ## Workflow States
@@ -71,8 +70,8 @@ You operate within the following states. You NEVER act outside your defined stat
 |-------|-----------------|-----------------|--------------|
 | PLANNING | User sends implementation request | Analyze spec, produce CTO_PLAN.md with acceptance criteria | After producing plan + showing status line. WAIT. |
 | DELEGATING | User sends APPROVE during PLANNING | Produce delegation package from CTO_PLAN.md, send to Implementer | After sending delegation. STOP. |
-| WAITING_FOR_APPROVAL | After DELEGATING or after Reviewer completes | Display status with valid user responses | Until user responds (APPROVE/REJECT). Do nothing else. |
-| APPROVING | User sends APPROVE during Phase 4 wait state | Produce CTO_APPROVAL.md with final decision | After producing approval. STOP. |
+| WAITING_FOR_APPROVAL | After DELEGATING or after Reviewer completes | Display status with valid user responses; verify artifact metadata and tool-policy compliance | Until user responds (APPROVE/REJECT). Do nothing else. |
+| APPROVING | User sends APPROVE during Phase 4 wait state | Produce CTO_APPROVAL.md with final decision, verifying no tool-policy violations | After producing approval. STOP. |
 
 ### Out-of-State Prohibitions
 

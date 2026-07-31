@@ -8,14 +8,14 @@ DS-EO operates on a fundamental separation between two layers:
 
 | Layer | What It Is | Where It Lives |
 |-------|-----------|----------------|
-| **Engineering Organization** (build-time) | CTO, Implementer, Reviewer — the team that develops software | OpenClaw agent configs + prompt files |
+| **Engineering Organization** (build-time) | CTO, Implementer, Reviewer, PM — the team that develops software | OpenClaw agent configs + prompt files |
 | **Runtime Product** (product-time) | CEO Agent, Research, Writer, etc. — what gets built | The deployed application |
 
 **Critical rule**: Never conflate the two layers. The CTO is not a replacement for the CEO Agent. The engineering organization develops software; the runtime product runs at deployment time.
 
 ### Role Definitions
 
-The three-engineering-organization model:
+The four-role engineering organization model:
 
 ```
 CTO (Architect & Decision Authority)
@@ -44,8 +44,15 @@ CTO (Architect & Decision Authority)
 
 - **Model**: Configurable (default: `ollama/laguna-xs-2.1:q4_K_M`)
 - **Role**: Independent quality verification
-- **Tool Policy**: Read-only (`tools.deny`: write, edit, apply_patch)
-- **Key Constraint**: Cannot modify any repository files — only reads and reports
+- **Tool Policy**: Can produce REVIEW_REPORT.md (`tools.allow`: group:fs, exec, process, write; `tools.deny`: edit, apply_patch)
+- **Key Constraint**: May only write REVIEW_REPORT.md in the current task directory — never modify source code
+
+#### Project Manager 📋
+
+- **Model**: Configurable (default: `ollama/qwen3.6:35b`)
+- **Role**: Process oversight — task lifecycle, status tracking, release management
+- **Tool Policy**: Read + write to docs/ and reports/ only (`tools.allow`: group:fs scoped; no git operations)
+- **Key Constraint**: No source code modifications — process coordination only
 
 ### Development Workflow
 
@@ -72,7 +79,7 @@ Every task gets a dedicated directory under `docs/development/reports/TASK_<id>/
 TASK_<YYYYMMDD>_<NNN>/
 ├── CTO_PLAN.md              # Architecture analysis + plan (CTO produces)
 ├── IMPLEMENTATION_REPORT.md  # Changes, tests, decisions (Implementer produces)
-├── REVIEW_REPORT.md          # Findings and recommendation (Reviewer → CTO copies)
+├── REVIEW_REPORT.md          # Findings and recommendation (produced by Reviewer)
 └── CTO_APPROVAL.md           # Final approve/reject with rationale (CTO produces)
 ```
 
@@ -91,6 +98,14 @@ Protocols exist in two layers:
 ```
 
 DS-EO defines its own authoritative protocol copies in the package. Installation deploys them to both global (`~/.openclaw/protocols/`) and per-project locations. The global versions serve as the source of truth for all projects using DS-EO.
+
+### Protocol Categories
+
+| Category | Protocols | Purpose |
+|----------|-----------|---------|
+| Governance | `approval_protocol.md`, `review_protocol.md`, `GATE_AUTHORITY_MATRIX.md` | Gates, scoring, decision authority, gate governance |
+| Communication | `communication_protocol.md` | Message formats and conventions |
+| Workflow | `delegation_protocol.md`, `handoff_protocol.md`, `completion_protocol.md` | Task lifecycle management |
 
 ## Configuration Architecture
 

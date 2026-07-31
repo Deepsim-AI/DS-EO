@@ -15,46 +15,61 @@ Defines the standard process for creating and assigning implementation tasks in 
 ## Delegation Flow
 
 ```
-PM creates TASK skeleton → PM assigns to CTO for plan → User approves (G1) → CTO delegates to Implementer
+PM detects need for new task → PM requests CTO to create → CTO creates TASK directory + assigns ID → PM triggers skeleton → User approves (G1) → CTO delegates to Implementer
 ```
 
 ### Step 1: Task Creation and Initiation
 
-**CTO Role — Technical Planning**: The CTO is the sole authority for writing `CTO_PLAN.md` containing technical content:
-- Problem statement
-- Current-state analysis
-- Proposed changes with affected files
-- Acceptance criteria (derived from spec)
-- Risks and constraints
-- Implementation instructions
+**CTO Role — Sole Authority for Task Creation**: The CTO is the sole authority for creating task directories and assigning IDs:
+- Creates `docs/development/reports/TASK_<YYYYMMDD>_<NNN>/` directory
+- Assigns ID following naming convention in `communication_protocol.md`
+- Writes or delegates writing of `CTO_PLAN.md` placeholder (structured skeleton with section headers and instructions for CTO to fill):
+  ```
+  # CTO Plan Placeholder
+  ## Instructions
+  The CTO shall populate this file with the architectural plan including:
+  - Problem statement
+  - Current-state analysis
+  - Proposed changes with affected files
+  - Acceptance criteria (derived from spec)
+  - Risks and constraints
+  - Implementation instructions
+  ```
+- Owns all technical content in `CTO_PLAN.md`.
 
-**PM Role — Task Initiation and Orchestration**: The Project Manager initiates task creation by:
-1. Determining if it's a continuation of an existing TASK or a new one.
-2. Creating directory: `docs/development/reports/TASK_<YYYYMMDD>_<NNN>/`
-3. Assigning ID following naming convention in `communication_protocol.md`.
-4. Writing `CTO_PLAN.md` **placeholder** (not technical content) — a structured skeleton with section headers and instructions for the CTO to fill:
-   ```
-   # CTO Plan Placeholder
-   ## Instructions
-   The CTO shall populate this file with the architectural plan including:
-   - Problem statement
-   - Current-state analysis
-   - Proposed changes with affected files
-   - Acceptance criteria (derived from spec)
-   - Risks and constraints
-   - Implementation instructions
-   ```
-5. Handing off to CTO for technical planning work.
+**PM Role — Task Detection, Requesting, and Orchestration**: The Project Manager initiates task creation by:
+1. Detecting that a new implementation task is needed (based on user requests, backlog review, or ongoing work).
+2. **Requesting** the CTO to create the task: alerting the CTO with requirement reference, priority, and any user-provided context.
+3. The PM does NOT create directories, assign IDs, or write `CTO_PLAN.md` — those are exclusively CTO responsibilities.
+4. After CTO creates the task directory, PM triggers the skeleton by sending a `TASK_OPEN` message.
 
 **PM → CTO Handoff**: PM transitions the task to CTO by sending a `TASK_OPEN` message with:
-- Task ID and directory path
+- Task ID and directory path (assigned by CTO)
 - Reference to the originating spec or requirement
 - Any user-provided context or priority notes
-- Note: "CTO_PLAN.md placeholder ready — please populate with technical plan"
+- Note: "CTO has created the task — please populate CTO_PLAN.md with technical plan"
 
 **PM → Reviewer Handoff**: After Gate G4, PM transitions a completed task to the Reviewer for final verification by sending a `TASK_STATUS_UPDATE` message.
 
-**PM → Close Handoff**: Post-G4 cleanup. PM archives the task directory, updates project status, and sends `TASK_CLOSED` notification.
+**PM → Close Handoff**: Post-G4 cleanup. PM archives the task directory, updates project status, and sends `TASK_STALLED` notification.
+
+---
+
+## Spec Lifecycle Management
+
+Specs (requirements derived from user input) follow this lifecycle:
+
+1. **Creation**: CTO creates specs during the planning phase, derived from user requirements.
+2. **Tracking**: PM tracks spec status (`active`, `in_progress`, `completed`, `archived`) in `PROJECT_STATUS.md`.
+3. **Reference**: Implementer references specs but never modifies them — all changes go through a new CTO plan.
+4. **Completion**: At G4 approval, the CTO moves the spec to "completed" status; PM records this update in `PROJECT_STATUS.md`.
+5. **Archival**: Specs for closed/completed tasks may be archived per project policy.
+
+### Rules
+
+- Only the CTO creates or modifies specs.
+- PM tracks but does not create or modify spec content.
+- Implementer never writes to spec files — only reads them as reference.
 
 ### Step 2: Task Delegation Message
 

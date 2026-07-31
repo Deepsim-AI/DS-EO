@@ -78,7 +78,7 @@ class TestManifestSchema(unittest.TestCase):
 
     def test_protocols_count(self):
         protocols = self.manifest.get("protocols", [])
-        self.assertEqual(len(protocols), 7, f"Expected exactly 7 protocols, got {len(protocols)}")
+        self.assertEqual(len(protocols), 8, f"Expected exactly 8 protocols, got {len(protocols)}")
 
     def test_each_protocol_has_file_and_category(self):
         for proto in self.manifest.get("protocols", []):
