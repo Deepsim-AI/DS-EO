@@ -57,6 +57,27 @@ The installer will:
 2. Prompt you for model names (or use defaults)
 3. Merge agent configurations into `openclaw.json`
 4. Deploy protocol files to global and project locations
+
+---
+
+### Windows
+
+```powershell
+# Clone this repository
+git clone <repo-url> ds-eo-openclaw
+cd ds-eo-openclaw
+
+# Run the interactive installer (PowerShell)
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1
+```
+
+Prerequisites for Windows:
+- PowerShell 5.1+ (Windows 10/11 includes this by default)
+- Python 3.8+ (used by the installer for JSON/YAML processing)
+- OpenClaw installed and running (`2026.7.1` or later)
+- Git (for repository management)
+
+For best results, install WSL2 and use `bash scripts/install.sh` within the Linux environment for full compatibility.
 5. Verify the installation
 
 See [INSTALLATION.md](INSTALLATION.md) for detailed steps.
@@ -99,7 +120,14 @@ ds-eo-openclaw/
 │   └── model_placeholders.txt       # Placeholder conventions
 │
 ├── scripts/                     # Installation and management helpers
-│   ├── install.sh               # Main installer (orchestrator)
+│   ├── install.sh                 # Main installer (Linux/macOS/WSL2)
+│   ├── install.ps1                # Main installer (Windows/PowerShell)
+│   ├── backup_openclaw_config.sh  # Pre-install backup
+│   ├── conflict_check.sh          # Pre-install conflict detection
+│   ├── generate_openclaw_config.sh# Generate and merge agent config
+│   ├── deploy_protocols.sh        # Protocol deployment
+│   ├── deploy_agents.sh           # Prompt file deployment
+│   └── verify_installation.sh     # Post-install verification
 │   ├── backup_openclaw_config.sh    # Pre-install backup
 │   ├── generate_openclaw_config.sh  # Agent config generator
 │   ├── deploy_protocols.sh          # Protocol deployment
