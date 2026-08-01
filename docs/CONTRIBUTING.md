@@ -4,7 +4,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone <repo-url> ds-eo-openclaw
+   git clone git@github.com:Deepsim-AI/DS-EO.git ds-eo-openclaw
    cd ds-eo-openclaw
    ```
 

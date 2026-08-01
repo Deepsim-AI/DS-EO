@@ -45,7 +45,7 @@ The engineering organization is portable across platforms. The runtime product i
 
 ```bash
 # Clone this repository
-git clone <repo-url> ds-eo-openclaw
+git clone git@github.com:Deepsim-AI/DS-EO.git ds-eo-openclaw
 cd ds-eo-openclaw
 
 # Run the interactive installer
@@ -64,7 +64,7 @@ The installer will:
 
 ```powershell
 # Clone this repository
-git clone <repo-url> ds-eo-openclaw
+git clone git@github.com:Deepsim-AI/DS-EO.git ds-eo-openclaw
 cd ds-eo-openclaw
 
 # Run the interactive installer (PowerShell)

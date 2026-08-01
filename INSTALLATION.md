@@ -9,6 +9,26 @@
 
 ## Installation Methods
 
+## Platform Installation Options
+
+### Linux / macOS / WSL2
+
+Use the bash installer:
+
+```bash
+bash scripts/install.sh
+```
+
+For Windows (native PowerShell):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1
+```
+
+Both installers provide the same 7-step installation flow with interactive prompts, rollback support, and verification. The bash version is recommended for Linux/macOS; the PowerShell version is native to Windows. WSL2 on Windows also supports `bash scripts/install.sh` directly.
+
+---
+
 ### Method 1: Scripted Installation (Recommended)
 
 ```bash

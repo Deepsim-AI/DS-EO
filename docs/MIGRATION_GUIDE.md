@@ -34,11 +34,18 @@ ls ~/.openclaw/protocols/
 python3 -c "import json; print(json.dumps(json.load(open('$HOME/.openclaw/openclaw.json')).get('agents',{}), indent=2))"
 ```
 
+
 ### 2. Run DS-EO Installation
 
 ```bash
 cd ds-eo-openclaw
 bash scripts/install.sh
+```
+
+**Windows**: use PowerShell instead:
+```powershell
+cd ds-eo-openclaw
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1
 ```
 
 The installer:
