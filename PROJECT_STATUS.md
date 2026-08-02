@@ -105,3 +105,29 @@
 - `docs/development/reports/TASK_DS_EO_019/EXECUTION_MODE_ARCHITECTURE.md` (63KB, 17 sections)
 - `docs/development/reports/TASK_DS_EO_019/REVIEW_REPORT.md` (Score: 5/5 spec, 5/5 architecture, 4/4 code)
 - `docs/development/reports/TASK_DS_EO_019/CTO_APPROVAL.md`
+
+---
+
+### TASK_DS_EO_013 — Workflow Audit ✅ (APPROVED + SUPERSEDED)
+**Date Completed**: 2026-08-01  
+**Decision**: APPROVED + SUPERSDED  
+
+**Summary**: Comprehensive workflow audit identified four pain points (#1 PM write bug, #2 G2 ambiguity, #3 naming convention, #4 metadata enforcement). All four have been addressed by subsequent tasks. No further action needed.
+
+### TASK_DS_EO_014 — PM Write Permission Fix ✅ (APPROVED)
+**Date Completed**: 2026-08-01  
+**Decision**: APPROVED  
+
+**Summary**: Fixed the critical PM write-permission bug (deny+allow conflict on write/edit/apply_patch) that rendered every PM task non-functional. Verified all agent policies post-fix. All acceptance criteria met.
+
+### TASK_DS_EO_009 — Git Initialization 📦 (OBSOLETE)
+**Date Obsoleted**: 2026-08-01  
+**Decision**: OBSOLETE — problem resolved by subsequent repo state  
+
+**Summary**: Repository now has full git history, .gitignore, committed baselines, and remote tracking. The original problem (unversioned repository) no longer exists. Artifacts preserved for historical reference only.
+
+### TASK_DS_EO_005 — CTO Role Enforcement Analysis 📦 (OBSOLETE)
+**Date Obsoleted**: 2026-08-01  
+**Decision**: OBSOLETE — findings addressed by subsequent governance overhaul  
+
+**Summary**: Analysis identified process-level observations about CTO boundary adherence. All underlying concerns addressed through GATE_AUTHORITY_MATRIX.md, metadata enforcement, and protocol consolidation in TASK_DS_EO_015+017. Artifacts preserved for historical reference only.
