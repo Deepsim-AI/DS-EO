@@ -289,3 +289,18 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 3. `git log --oneline` — was the artifact committed to a known remote SHA?
 
 All three checks must pass before any claim about task state is made.
+
+---
+
+## Implementer Report Enforcement (NEW §9.0)
+
+**Problem**: The implementation report must be produced simultaneously with work completion — not retroactively after user intervention or review start. This is a recurring failure mode across tasks.
+
+**Rule 1: Immeate report on completion.** When the Implementer finishes code changes and tests, the IMPLEMENTATION_REPORT.md must be written **before any other action**. It is not a separate phase — it is part of the completion step itself. The Implementer may not claim "implementation complete" until the report exists.
+
+**Rule 2: Reviewer timestamp gate.** The Reviewer MUST verify that IMPLEMENTATION_REPORT.md predates the reviewer's first access to the task directory by at least the time needed for the implementer to produce the report (minimum: the time between the delegate message and the report). If the report was created more than X minutes after the delegate message, or if there is no evidence of simultaneous production, flag it.
+
+**Rule 3: No review without report.** The Reviewer must refuse to begin review if IMPLEMENTATION_REPORT.md does not exist at the time of their first access to the task directory. If accessed later and then found, the gap must be documented in BOUNDARY_VIOLATION.md and the user notified.
+
+**Rule 4: Implementer may not defer reporting.** The Implementer has no authority to defer report production to a later session. This is a process violation equivalent to "report retroactively produced" but more severe because it delays review by definition.
+

@@ -7,6 +7,7 @@ This engine is platform-neutral and can be used by any DS-EO edition
 
 States: S0–S10 as defined in EXECUTION_MODE_ARCHITECTURE.md §2
 Transitions: 12 transitions as defined in EXECUTION_MODE_ARCHITECTURE.md §3.4
+Audit Trail: Phase 2 integration via ds_eo_openclaw.workflow.audit_log module.
 
 Usage:
     from ds_eo_openclaw.workflow.state_engine import StateEngine, State
@@ -19,6 +20,8 @@ Usage:
 import os
 from enum import Enum
 from typing import Optional, List
+
+from .audit_log import AuditLog
 
 
 class State(Enum):
@@ -37,11 +40,28 @@ class State(Enum):
 
 
 class StateEngine:
-    """Core workflow state machine.
+    """Core workflow state machine with Phase 2 audit integration.
 
     Detects current state from task directory artifacts, validates transitions,
-    and supports automatic mode auto-advancement for eligible states.
+    supports automatic mode auto-advancement, and produces schema-compliant
+    audit entries (14-field §10.2) for every transition.
     """
+
+    # Transition-to-gate mapping: which gate does each valid transition cross?
+    _TRANSITION_GATE = {
+        (State.TASK_OPEN, State.G1_WAITING): None,            # no gate — just submitted
+        (State.G1_WAITING, State.IMPLEMENTATION): "G1",
+        (State.G1_WAITING, State.CHANGES_REQD): "G1",
+        (State.IMPLEMENTATION, State.WAITING_G2): None,
+        (State.WAITING_G2, State.REVIEW): "G2",
+        (State.WAITING_G2, State.IMPLEMENTATION): "G2",
+        (State.REVIEW, State.G3_PENDING): None,
+        (State.G3_PENDING, State.FINAL_APPROVAL): "G3",
+        (State.G3_PENDING, State.CHANGES_REQD): "G3",
+        (State.FINAL_APPROVAL, State.COMPLETED): "G4",
+        (State.FINAL_APPROVAL, State.IMPLEMENTATION): "G4",
+        (State.CHANGES_REQD, State.IMPLEMENTATION): None,
+    }
 
     def __init__(self, task_dir: str, execution_mode: str = "manual"):
         if execution_mode not in ("manual", "automatic"):
@@ -49,7 +69,9 @@ class StateEngine:
         self.task_dir = task_dir
         self.execution_mode = execution_mode
         self.current_state: Optional[State] = None
-        self.audit_log: List[dict] = []
+        self.audit_log: List[dict] = []  # runtime audit trail (in-memory)
+        # Per-task persistent audit log (created on first transition)
+        self._audit_log_manager: Optional[AuditLog] = None
 
     # ------------------------------------------------------------------ #
     # State Detection
@@ -81,6 +103,89 @@ class StateEngine:
 
         # No signals present — treat as TASK_OPEN (new task)
         return State.TASK_OPEN
+
+    def _ensure_audit_manager(self, task_id: str) -> AuditLog:
+        """Lazily create the per-task audit log manager on first use."""
+        if self._audit_log_manager is None:
+            self._audit_log_manager = AuditLog.create(self.task_dir, task_id)
+        return self._audit_log_manager
+
+    def _record_transition_audit(
+        self, from_state: State, to_state: State,
+        execution_mode: str, triggered_by: str,
+        details: dict, verified_artifacts: list
+    ):
+        """Record a transition in the persistent audit log (§10.2 schema).
+
+        Called by auto_advance() and manual_transition() after every valid transition.
+        Produces an AuditEntry with all 14 required fields plus a reconstruction hash chain.
+        """
+        # Derive task_id from directory name pattern (e.g., /path/TASK_DS_EO_021/)
+        parts = os.path.normpath(self.task_dir).split(os.sep)
+        task_id = None
+        for part in reversed(parts):
+            if part.startswith("TASK_"):
+                task_id = part
+                break
+        if task_id is None:
+            # Fallback: use a placeholder — production code would receive task_id explicitly
+            task_id = "UNKNOWN_TASK"
+
+        gate_passed = self._TRANSITION_GATE.get((from_state, to_state))
+        gate_status = None
+        if gate_passed is not None:
+            # Derive gate status from transition target for gates with outcomes
+            if to_state == State.IMPLEMENTATION and from_state in (State.G1_WAITING, State.FINAL_APPROVAL):
+                gate_status = "REJECTED"
+            elif to_state == State.CHANGES_REQD:
+                gate_status = "CHANGES_REQD"
+            else:
+                gate_status = "APPROVED"
+
+        entry = self._ensure_audit_manager(task_id).append_entry(
+            transition_key=self._transition_to_key(from_state, to_state),
+            from_state=from_state.value,
+            to_state=to_state.value,
+            gate_passed=gate_passed,
+            gate_status=gate_status or "APPROVED",
+            agent_id="pm" if triggered_by == "PM" else triggered_by.lower(),
+            execution_mode=execution_mode,
+            triggered_by=triggered_by,
+            details=details,
+            verified_artifacts=verified_artifacts
+        )
+
+        # Also record in runtime audit trail (in-memory)
+        self.audit_log.append({
+            "event": "transition",
+            "auditId": entry.auditId,
+            "fromState": from_state.value,
+            "toState": to_state.value,
+            "executionMode": execution_mode,
+            "triggeredBy": triggered_by,
+            "gatePassed": gate_passed,
+            "gateStatus": gate_status or "APPROVED",
+        })
+
+    @staticmethod
+    def _transition_to_key(from_state: State, to_state: State) -> str:
+        """Map a transition pair to its T0–T8 key."""
+        keys = {
+            (State.TASK_OPEN, State.G1_WAITING): "T0",
+            (State.G1_WAITING, State.IMPLEMENTATION): "T1",
+            (State.G1_WAITING, State.CHANGES_REQD): "T2",
+            (State.IMPLEMENTATION, State.WAITING_G2): "T3",
+            (State.WAITING_G2, State.REVIEW): "T4",
+            (State.WAITING_G2, State.IMPLEMENTATION): "T5",
+            (State.REVIEW, State.G3_PENDING): "T6",
+            (State.G3_PENDING, State.FINAL_APPROVAL): "T7",
+            (State.G3_PENDING, State.CHANGES_REQD): "T8",
+            # T9 and T10 map to existing keys
+            (State.FINAL_APPROVAL, State.COMPLETED): "T7",
+            (State.FINAL_APPROVAL, State.IMPLEMENTATION): "T5",
+            (State.CHANGES_REQD, State.IMPLEMENTATION): "T3",
+        }
+        return keys.get((from_state, to_state), f"TX_{from_state.value}_{to_state.value}")
 
     # ------------------------------------------------------------------ #
     # Transition Validation
@@ -115,6 +220,9 @@ class StateEngine:
     def auto_advance(self) -> Optional[str]:
         """Auto-advance workflow in automatic mode.
 
+        On every successful transition, creates a full AuditEntry (14 fields)
+        via the audit_log module and appends it to the task's AUDIT_LOG.json.
+
         Returns:
             An audit action string describing the transition if one was performed,
             or None if no advancement is possible (manual mode or no valid transition).
@@ -134,15 +242,34 @@ class StateEngine:
         if not self.can_transition(current, next_state):
             return None  # Not a valid transition — do nothing
 
-        # Record audit entry
-        self.audit_log.append({
-            "event": "transition",
-            "fromState": current.value,
-            "toState": next_state.value,
-            "executionMode": "automatic",
-            "triggeredBy": "PM",
-            "reason": reason,
-        })
+        # Build details and verified artifacts for audit entry
+        details_map = {
+            (State.TASK_OPEN, State.G1_WAITING): {"reason": "Plan submitted for review"},
+            (State.WAITING_G2, State.REVIEW): {"g2ChecklistResult": "passed"},
+            (State.WAITING_G2, State.IMPLEMENTATION): {"g2ChecklistResult": "failed"},
+            (State.REVIEW, State.G3_PENDING): {"reviewComplete": True},
+            (State.FINAL_APPROVAL, State.COMPLETED): {"ctoDecision": "approved"},
+            (State.FINAL_APPROVAL, State.IMPLEMENTATION): {"ctoDecision": "rejected"},
+        }
+        details = details_map.get((current, next_state), {})
+
+        # Determine verified artifacts based on the transition
+        artifact_map = {
+            (State.TASK_OPEN, State.G1_WAITING): ["CTO_PLAN.md"],
+            (State.WAITING_G2, State.REVIEW): ["IMPLEMENTATION_REPORT.md"],
+            (State.REVIEW, State.G3_PENDING): ["REVIEW_REPORT.md"],
+        }
+        verified = artifact_map.get((current, next_state), [])
+
+        # Record transition in persistent audit log (§10.2 schema)
+        self._record_transition_audit(
+            from_state=current,
+            to_state=next_state,
+            execution_mode="automatic",
+            triggered_by="PM",
+            details=details,
+            verified_artifacts=verified
+        )
 
         return f"Automated: {current.value} → {next_state.value} ({reason})"
 
@@ -219,9 +346,42 @@ class StateEngine:
         """
         return True
 
-    # ------------------------------------------------------------------ #
-    # Static Utilities
-    # ------------------------------------------------------------------ #
+    def manual_transition(self, from_state: State, to_state: State,
+                            triggered_by: str, details: dict = None) -> Optional[str]:
+        """Perform a manual (non-auto-advance) transition with full audit logging.
+
+        This is the entry point for PM or CTO-initiated transitions that cross
+        gate boundaries. Always produces an AuditEntry per §10.2 schema.
+
+        Args:
+            from_state: Current state to leave
+            to_state: Target state to enter (must be a valid transition)
+            triggered_by: Entity name ("CTO", "PM", "Reviewer", "User")
+            details: Optional transition-specific context for audit entry
+
+        Returns:
+            Audit string on success, None if invalid transition.
+        """
+        if not self.can_transition(from_state, to_state):
+            return None  # Invalid — do nothing
+
+        details = details or {}
+        gate_passed = self._TRANSITION_GATE.get((from_state, to_state))
+        verified = []
+        if from_state == State.WAITING_G2 and to_state == State.REVIEW:
+            verified = ["IMPLEMENTATION_REPORT.md"]
+
+        # Record in persistent audit log
+        self._record_transition_audit(
+            from_state=from_state,
+            to_state=to_state,
+            execution_mode="manual",
+            triggered_by=triggered_by,
+            details=details,
+            verified_artifacts=verified
+        )
+
+        return f"Manual: {from_state.value} → {to_state.value} (by {triggered_by})"
 
     @staticmethod
     def get_transition_matrix() -> dict:

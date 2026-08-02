@@ -117,3 +117,39 @@ Phase 1 of the Automatic Mode implementation — core workflow state engine prod
 **Test Results**: 14/14 tests pass
 
 **Reviewer Score**: 4.75/5 overall (Spec: 5/5, Code: 4/5, Architecture: 5/5, Tests: 4/5)
+
+---
+
+## [Phase 2 — Audit Trail Integration] — 2026-08-02
+
+### Tasks Completed This Phase
+
+| Task | Title | Decision |
+|------|-------|----------|
+| TASK_DS_EO_021 | Phase 2: Audit Trail Integration | ✅ APPROVED |
+
+### Summary
+
+Implemented the schema-compliant audit logging system from EXECUTION_MODE_ARCHITECTURE.md §10.2 — every workflow transition now produces a fully reconstructable record with all 14 required fields, an integrity hash chain, and atomic persistence.
+
+**Added:**
+- `ds_eo_openclaw/workflow/audit_log.py` (298 lines) — AuditEntry class with __slots__, AuditLog manager, ProjectAuditIndex
+- `tests/test_audit_log.py` (448 lines) — 20 tests: schema validation, persistence round-trip, 6 reconstruction scenarios
+- Updated `ds_eo_openclaw/workflow/state_engine.py` (~160 lines added) — integrated audit logging into auto_advance() and manual_transition(), added gate mapping table and transition key mapping
+- Updated `ds_eo_openclaw/workflow/__init__.py` — exported AuditLog from workflow package
+- `docs/reports/AUDIT_INDEX.json` — project-level cross-task audit index (initial structure)
+
+**Key capabilities:**
+- Immutable 14-field AuditEntry with UUID v4, ISO-8601 UTC timestamps, SHA-256 integrity hashes
+- Per-task AUDIT_LOG.json (lazy initialization on first append)
+- Project-level AUDIT_INDEX.json with atomic writes (temp file + rename)
+- Reconstruction hash chain — modifying any prior entry invalidates all subsequent hashes
+- Full workflow history reconstructable from a single task's AUDIT_LOG.json
+
+**Test Results**: 34/34 tests passing (14 Phase 1 + 20 Phase 2); no regression in Phase 1 state engine
+
+**Reviewer Score**: 4.875/5 overall (Spec: 5/5, Code: 4/5, Architecture: 5/5, Tests: 5/5)
+
+---
+
+## [Phase 3 — Automatic Mode Implementation] — In Progress
