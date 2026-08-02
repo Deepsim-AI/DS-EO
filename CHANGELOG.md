@@ -93,3 +93,27 @@ Post-TASK_DS_EO_015+017 documentation audit identified stale references to the p
 ### Summary
 
 TASK_DS_EO_019 delivered architecture design for configurable workflow execution modes — one engineering workflow with Manual or Automatic orchestration. No code changes; all deliverables are architectural documents and a 5-phase implementation roadmap. Design reviewed by Reviewer at 5/5 spec compliance and 5/5 architecture adherence (APPROVE_WITH_COMMENTS). CTO final approval issued. Phase 1 implementation (PM workflow state engine) recommended as next task.
+
+---
+
+## [Phase 1 — PM Workflow State Engine] — 2026-08-02
+
+### Tasks Completed This Phase
+
+| Task | Title | Decision |
+|------|-------|----------|
+| TASK_DS_EO_020 | Phase 1: PM Workflow State Engine (Core) | ✅ APPROVED |
+
+### Summary
+
+Phase 1 of the Automatic Mode implementation — core workflow state engine producing a platform-neutral Python module implementing the 11-state state machine with auto-advance support.
+
+**Added:**
+- `ds_eo_openclaw/workflow/state_engine.py` — State enum (S0–S10), StateEngine class (detect_state, can_transition, auto_advance)
+- `tests/test_state_engine.py` — 14 unit tests covering all acceptance criteria
+- Package scaffolding: `__init__.py` files for `ds_eo_openclaw/` and `workflow/`
+- Updated `agents/pm.md` with Workflow State Engine Integration section and tool policy update (exec allowed for file checking/state engine invocation only)
+
+**Test Results**: 14/14 tests pass
+
+**Reviewer Score**: 4.75/5 overall (Spec: 5/5, Code: 4/5, Architecture: 5/5, Tests: 4/5)

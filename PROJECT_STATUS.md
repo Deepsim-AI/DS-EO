@@ -1,7 +1,7 @@
 # DS-EO Project Status
 
-**Last Updated**: 2026-07-30  
-**Current Phase**: Post-G4 Governance Migration  
+**Last Updated**: 2026-08-02  
+**Current Phase**: Phase 1 — PM Workflow State Engine (Implementation)  
 
 ---
 
@@ -9,11 +9,32 @@
 
 | Task ID | Title | Status | Agent | Last Update |
 |---------|-------|--------|-------|-------------|
-| *(none)* | No active tasks — all completed | COMPLETE | — | 2026-07-30 |
+| TASK_DS_EO_021 | *Pending next task assignment* | PENDING | — | — |
 
 ---
 
 ## Completed Tasks
+
+### TASK_DS_EO_020 — Phase 1: PM Workflow State Engine (Core) ✅ (APPROVED)
+**Date Completed**: 2026-08-02  
+**Decision**: APPROVED (Gate G4)  
+
+**Summary**: Core workflow state engine implemented — the 11-state state machine with all 12 permitted transitions, auto-advance support for automatic execution mode, and proper authority boundaries. This is Phase 1 of the Automatic Mode implementation from TASK_DS_EO_019.
+
+**Changes**:
+- Created `ds_eo_openclaw/workflow/state_engine.py` — State enum (S0–S10), StateEngine class with detect_state(), can_transition(), auto_advance()
+- Created `ds_eo_openclaw/__init__.py` and `ds_eo_openclaw/workflow/__init__.py` (package scaffolding)
+- Created `tests/test_state_engine.py` — 14 unit tests covering state detection, transitions, and auto-advance behavior
+- Updated `agents/pm.md` — added Workflow State Engine Integration section, updated tool policy (exec allowed for file checking/state engine only)
+- All 14 tests pass; no regressions
+
+**Artifacts**:
+- `docs/development/reports/TASK_DS_EO_020/CTO_PLAN.md`
+- `docs/development/reports/TASK_DS_EO_020/IMPLEMENTATION_REPORT.md`
+- `docs/development/reports/TASK_DS_EO_020/REVIEW_REPORT.md` (Score: 4.75/5)
+- `docs/development/reports/TASK_DS_EO_020/CTO_APPROVAL.md`
+
+---
 
 ### TASK_DS_EO_015+017 — Protocol & Governance Consistency Migration ✅ (APPROVED)
 **Date Completed**: 2026-07-30  
@@ -59,7 +80,7 @@
 | Phase 1 — Canonical Repository Establishment | 2026-07-28 | Migrated artifacts to ds-eo-openclaw/ |
 | Phase 2 — Self-Hosting | 2026-07-28 | DS-EO develops DS-EO; TASK_20260729_001, TASK_DS_EO_003 completed |
 | Post-G4 Governance Migration | 2026-07-30 | TASK_DS_EO_015+017: full protocol & governance overhaul |
-
+| Phase 1 — PM Workflow State Engine | 2026-08-02 | TASK_DS_EO_020: core state engine implementation (Phase 1 of TASK_DS_EO_019) |
 ---
 
 ### TASK_DS_EO_018 — Document Consistency Sweep ✅ (APPROVED)
