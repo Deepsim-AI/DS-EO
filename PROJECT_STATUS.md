@@ -81,3 +81,27 @@
 - `docs/development/reports/TASK_DS_EO_018/REVIEW_REPORT.md`
 - `docs/development/reports/TASK_DS_EO_018/CTO_APPROVAL.md`
 
+
+---
+
+### TASK_DS_EO_019 — Configurable Manual and Automatic Workflow Execution Modes ✅ (APPROVED)
+**Date Completed**: 2026-08-01  
+**Decision**: APPROVED (Gate G4)  
+
+**Summary**: Architecture design for configurable workflow execution modes. Established formal state machine with 11 states, defined both Manual Mode (unchanged) and Automatic Mode (PM-coordinated), preserved all governance gates and PM authority boundaries. This is a design-only task — implementation of Automatic Mode will be a future task.
+
+**Changes**:
+- Defined 11 canonical workflow states (S0–S10) with full entry/exit conditions, owners, and transition rules
+- Specified Manual Mode as reference unchanged behavior; Automatic Mode as PM orchestration layer with strict authority boundaries
+- Established configuration model (`workflow.execution_mode: manual|automatic`, default=`manual`)
+- Defined mode switching rules (safe in both directions at state boundaries only)
+- Designed failure/rework/stall handling for automatic mode with escalation chains and per-state timeouts
+- Specified audit trail requirements with JSON log entry schema for all automated transitions
+- Documented platform portability considerations (DS-EO concept layer + platform adapters)
+- Produced 5-phase implementation roadmap; Phase 1 (PM workflow state engine) recommended as next task
+
+**Artifacts**:
+- `docs/development/reports/TASK_DS_EO_019/CTO_PLAN.md`
+- `docs/development/reports/TASK_DS_EO_019/EXECUTION_MODE_ARCHITECTURE.md` (63KB, 17 sections)
+- `docs/development/reports/TASK_DS_EO_019/REVIEW_REPORT.md` (Score: 5/5 spec, 5/5 architecture, 4/4 code)
+- `docs/development/reports/TASK_DS_EO_019/CTO_APPROVAL.md`

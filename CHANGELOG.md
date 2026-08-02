@@ -80,3 +80,16 @@ Protocol authority, artifact ownership, and capability alignment were audited ag
 ### Summary
 
 Post-TASK_DS_EO_015+017 documentation audit identified stale references to the pre-migration state (3 roles vs 4, 6 protocols vs 7, Reviewer as read-only). A sweep across 10+ files corrected all discrepancies against authoritative sources. The final gap — `GATE_AUTHORITY_MATRIX.md` missing from `ds_eo_manifest.yaml` — was closed with proper manifest registration and test count updates. All 53 tests pass.
+
+
+## [Post-G4 Cleanup] — 2026-08-01
+
+### Tasks Completed This Phase
+
+| Task | Title | Decision |
+|------|-------|----------|
+| TASK_DS_EO_019 | Configurable Manual and Automatic Workflow Execution Modes (Design) | ✅ APPROVED |
+
+### Summary
+
+TASK_DS_EO_019 delivered architecture design for configurable workflow execution modes — one engineering workflow with Manual or Automatic orchestration. No code changes; all deliverables are architectural documents and a 5-phase implementation roadmap. Design reviewed by Reviewer at 5/5 spec compliance and 5/5 architecture adherence (APPROVE_WITH_COMMENTS). CTO final approval issued. Phase 1 implementation (PM workflow state engine) recommended as next task.
