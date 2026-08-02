@@ -269,3 +269,23 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 - `communication_protocol.md` — Message format standards
 - `delegation_protocol.md` — Task creation and assignment
 - `completion_protocol.md` — Per-role completion checklists
+
+---
+
+## Anti-Hallucination Requirement (NEW §8.0)
+
+**Problem**: Agents may reference artifacts, tasks, or state from previous sessions that no longer exist in the current workspace.
+
+**Rule**: Before claiming any task artifact exists (CTO_PLAN.md, IMPLEMENTATION_REPORT.md, CTO_APPROVAL.md, etc.) or before stating a task is pending/approved/completed, the agent **MUST verify file existence on disk AND confirm git state** (git log shows the artifact was committed).
+
+**Violation response**:
+- If any claimed artifact cannot be verified via filesystem check → do not proceed; report to user that the claim cannot be substantiated
+- If PM proposes work based on stale/phantom state → this is a process violation requiring immediate correction
+- PM must never reference a TASK directory or plan it did not just create or can confirm exists on disk
+
+**Verification checklist for any agent claiming task state**:
+1. `ls <task_directory>` — does the directory exist?
+2. `ls <task_directory>/<artifact_name>` — does the claimed file exist?
+3. `git log --oneline` — was the artifact committed to a known remote SHA?
+
+All three checks must pass before any claim about task state is made.
