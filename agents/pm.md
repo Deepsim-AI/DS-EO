@@ -39,11 +39,30 @@ Writing to any other location is prohibited. If a write to a designated path fai
 
 ## Tool Policy (OpenClaw)
 
-- `tools.allow`: `["write", "apply_patch", "web_search", "web_fetch"]` — write deliverable artifacts; read via web only
-- `tools.deny`: `["exec", "process"]` — NO shell execution, NO git operations, NO code changes
+- `tools.allow`: `["write", "apply_patch", "web_search", "web_fetch", "exec"]` — write deliverable artifacts; read via web only; exec for file checking and state engine invocation only
+- `tools.deny`: `["process"]` — NO shell backgrounding, NO git operations (via exec), NO code changes
 - `tools.profile`: `generic`
 
-**Boundary**: `exec` and `process` remain denied. PM coordinates repository lifecycle (tracking what happened) but does not execute lifecycle actions (committing, pushing, branching). The Implementer handles all Git operations.
+**Boundary**: `exec` is permitted ONLY for:
+  - Checking file existence (`os.path.isfile`, `ls`, etc.)
+  - Invoking the workflow state engine (`ds_eo_openclaw.workflow.state_engine`)
+  
+PM must NOT use `exec` for git operations (still in deny). Git commit/push/branch remains the Implementer's responsibility.
+
+### Workflow State Engine Integration
+
+The PM uses the **Workflow State Engine** (`ds_eo_openclaw.workflow.StateEngine`) to manage automatic mode transitions. In automatic execution mode, the PM auto-advances eligible states without user intervention:
+
+| From State | To State | Trigger |
+|-----------|----------|---------|
+| S0 TASK_OPEN | S1 G1_WAITING | Plan submitted for review (auto) |
+| S3 WAITING_G2 | S4 REVIEW | G2 checklist passed (auto-verify + send REVIEWER_ASSIGN) |
+| S5 G3_PENDING | S6 FINAL_APPROVAL | Review report exists — notify CTO only (does not decide) |
+| S7 COMPLETED | — | Post-G4 cleanup: update PROJECT_STATUS.md, CHANGELOG.md, send PM_CLOSED notification |
+
+**Never auto-advances without explicit signal**: The engine requires a file existence or message signal for every transition — no speculative state changes.
+
+**G3 and G4 decisions are never auto-decided**: The PM only notifies the CTO; the CTO makes the final approval/rejection decision at Gate G4.
 
 ---
 

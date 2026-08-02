@@ -134,6 +134,7 @@ The commit message must reference the TASK_ID and include a brief description of
 
 **Prerequisites** (must all exist before handoff):
 - All items on the **G2 Gate Checklist** (see `approval_protocol.md`) verified complete
+- **[NEW] IMPLEMENTATION_REPORT.md must exist at the time of self-declaration.** The report is not a retrospective artifact — it must be produced *simultaneously* with the implementer's completion claim. Retroactively filling in an implementation report after review has begun constitutes a process violation and requires user notification.
 
 **Handoff Message**: Implementer sends an `IMPL_COMPLETE` message containing:
 - Task ID
@@ -145,7 +146,8 @@ The commit message must reference the TASK_ID and include a brief description of
 1. Confirm task directory exists at expected path
 2. Read `IMPLEMENTATION_REPORT.md` — verify it references the spec and acceptance criteria
 3. Run `git diff` to see actual changes vs. what was reported
-4. If report is missing or incomplete → return to Implementer with specific gap
+4. **Verify report timestamps**: if IMPLEMENTATION_REPORT.md was created or significantly modified *after* Reviewer's first access to the task directory, flag this as a process violation and notify the user before proceeding. The report must predate any review activity.
+5. If report is missing, incomplete, or retroactively produced → return to Implementer with specific gap + process violation notice
 
 ---
 
@@ -170,8 +172,6 @@ The commit message must reference the TASK_ID and include a brief description of
 ---
 
 **Note — G3 iteration**: G3 may be entered multiple times for re-review. Each return from the Reviewer with REQUEST_CHANGES or REJECT sends the task back to Implementer for correction. The task **never re-enters G2** on a return — it loops G3 → Implementer → G3 until the Reviewer issues PASS, then proceeds to G4.
-
-### Transition 4: CTO → Complete/Return (Gate G4)---
 
 ### Transition 4: CTO → Complete/Return (Gate G4)
 
@@ -200,7 +200,7 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 | Returning Agent | To | Reason |
 |----------------|-----|--------|
 | CTO | Implementer | Ambiguous acceptance criteria; missing spec reference |
-| Reviewer | Implementer | Implementation report incomplete; test results missing |
+| Reviewer | Implementer | Implementation report incomplete; test results missing; **report retroactively produced** |
 | CTO | Reviewer | No review report received; or report lacks recommendation |
 
 ---
@@ -213,7 +213,7 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 | PM → Monitor | Stall detection report | Verify last activity timestamp |
 | PM → Close | Artifact verification, status update | Confirm all artifacts present |
 | CTO → Implementer | `CTO_PLAN.md`, user approval | Read plan, confirm criteria present |
-| Implementer → Reviewer | `IMPLEMENTATION_REPORT.md` | Run git diff, check test results |
+| Implementer → Reviewer | **`IMPLEMENTATION_REPORT.md` (pre-dating review)** | Run git diff, check test results, **verify report timestamps** |
 | Reviewer → CTO | Review report (chat/file) | Confirm recommendation exists |
 | CTO → User/Complete | `CTO_APPROVAL.md`, updated spec | Decision clear and referenced |
 
@@ -225,6 +225,7 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 2. Incomplete handoffs are returned — never silently accepted.
 3. The receiving agent is responsible for verification, not the sending agent.
 4. All return reasons must be specific and actionable.
+5. **IMPLEMENTATION_REPORT.md must exist at the time of Implementer's self-declaration of completion.** Retroactively filling in an implementation report after review has begun is a process violation and requires user notification before proceeding.
 
 ---
 
