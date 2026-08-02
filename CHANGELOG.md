@@ -107,7 +107,26 @@ TASK_DS_EO_019 delivered architecture design for configurable workflow execution
 ### Summary
 
 Phase 1 of the Automatic Mode implementation — core workflow state engine producing a platform-neutral Python module implementing the 11-state state machine with auto-advance support.
+## [Phase 2 — Audit Trail Integration] — 2026-08-02
 
+### Tasks Completed This Phase
+
+| Task | Title | Decision |
+|------|-------|----------|
+| TASK_DS_EO_021 | Phase 2: Audit Trail Integration | ✅ APPROVED |
+
+### Summary
+
+Phase 2 of the Automatic Mode implementation — schema-compliant audit logging system implementing EXECUTION_MODE_ARCHITECTURE.md §10.2. Every workflow transition now produces a fully reconstructable record with all 14 required fields, integrity hash chain, and atomic persistence. Integrated with Phase 1 state engine for both auto-advance and manual transitions.
+
+**Key changes**:
+- Created `ds_eo_openclaw/workflow/audit_log.py` (298 lines) — AuditEntry class with __slots__, AuditLog manager, ProjectAuditIndex
+- Created `tests/test_audit_log.py` (448 lines) — 20 tests covering schema validation, persistence round-trip, and 6 reconstruction scenarios
+- Updated `ds_eo_openclaw/workflow/state_engine.py` (~160 lines added) — integrated audit logging into auto_advance() and manual_transition()
+- Updated `ds_eo_openclaw/workflow/__init__.py` — exported AuditLog from workflow package
+- Created `docs/reports/AUDIT_INDEX.json` — project-level cross-task audit index (initial structure)
+
+**Test Results**: 34/34 tests passing (14 Phase 1 + 20 Phase 2); no regression in Phase 1 state engine
 **Added:**
 - `ds_eo_openclaw/workflow/state_engine.py` — State enum (S0–S10), StateEngine class (detect_state, can_transition, auto_advance)
 - `tests/test_state_engine.py` — 14 unit tests covering all acceptance criteria

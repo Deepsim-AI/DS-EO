@@ -1,7 +1,7 @@
 # DS-EO Project Status
 
 **Last Updated**: 2026-08-02  
-**Current Phase**: Phase 2 — Audit Trail Integration (Implementation)  
+**Current Phase**: Phase 3 — User-Facing Mode Selector (Design Pending)  
 
 ---
 
@@ -9,7 +9,6 @@
 
 | Task ID | Title | Status | Agent | Last Update |
 |---------|-------|--------|-------|-------------|
-| TASK_DS_EO_021 | *Pending next task assignment* | PENDING | — | — |
 
 ---
 
@@ -106,8 +105,7 @@
 | Phase 2 — Self-Hosting | 2026-07-28 | DS-EO develops DS-EO; TASK_20260729_001, TASK_DS_EO_003 completed |
 | Post-G4 Governance Migration | 2026-07-30 | TASK_DS_EO_015+017: full protocol & governance overhaul |
 | Phase 1 — PM Workflow State Engine | 2026-08-02 | TASK_DS_EO_020: core state engine implementation (Phase 1 of TASK_DS_EO_019) |
-| Phase 2 — Audit Trail Integration | 2026-08-02 | TASK_DS_EO_021: audit logging system with 14-field schema, integrity hash chain, atomic persistence |
----
+| Phase 2 — Audit Trail Integration | 2026-08-02 ---
 
 ### TASK_DS_EO_018 — Document Consistency Sweep ✅ (APPROVED)
 **Date Completed**: 2026-07-31  
