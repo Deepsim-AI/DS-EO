@@ -227,6 +227,32 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 
 ---
 
+## Session-Continuity Guarantee (NEW §7.0)
+
+**Problem**: Agent sessions may end mid-sequence, leaving processes partially completed. The last known state is not a valid completion — the work must be finished.
+
+**Rule 1: Continuity is mandatory.** Every agent that begins a multi-step sequence must complete it in a single session. If interruption occurs, the incomplete state must be persisted in the task directory as `SESSION_INTERRUPT.md` before any new work starts on another task.
+
+**Rule 2: Interrupted sessions are tracked artifacts.** `SESSION_INTERRUPT.md` format:
+```json
+{
+  "interruptedBy": "<reason or auto-detected timeout>",
+  "completedSteps": ["<step already completed>"],
+  "pendingSteps": ["<step that was not completed>"],
+  "sessionEndTimestamp": "<ISO-8601>",
+  "nextAgent": "<which agent must resume>",
+  "blockingOnUserConfirmation": false
+}
+```
+
+**Rule 3: No task may begin until the previous session's interruption is resolved.** An agent receiving a new task request MUST check whether any unresolved `SESSION_INTERRUPT.md` exists in the workspace. If it does, that interrupted sequence takes priority — new work only starts after it completes.
+
+**Rule 4: User notification on cross-session gaps.** If an interrupted sequence spans more than one session boundary and requires user intervention (e.g., a missing push confirmation), the PM MUST send a `PM_STATUS_UPDATE` with status="AWAITING_USER" describing what is blocked. This is a process violation if omitted.
+
+**Rule 5: Session continuity applies to all agents, not just PM.** The CTO's G4 decision is complete only when it writes `CTO_APPROVAL.md`. The Implementer's work is complete only when tests are written and pass. The Reviewer's review is complete only when `REVIEW_REPORT.md` exists. None of these may be deferred to another session without documenting the interruption.
+
+---
+
 ## Rules
 
 1. No phase may begin until the receiving agent has verified all prerequisites.

@@ -15,7 +15,7 @@ Defines the standard process for creating and assigning implementation tasks in 
 ## Delegation Flow
 
 ```
-PM detects need for new task → PM requests CTO to create → CTO creates TASK directory + assigns ID → PM triggers skeleton → User approves (G1) → CTO delegates to Implementer
+PM detects need for new task → PM requests CTO to create → CTO creates TASK directory + assigns ID → CTO writes CTO_PLAN.md → User approves (G1) → CTO delegates to Implementer
 ```
 
 ### Step 1: Task Creation and Initiation
@@ -23,25 +23,14 @@ PM detects need for new task → PM requests CTO to create → CTO creates TASK 
 **CTO Role — Sole Authority for Task Creation**: The CTO is the sole authority for creating task directories and assigning IDs:
 - Creates `docs/development/reports/TASK_<YYYYMMDD>_<NNN>/` directory
 - Assigns ID following naming convention in `communication_protocol.md`
-- Writes or delegates writing of `CTO_PLAN.md` placeholder (structured skeleton with section headers and instructions for CTO to fill):
-  ```
-  # CTO Plan Placeholder
-  ## Instructions
-  The CTO shall populate this file with the architectural plan including:
-  - Problem statement
-  - Current-state analysis
-  - Proposed changes with affected files
-  - Acceptance criteria (derived from spec)
-  - Risks and constraints
-  - Implementation instructions
-  ```
+- **Writes CTO_PLAN.md directly** — this is a technical document containing architectural analysis, problem statement, acceptance criteria, risks, constraints, and implementation instructions. No other agent may produce CTO_PLAN.md.
 - Owns all technical content in `CTO_PLAN.md`.
 
 **PM Role — Task Detection, Requesting, and Orchestration**: The Project Manager initiates task creation by:
 1. Detecting that a new implementation task is needed (based on user requests, backlog review, or ongoing work).
-2. **Requesting** the CTO to create the task: alerting the CTO with requirement reference, priority, and any user-provided context.
+2. **Requesting** the CTO to create the task: alerting the CTO with requirement reference, priority, and any user-provided context. The PM may *propose* what the task should cover, but must not write the plan itself.
 3. The PM does NOT create directories, assign IDs, or write `CTO_PLAN.md` — those are exclusively CTO responsibilities.
-4. After CTO creates the task directory, PM triggers the skeleton by sending a `TASK_OPEN` message.
+4. After CTO creates the task and writes the plan, PM triggers the skeleton by sending a `TASK_OPEN` message.
 
 **PM → CTO Handoff**: PM transitions the task to CTO by sending a `TASK_OPEN` message with:
 - Task ID and directory path (assigned by CTO)
@@ -70,6 +59,36 @@ Specs (requirements derived from user input) follow this lifecycle:
 - Only the CTO creates or modifies specs.
 - PM tracks but does not create or modify spec content.
 - Implementer never writes to spec files — only reads them as reference.
+
+---
+
+## Role Boundary Enforcement (NEW §4.0)
+
+**No agent may perform work that belongs to another role.** This is a fundamental boundary, not a suggestion.
+
+### Violation Detection and Response
+
+When any agent detects it is about to cross into another role's territory:
+
+1. **Stop immediately** — Do not continue the action
+2. **Document** — Write `BOUNDARY_VIOLATION.md` in the task directory describing what was attempted and which role owns that work
+3. **Return** — Notify the appropriate agent that this work belongs to them
+4. **User notification** (if timeline-impacting) — PM sends PM_STATUS_UPDATE
+
+### Concrete Examples
+
+| Wrong Action | Owner | Correct Agent |
+|-------------|-------|---------------|
+| PM writes CTO_PLAN.md | ❌ PM | ✅ CTO only |
+| PM creates task directory | ❌ PM | ✅ CTO only |
+| PM assigns TASK ID | ❌ PM | ✅ CTO only |
+| Implementer decides architecture not in plan | ❌ Implementer | ✅ CTO only |
+| Reviewer modifies code | ❌ Reviewer | ✅ N/A (only reports) |
+| Reviewer writes anything except REVIEW_REPORT.md | ❌ Reviewer | ✅ (prohibited) |
+| CTO does Post-G4 cleanup | ❌ CTO | ✅ PM only |
+| Any agent defers multi-step sequence to next session | ❌ All | ✅ Must complete in same session or document interruption |
+
+---
 
 ### Step 2: Task Delegation Message
 
@@ -133,7 +152,8 @@ The delegation creates an implicit contract. The Implementer must:
 2. The user must approve (Gate G1) before delegation occurs.
 3. Every delegation must reference an existing spec or architecture document.
 4. Acceptance criteria must be testable — vague criteria are grounds for returning to the CTO.
-5. **PM does not write technical content** — it creates task skeletons and plan placeholders only; all architectural decisions remain with the CTO.
+5. **PM does not write technical content** — it creates task requests and orchestrates process; all technical artifacts (directories, IDs, plans) are exclusively CTO responsibilities.
+6. **No agent may perform another agent's core duties**, regardless of convenience or urgency. Boundary violations are process violations requiring documentation and user notification.
 
 ---
 

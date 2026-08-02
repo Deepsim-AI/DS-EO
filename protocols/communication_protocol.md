@@ -38,7 +38,7 @@ Required fields:
 {
   "type": "PM_STATUS_UPDATE",
   "taskId": "<optional TASK id if applicable>",
-  "status": "IN_PROGRESS | BLOCKED | AWAITING_REVIEW | IN_REVIEW | APPROVED | COMPLETE",
+  "status": "IN_PROGRESS | BLOCKED | AWAITING_REVIEW | IN_REVIEW | APPROVED | COMPLETE | AWAITING_USER",
   "milestoneProgress": "<cumulative progress toward next milestone, if applicable>",
   "message": "<brief status description>"
 }
@@ -160,6 +160,32 @@ Required fields:
 }
 ```
 
+### 10. Completion Summary (NEW) — CTO → User (Post-G4)
+
+Sent by: CTO → User **immediately after** writing `CTO_APPROVAL.md` at Gate G4 approval. This is a mandatory handoff from the technical authority to the user, summarizing what was approved and proposing next steps.
+
+**Required fields**:
+```json
+{
+  "type": "COMPLETION_SUMMARY",
+  "taskId": "TASK_<YYYYMMDD>_<NNN>",
+  "decision": "APPROVE | REJECT",
+  "deliverablesCompleted": ["<list of deliverable names and file paths>"],
+  "reviewScore": "<overall review score or N/A if rejected>",
+  "nextAvailableTasks": [
+    {
+      "title": "<proposed task title>",
+      "priority": "P0 | P1 | P2",
+      "briefScope": "<one-line summary>"
+    }
+  ],
+  "pmActionRequired": true,
+  "notes": "<optional context>"
+}
+```
+
+**Timing**: This message is sent *before* the PM begins Post-G4 cleanup — it is a CTO deliverable that triggers the user's awareness and enables informed prioritization of Phase N+1.
+
 ---
 
 ## PM Communication Patterns
@@ -188,6 +214,18 @@ Required fields:
 - **Content**: Current phase, last activity timestamp, stall reason.
 - **Format**: `TASK_STALLED` message type.
 
+### Pattern 5: Proactive Next-Task Proposal (NEW)
+
+- **When**: Immediately after Post-G4 cleanup is complete AND the user has not already initiated a new task request.
+- **To**: User.
+- **Content**: "Here's what just shipped. Here are the next tasks available per the roadmap — which do you want to prioritize?"
+- **Format**: `PM_STATUS_UPDATE` message containing:
+  - Completed deliverables summary (1 sentence)
+  - Ranked list of next-available tasks with priority and one-line scope
+  - Explicit question asking for prioritization direction
+
+**This pattern ensures the PM proactively drives the workflow forward instead of waiting passively for user input.** A task's completion is not considered "complete" from a process standpoint until the next-task proposal has been sent to the user.
+
 ---
 
 ## Communication Boundaries
@@ -196,6 +234,31 @@ Required fields:
 2. **PM does NOT communicate technical content** — all technical discussion flows through Implementer → CTO channels (`DELEGATE`, `IMPL_COMPLETE`, `REVIEW_COMPLETE`).
 3. The Reviewer never sends an IMPL_COMPLETE or DELEGATE message.
 4. Chat artifacts must include the full path to any file-based deliverable.
+
+### Role Boundaries (NEW §5.0)
+
+| Agent | May Do | May NOT Do | Enforcement |
+|-------|--------|------------|-------------|
+| **PM** | Create task requests, orchestrate process, Post-G4 admin, user notifications | Write CTO plans, make technical decisions, delegate implementation | Cross-boundary action is a process violation; must be flagged and corrected |
+| **CTO** | Architectural analysis, task plans, G1/G3/G4 decisions, Completion Summary to user | Implement code, write review reports, do Post-G4 cleanup | CTO's authority ends at CTO_APPROVAL.md |
+| **Implementer** | Code per approved plan, tests, implementation report | Architect anything new, decide gates, communicate with Reviewer directly | All work must match the CTO plan exactly; deviations require CTO return |
+| **Reviewer** | Independent verification, review report with scoring and recommendation | Approve or reject (only recommends to CTO), modify code or non-review files | Scoping is strictly one TASK directory; only REVIEW_REPORT.md may be written |
+
+### Violation Response Protocol (NEW §5.1)
+
+When any agent detects a role boundary violation by another agent:
+1. **Stop** — Do not proceed with the violating work
+2. **Flag** — Document the specific violation in the task directory as `BOUNDARY_VIOLATION.md`
+3. **Return** — Send the work back to the originating agent with specifics
+4. **User notification** — If the violation affects deliverable quality or timeline, notify the user via PM_STATUS_UPDATE
+
+Examples of violations:
+- PM writing a CTO_PLAN.md → boundary violation (PM cannot write technical plans)
+- Implementer making architectural decisions not in the CTO plan → boundary violation
+- Reviewer modifying code files outside REVIEW_REPORT.md → boundary violation
+- CTO doing Post-G4 cleanup → boundary violation
+
+---
 
 ## Naming Conventions
 
@@ -221,8 +284,10 @@ Required fields:
 docs/development/reports/TASK_<id>/
 ├── CTO_PLAN.md
 ├── IMPLEMENTATION_REPORT.md
-├── REVIEW_REPORT.md          (copied by CTO after approval)
-└── CTO_APPROVAL.md
+├── REVIEW_REPORT.md          (written by Reviewer directly)
+├── CTO_APPROVAL.md
+└── SESSION_INTERRUPT.md      (if session ends mid-sequence)
+└── BOUNDARY_VIOLATION.md     (if role boundary is crossed)
 ```
 
 ---
@@ -244,6 +309,8 @@ docs/development/reports/TASK_<id>/
 3. The Implementer never initiates a DELEGATE message — it only receives them from CTO.
 4. Chat artifacts must include the full path to any file-based deliverable.
 5. PM communicates process state only — technical content flows through Implementer → CTO channels.
+6. **CTO must send COMPLETION_SUMMARY immediately after G4 approval** — user awareness and next-task prioritization cannot be deferred to PM.
+7. **PM must proactively propose next tasks after Post-G4** — workflow ownership includes driving forward, not just recording.
 
 ---
 
