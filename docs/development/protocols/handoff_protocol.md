@@ -102,6 +102,14 @@ The commit message must reference the TASK_ID and include a brief description of
 }
 ```
 
+**Post-G4 Atomic Completion (NEW)** — Effective immediately: The entire Post-G4 sequence (actions 1–7) must be completed **within the same session** that receives G4 approval. If the PM session ends before push completes:
+
+- A `TASK_STALLED` message must be sent with phase="POST_G4_PUSH_INCOMPLETE" and lastActivity set to the time of session end
+- On next available cycle, a PM session MUST resume the Post-G4 sequence from where it left off — not restart from scratch
+- This is a **process violation** if the gap persists for more than one session boundary
+
+The CTO's final step (writing `CTO_APPROVAL.md`) does NOT include Post-G4 duties per AGENTS.md §6 Rule 6. Post-G4 is exclusively PM, and the PM must complete it atomically without deferring to a future session.
+
 **Note**: PM does not decide gates — it only observes and records transitions. Gate decisions remain with the CTO.
 ---
 
@@ -211,7 +219,7 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 |-----------|-------------------|---------------------|
 | PM → Open TASK | `CTO_PLAN.md` placeholder, spec ref | Read placeholder, confirm structure |
 | PM → Monitor | Stall detection report | Verify last activity timestamp |
-| PM → Close | Artifact verification, status update | Confirm all artifacts present |
+| PM → Close | Artifact verification, status update + **push confirmation** | Confirm all artifacts present AND remote push verified |
 | CTO → Implementer | `CTO_PLAN.md`, user approval | Read plan, confirm criteria present |
 | Implementer → Reviewer | **`IMPLEMENTATION_REPORT.md` (pre-dating review)** | Run git diff, check test results, **verify report timestamps** |
 | Reviewer → CTO | Review report (chat/file) | Confirm recommendation exists |
@@ -226,6 +234,7 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 3. The receiving agent is responsible for verification, not the sending agent.
 4. All return reasons must be specific and actionable.
 5. **IMPLEMENTATION_REPORT.md must exist at the time of Implementer's self-declaration of completion.** Retroactively filling in an implementation report after review has begun is a process violation and requires user notification before proceeding.
+6. **Post-G4 duties are atomic** — The entire Post-G4 sequence (status update, changelog, commit, PM_CLOSED message, push) must complete within one session. If the session ends mid-sequence, a TASK_STALLED message with phase="POST_G4_PUSH_INCOMPLETE" is required. The next available PM session MUST resume and complete the sequence — not defer it again. This is a process violation if the gap persists beyond one session boundary.
 
 ---
 
