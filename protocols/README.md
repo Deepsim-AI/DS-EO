@@ -23,7 +23,7 @@ Layer 2: Project Adaptations (optional)
 |----------|-----------|---------|
 | Governance | `approval_protocol.md`, `review_protocol.md`, `GATE_AUTHORITY_MATRIX.md` | Gates, scoring, decision authority, gate governance |
 | Communication | `communication_protocol.md` | Message formats and conventions |
-| Workflow | `delegation_protocol.md`, `handoff_protocol.md`, `completion_protocol.md` | Task lifecycle management |
+| Workflow | `delegation_protocol.md`, `handoff_protocol.md`, `completion_protocol.md`, `release_management_protocol.md` | Task lifecycle management, post-G4 closure, documentation sync |
 
 ## Installation Deployment
 

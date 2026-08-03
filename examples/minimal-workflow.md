@@ -6,15 +6,17 @@ This walkthrough demonstrates a complete task cycle using DS-EO on OpenClaw. It 
 
 ## Scenario
 
-A user requests: "Add input validation to the configuration parser."
+A user requests: "Switch to automatic execution mode and run the pending TASK_20260803_001 task."
 
-### Workflow Overview
+### Workflow Overview (Automatic Mode)
 
 ```
-User → PM → CTO (Plan, G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4) → PM Closes
+User → PM → CTO (Plan, G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4) → PM Post-G4 Closure
 ```
 
-The Project Manager coordinates task lifecycle throughout — creating tasks, sending status messages, and closing after approval. The CTO owns all technical decisions.
+The Project Manager coordinates task lifecycle throughout. The CTO owns all technical decisions.
+
+**Execution mode**: The user can switch between `manual` and `automatic` via `/eo mode <mode>` commands. In automatic mode, the workflow state engine auto-advances through gates after each phase completes. In manual mode, each gate requires explicit user approval.
 
 ---
 
@@ -24,10 +26,7 @@ The Project Manager coordinates task lifecycle throughout — creating tasks, se
 
 ```
 User → PM Agent:
-"Please add input validation to the configuration parser in config/parse.py.
- The parser currently accepts any string without checking format or length.
- I need it to validate that inputs are non-empty strings ≤256 characters,
- and that numeric fields parse as valid integers."
+"Switch to automatic mode and execute the pending TASK_20260803_001 task."
 ```
 
 ### PM creates task lifecycle and delegates to CTO
@@ -78,13 +77,9 @@ leading to runtime errors downstream.
 
 ### Gate G1: User Approves Plan
 
-The CTO displays the plan with status line:
-```
-[TASK_20260728_001] PLANNING: Plan ready for review
-Valid responses: APPROVE | REJECT | REQUEST_CHANGES(<issue>)
-```
+If in manual mode, the user responds via chat. In automatic mode, if the user previously set `/eo mode automatic`, this transition occurs without user input once the plan is written.
 
-User responds: `APPROVE`
+User (manual mode) responds: `APPROVE`
 
 ---
 
@@ -140,7 +135,7 @@ No deviations from the approved plan.
 
 ### Gate G2: Implementation Complete
 
-Implementer signals completion. CTO verifies artifacts exist and confirms. PM updates task status to "In Review".
+If in automatic mode, the state engine detects that `IMPLEMENTATION_REPORT.md` exists and auto-advances to Review. In manual mode, the user signals completion.
 
 ---
 
@@ -183,7 +178,7 @@ Reviewer produces REVIEW_REPORT.md directly in task directory.
 
 ### Gate G3: Review Passes
 
-PM updates task status to "Awaiting Approval". CTO confirms review report is complete and recommendation is justified.
+In automatic mode, once `REVIEW_REPORT.md` exists with a passing score, the state engine auto-advances to Approval. In manual mode, the user must explicitly approve.
 
 ---
 
@@ -221,7 +216,7 @@ The CTO reviews both reports independently:
 
 ### Gate G4: Approval Complete
 
-CTO writes `CTO_APPROVAL.md`. PM updates task status to "Completed" and runs post-G4 verification checklist (see `completion_protocol.md` §Post-G4).
+In automatic mode, once `CTO_APPROVAL.md` exists, the state engine auto-advances to STALLED (waiting for Post-G4). The PM must execute post-G4 duties in a separate session.
 
 ---
 
@@ -234,6 +229,8 @@ CTO writes `CTO_APPROVAL.md`. PM updates task status to "Completed" and runs pos
 | Review | Reviewer | `REVIEW_REPORT.md` | G3 (Review passes) | Sends TASK_IN_REVIEW to Reviewer, updates status |
 | Approval | CTO | `CTO_APPROVAL.md` | G4 (Final approve) | Updates status to "Completed" after approval |
 
+**Execution modes**: Users can toggle between manual and automatic mode at any time using `/eo mode <mode>`. Per-task overrides are also supported via `/eo mode override TASK_<id> <mode|off>`.
+
 **Total time**: Depends on implementation complexity. The workflow ensures quality at every step through formal gates and independent verification.
 
 ### Full Workflow Diagram
@@ -241,3 +238,10 @@ CTO writes `CTO_APPROVAL.md`. PM updates task status to "Completed" and runs pos
 ```
 User Request → PM Lifecycle Coordination → CTO Plan (G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4) → PM Post-G4 Verification
 ```
+
+### Notes
+
+- **Automatic mode**: State engine auto-advances through phases once artifacts are produced. No manual intervention needed.
+- **Manual mode**: User must explicitly approve at each gate.
+- **Post-G4 isolation**: Per AGENTS.md §11b, PM closure duties occur in a separate session from G4 approval.
+- **Artifact author tracking**: All agent-produced artifacts include `produced_by` metadata (AGENTS.md §11e). Self-authored reviews across roles are prohibited.

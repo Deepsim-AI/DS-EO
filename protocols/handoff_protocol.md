@@ -328,3 +328,184 @@ All three checks must pass before any claim about task state is made.
 
 **Rule 4: Implementer may not defer reporting.** The Implementer has no authority to defer report production to a later session. This is a process violation equivalent to "report retroactively produced" but more severe because it delays review by definition.
 
+
+---
+
+## Pre-Phase Entry Gate Enforcement (NEW §10.0)
+
+**Problem**: Agents routinely proceed to the next phase even when prerequisite artifacts from prior phases are missing. Rules in text ("must") provide no mechanical barrier. TASK_DS_EO_024 demonstrated two violations: Reviewer skipped G3 and jumped to Post-G4 without REVIEW_REPORT.md; no CTO_APPROVAL.md existed before PM_CLOSED.md was written.
+
+**Principle**: Each phase gate is a *mechanical checkpoint*, not an advisory step. The receiving agent has **zero authority** to start until ALL prerequisite artifacts exist on disk and are verified. If any artifact is missing, the agent MUST halt, log the block, and notify the user — never infer, proceed, or perform another agent's duties.
+
+### §10.1 Pre-G3 Enforcement (Reviewer Entry Gate)
+
+Before the Reviewer begins ANY review activity for a task, the following files must exist in the task directory:
+
+- [ ] `CTO_PLAN.md` — verified present and non-empty
+- [ ] `IMPLEMENTATION_REPORT.md` — verified present AND timestamp predates reviewer access time
+
+**If either file is missing:**
+1. Agent MUST halt immediately — do not read code, do not run git diff, do not begin assessment
+2. Write `BLOCKED_BY_MISSING_ARTIFACTS.md` to the task directory:
+   ```markdown
+   # BLOCKED BY MISSING ARTIFACTS
+
+   **Task**: <TASK_ID>
+   **Blocked By**: <agent_name/model>
+   **Timestamp**: <ISO-8601>
+
+   ## Missing Artifacts
+   - <artifact 1> — status: absent/created-after-review-start
+   - ...
+
+   ## Required Next Step
+   The Implementer must produce all missing artifacts. The user must be notified of this blockage.
+   ```
+3. Send `PM_STATUS_UPDATE` with status="BLOCKED", reason="G3 entry gate failed — missing artifacts"
+4. Do not proceed until the missing artifacts appear and are verified
+
+**This rule overrides all other review duties.** No review report, no scoring rubric, no recommendation — nothing happens without the prerequisite files. This prevents TASK_DS_EO_024-style gaps where review never occurred but Post-G4 proceeded anyway.
+
+### §10.2 Pre-G4 Enforcement (CTO Entry Gate)
+
+Before the CTO issues a final G4 decision, the following must exist:
+
+- [ ] `REVIEW_REPORT.md` — verified present with a valid recommendation field
+- [ ] `IMPLEMENTATION_REPORT.md` — verified present
+
+**If REVIEW_REPORT.md is missing:**
+1. CTO MUST NOT issue an approval or rejection at G4
+2. Document in `BLOCKED_BY_MISSING_ARTIFACTS.md` that G3 was never executed
+3. Send `PM_STATUS_UPDATE` with status="BLOCKED", reason="G4 cannot execute — no review report (G3 was skipped)"
+
+**This rule prevents the TASK_DS_EO_024 violation where Post-G4 was performed without any prior review.**
+
+### §10.3 Pre-Post-G4 Enforcement (PM Entry Gate)
+
+Before the PM begins ANY Post-G4 work, the following files must ALL exist in the task directory with valid content:
+
+- [ ] `CTO_PLAN.md` — present and non-empty
+- [ ] `IMPLEMENTATION_REPORT.md` — present and non-empty
+- [ ] `REVIEW_REPORT.md` — present with a valid recommendation (APPROVE, APPROVE_WITH_COMMENTS, REQUEST_CHANGES, or REJECT)
+- [ ] `CTO_APPROVAL.md` — present with an **APPROVE** decision
+
+**If ANY file is missing:**
+1. PM MUST halt immediately — do not update status, do not write CHANGELOG, do not commit, do not push
+2. Write `BLOCKED_BY_MISSING_ARTIFACTS.md` to the task directory documenting which artifacts are absent and why Post-G4 cannot proceed
+3. Send `PM_STATUS_UPDATE` with status="BLOCKED", reason="<specific missing artifact(s)>"
+4. Notify user: "Post-G4 blocked for <TASK_ID> — missing: <list>. Review (G3) and/or CTO approval (G4) were not executed."
+
+**This rule is absolute.** PM has no authority to proceed with Post-G4 work without all four artifacts. This directly prevents TASK_DS_EO_024 where PM_CLOSED.md was written before G3 and G4 ever occurred.
+
+### §10.4 Enforcement Rule: No Inferred Completion
+
+No agent may infer that a prior phase completed based on:
+- Chat messages or verbal claims
+- Code changes that appear to match the spec
+- Test results that pass
+- Any other indirect evidence
+
+**The only valid evidence of phase completion is the existence of the required artifact files on disk.** If a file doesn't exist, the phase never completed — period.
+
+### §10.5 Enforcement Rule: No Cross-Agent Duty Substitution
+
+If an agent encounters missing artifacts that it could theoretically produce itself, it MUST NOT fill them in. Each agent's output is its designated role artifact only:
+- Reviewer writes REVIEW_REPORT.md only
+- CTO writes CTO_APPROVAL.md only
+- PM writes post-G4 deliverables only
+- No agent may write another agent's artifacts under any circumstance
+
+This rule prevents TASK_DS_EO_024 where the Reviewer wrote PM_CLOSED.md (a Post-G4 artifact) instead of REVIEW_REPORT.md (a G3 artifact).
+
+---
+
+## Phase Gate Compliance Verification File (NEW §11.0)
+
+**Requirement:** Every task directory MUST contain a `TASK_COMPLETION_AUDIT.md` file that tracks which gates were executed and in what order. This file is the authoritative source for whether a task has properly completed all gates.
+
+### TASK_COMPLETION_AUDIT.md Format
+
+```markdown
+# Task Completion Audit — <TASK_ID>
+
+## Gate Execution Log
+| Gate | Status | Artifact Produced | Produced By | Timestamp | Verified |
+|------|--------|-------------------|-------------|-----------|----------|
+| G1 | ✅ Executed | CTO_PLAN.md | CTO + User | YYYY-MM-DDTHH:MM:SS | YYYY-MM-DDTHH:MM:SS |
+| G2 | ⏳ Pending | — | — | — | — |
+| G3 | ❌ NOT EXECUTED | — | — | — | — |
+| G4 | ❌ NOT EXECUTED | — | — | — | — |
+| Post-G4 | ❌ BLOCKED (G3, G4 missing) | — | — | — | — |
+
+## Blockers
+- <list any blockers here>
+
+## Gate Compliance Checklist
+| Requirement | Met? | Evidence |
+|-------------|------|----------|
+| G3 review occurred | [ ] | REVIEW_REPORT.md present with recommendation |
+| G4 CTO approval issued | [ ] | CTO_APPROVAL.md present with APPROVE decision |
+| All 4 artifacts exist on disk | [ ] | ls confirms all files |
+| Post-G4 atomic (completed in one session) | [ ] | PM_CLOSED timestamp check |
+
+## Final Status: <PENDING_BLOCKED | ACTIVE | COMPLETE>
+```
+
+### Rules for TASK_COMPLETION_AUDIT.md
+
+1. **Must be created at task open time** with all gates initialized to pending
+2. **Updated after each gate execution** — status, artifact name, producer, timestamps
+3. **Must exist before any phase transition** — the receiving agent reads this file as part of its prerequisite check
+4. **Final Status must match reality** — if Post-G4 was written but G3/G4 are "NOT EXECUTED", mark as BLOCKED and flag violation
+5. **If a gate is "NOT EXECUTED" but later gates claim completion, this is a process violation** — write `BOUNDARY_VIOLATION.md` and notify user
+
+---
+
+## Process Violation Documentation (NEW §12.0)
+
+### When to Write BOUNDARY_VIOLATION.md
+
+Write this file whenever:
+- An agent proceeded past a gate without required artifacts
+- A phase was skipped entirely (e.g., G3 never executed but Post-G4 ran)
+- An agent produced another agent's artifact
+- An implementation report was retroactively produced after review started
+- Any gate sequence is out of order
+
+### BOUNDARY_VIOLATION.md Format
+
+```markdown
+# Boundary Violation — <TASK_ID>
+
+**Violation Type**: <type — e.g., "G3_SKIP_POST_G4", "REPORT_RETROACTIVE", "CROSS_AGENT_DUTY">
+**Detected By**: <agent/model>
+**Timestamp**: <ISO-8601>
+
+## Description
+<What happened, what should have happened, and the gap>
+
+## Timeline
+| Timestamp | Action | Agent | Issue |
+|-----------|--------|-------|-------|
+| ... | ... | ... | ... |
+
+## Required Remediation
+1. <specific action to fix>
+2. <specific action to fix>
+
+## Impact Assessment
+- Severity: <Low | Medium | High | Critical>
+- Work affected: <description>
+- User notified: [ ] Yes / [ ] No
+```
+
+### Severity Definitions
+
+| Severity | When to Use | Required Response |
+|----------|-------------|-------------------|
+| **Critical** | Post-G4 performed without G3/G4 approval; work committed/pushed without gates | Immediate user notification; halt all subsequent work on this task until remediated |
+| **High** | Gate skipped but not yet committed; review started without implementation report | Block phase; notify user in session |
+| **Medium** | Report produced after deadline but before review started | Flag in BOUNDARY_VIOLATION.md; note for CTO evaluation of Implementer |
+| **Low** | Minor process deviations that don't affect task integrity | Log for process improvement review; no user notification required |
+
+---

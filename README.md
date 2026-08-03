@@ -78,9 +78,6 @@ Prerequisites for Windows:
 - Git (for repository management)
 
 For best results, install WSL2 and use `bash scripts/install.sh` within the Linux environment for full compatibility.
-5. Verify the installation
-
-See [INSTALLATION.md](INSTALLATION.md) for detailed steps.
 
 ## Repository Structure
 
@@ -128,11 +125,6 @@ ds-eo-openclaw/
 │   ├── deploy_protocols.sh        # Protocol deployment
 │   ├── deploy_agents.sh           # Prompt file deployment
 │   └── verify_installation.sh     # Post-install verification
-│   ├── backup_openclaw_config.sh    # Pre-install backup
-│   ├── generate_openclaw_config.sh  # Agent config generator
-│   ├── deploy_protocols.sh          # Protocol deployment
-│   ├── deploy_agents.sh             # Prompt file deployment
-│   └── verify_installation.sh       # Post-install verification
 │
 ├── tests/                       # Verification and compliance tests
 │   ├── test_manifest_schema.py      # Manifest schema validation
@@ -146,8 +138,22 @@ ds-eo-openclaw/
 │   ├── COMPATIBILITY.md           # OpenClaw version compatibility
 │   └── CONTRIBUTING.md            # Contribution guidelines
 │
-└── examples/                    # Usage examples
-    └── minimal-workflow.md        # "From request to delivery" walkthrough
+├── examples/                    # Usage examples
+│   └── minimal-workflow.md        # "From request to delivery" walkthrough
+│
+└── ds_eo_openclaw/              # Python package (v0.3 — Automatic Mode)
+    ├── __init__.py              # Package initialization
+    └── workflow/
+        ├── __init__.py
+        ├── state_engine.py      # 11-state state machine with auto-advance
+        ├── audit_log.py         # Immutable audit trail with hash chain
+        ├── config.py            # Mode config with per-task overrides
+        ├── selector.py          # Atomic mode switching
+        ├── notifications.py     # Auto-mode notification messages
+        ├── timeout_config.py    # Per-state timeouts
+        ├── stall_detection.py   # PM monitoring integration
+        ├── escalation.py        # Blocker escalation chain
+        └── failure_detector.py  # Repeated failure detection
 ```
 
 ## Roles
@@ -171,9 +177,8 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
 
 - **v0.1** (completed): Extract, package, and install DS-EO OpenClaw Edition
 - **v0.2** (completed): Protocol & governance consistency migration
-- **v1.0**: Platform abstraction layer for multi-platform editions
-- **Future**: Additional platform editions (Claude, Codex, Gemini)
-- **v1.0**: Platform abstraction layer for multi-platform editions
+- **v0.3** (completed): Automatic Mode — full workflow engine, audit trail, mode selector, failure handling, and slash command skill
+- **v1.0** (planned): Platform abstraction layer for multi-platform editions
 - **Future**: Additional platform editions (Claude, Codex, Gemini)
 
 ## License

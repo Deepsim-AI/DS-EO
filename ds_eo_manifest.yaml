@@ -4,7 +4,7 @@
 package:
   name: "ds-eo-openclaw"                    # Package identifier
   title: "DeepSim Engineering Organization — OpenClaw Edition"  # Display name
-  version: "0.2.0"
+  version: "0.3.0"
   description: >
     Extractable engineering organization framework for OpenClaw.
     Provides agent roles, protocols, and workflows to transform
@@ -127,6 +127,79 @@ templates:                                  # Document templates included
   - id: "cto_approval"
     file: "templates/cto_approval_template.md"
     purpose: "CTO final approval memo format"
+
+workflow_package:                           # Automatic Mode workflow infrastructure (v0.3)
+  description: >
+    Platform-neutral workflow engine, audit logging, mode selector,
+    failure handling, and user-facing slash command skill.
+  modules:
+    - id: "state_engine"
+      file: "ds_eo_openclaw/workflow/state_engine.py"
+      purpose: "11-state state machine with auto-advance support (S0–S10)"
+
+    - id: "audit_log"
+      file: "ds_eo_openclaw/workflow/audit_log.py"
+      purpose: "Immutable audit entries with SHA-256 integrity hash chain"
+
+    - id: "mode_config"
+      file: "ds_eo_openclaw/workflow/config.py"
+      purpose: "Execution mode config with per-task overrides"
+
+    - id: "mode_selector"
+      file: "ds_eo_openclaw/workflow/selector.py"
+      purpose: "Atomic mode switching with audit trail integration"
+
+    - id: "notifications"
+      file: "ds_eo_openclaw/workflow/notifications.py"
+      purpose: "Auto-mode state notifications and switch messages (7 + 2)"
+
+    - id: "timeout_config"
+      file: "ds_eo_openclaw/workflow/timeout_config.py"
+      purpose: "Per-state timeouts with human-ownership exemptions"
+
+    - id: "stall_detection"
+      file: "ds_eo_openclaw/workflow/stall_detection.py"
+      purpose: "PM monitoring cycle for timestamp-based stall detection"
+
+    - id: "escalation"
+      file: "ds_eo_openclaw/workflow/escalation.py"
+      purpose: "Blocker escalation chain (PM → CTO → User) with rate limiting"
+
+    - id: "failure_detector"
+      file: "ds_eo_openclaw/workflow/failure_detector.py"
+      purpose: "Repeated failure detection with configurable thresholds"
+
+  tests:
+    - file: "tests/test_state_engine.py"
+      purpose: "14 tests for state machine acceptance criteria"
+    - file: "tests/test_audit_log.py"
+      purpose: "20 tests for audit log schema and reconstruction"
+    - file: "tests/test_mode_selector.py"
+      purpose: "31 tests for mode switching scenarios"
+    - file: "tests/test_failure_handling.py"
+      purpose: "33 tests for timeout, stall, escalation edge cases"
+    - file: "tests/test_manual_mode_regression.py"
+      purpose: "~25 tests for manual mode regression coverage"
+    - file: "tests/test_auto_mode_transitions.py"
+      purpose: "~20 tests for auto-mode transitions"
+    - file: "tests/test_mode_switching.py"
+      purpose: "~24 tests for mode switching scenarios"
+    - file: "tests/test_edge_cases.py"
+      purpose: "~14 tests for timeout, stall, escalation edge cases"
+    - file: "tests/test_audit_integration.py"
+      purpose: "~7 tests for cross-task audit reconstruction"
+    - file: "tests/test_platform_portability.py"
+      purpose: "~8 tests for design decision verification"
+
+  skill_commands:
+    id: "eo_commands"
+    files:
+      - file: "skills/eo/SKILL.md"
+        purpose: "Slash command definition with OpenClaw integration frontmatter"
+      - file: "skills/eo/commands.py"
+        purpose: "Utility wrappers around ModeSelector API (4 functions)"
+
+  total_tests: 277                         # Combined across all workflow test modules
 
 installation:                               # Installation metadata
   steps:

@@ -4,8 +4,9 @@
 
 | DS-EO Version | Minimum OpenClaw Version | Notes |
 |---------------|-------------------------|-------|
-| 0.1.x (current) | 2026.7.1 | Tested on 2026.7.1 and later |
-| 0.2.x (planned) | TBD | Self-hosting edition |
+| 0.1.x (completed) | 2026.7.1 | Tested on 2026.7.1 and later |
+| 0.2.x (completed) | 2026.7.1 | Protocol & governance consistency migration |
+| 0.3.x (current) | 2026.7.1 | Automatic Mode — workflow engine, audit trail, mode selector, failure handling, /eo skill |
 | 1.0.x (planned) | TBD | Platform abstraction layer |
 
 ## Agent Model Compatibility

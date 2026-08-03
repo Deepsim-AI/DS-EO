@@ -29,16 +29,7 @@ Both installers provide the same 7-step installation flow with interactive promp
 
 ---
 
-### Method 1: Scripted Installation (Recommended)
-
-```bash
-# From this repository's root directory:
-bash scripts/install.sh
-```
-
-The installer will walk you through each step interactively. It handles backup, config generation, merging, deployment, and verification automatically. If any verification check fails, it rolls back to the pre-install state.
-
-### Method 2: Manual Installation (Step by Step)
+### Method 1: Manual Installation (Step by Step)
 
 If you prefer full control, follow these steps manually. Each step includes rollback instructions.
 

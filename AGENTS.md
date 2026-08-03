@@ -10,7 +10,7 @@ DS-EO operates on a fundamental separation between two layers:
 
 | Layer | What It Is | Where It Lives |
 |-------|-----------|----------------|
-| **Build-Time Engineering Organization** (who builds) | CTO, Implementer, Reviewer — the team that develops software | OpenClaw agent configs + prompt files |
+| **Build-Time Engineering Organization** (who builds) | CTO, Implementer, Reviewer, PM — the team that develops software | OpenClaw agent configs + prompt files |
 | **Runtime Product** (what is built) | The deployed application | The shipped product at deployment time |
 
 **Critical rule**: Never conflate the two layers. The CTO is not a replacement for the CEO Agent. The engineering organization develops software; the runtime product runs at deployment time.
@@ -198,6 +198,8 @@ The `ds-eo-openclaw/protocols/` directory contains the authoritative protocol de
 | `delegation_protocol.md` | Workflow | Task creation, assignment, and scope containment |
 | `handoff_protocol.md` | Workflow | Phase transition requirements and artifact verification |
 | `review_protocol.md` | Governance | Review criteria, scoring rubric (4 dimensions), recommendation thresholds |
+| `release_management_protocol.md` | Workflow | Post-G4 closure, documentation sync, repository lifecycle coordination |
+| `GATE_AUTHORITY_MATRIX.md` | Governance | Single source of truth for gate governance decisions |
 
 ---
 

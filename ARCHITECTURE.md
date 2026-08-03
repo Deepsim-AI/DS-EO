@@ -176,9 +176,9 @@ DS-EO installs by merging configuration and deploying files — it never modifie
 
 ## Future Architecture
 
-### v0.2 — Self-Hosting
+### v0.3 — Automatic Mode (completed)
 
-Use DS-EO to develop DS-EO itself, validating that the workflow works for its own evolution.
+Full workflow engine with automatic mode support, audit trail, user-facing mode selector, failure/stall handling, and slash command skill. See [CHANGELOG.md](CHANGELOG.md) for details on all 6 implementation phases.
 
 ### v1.0 — Platform Abstraction
 
