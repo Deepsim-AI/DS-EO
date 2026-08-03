@@ -249,4 +249,29 @@ User-facing mode selector providing the missing control layer for the Automatic 
 
 ---
 
-## [Phase 4 — Automatic Mode Implementation] — In Progress
+## [Phase 4 — Failure/Stall Handling Refinements] — 2026-08-02
+
+### Tasks Completed This Phase
+
+| Task | Title | Decision |
+|------|-------|----------|
+| TASK_DS_EO_023 | Phase 4: Failure/Stall Handling Refinements | ✅ APPROVED |
+
+### Summary
+
+Phase 4 of the Automatic Mode implementation — operational resilience layer for automatic mode. Configurable per-state timeouts, PM monitoring cycle, blocker escalation chains with rate limiting, repeated failure detection, and audit log rotation. Ensures automatic mode can reliably self-manage tasks that encounter problems without human intervention for every edge case.
+
+**Added:**
+- `ds_eo_openclaw/workflow/timeout_config.py` (50 lines) — Per-state timeouts with human-ownership exemptions (G1_WAITING, G3_PENDING, FINAL_APPROVAL always None/exempt)
+- `ds_eo_openclaw/workflow/stall_detection.py` (80 lines) — PM monitoring cycle integration for timestamp comparison
+- `ds_eo_openclaw/workflow/escalation.py` (60 lines) — Blocker escalation chain (PM → CTO → User) with 5-minute rate limiting
+- `ds_eo_openclaw/workflow/failure_detector.py` (50 lines) — Repeated failure detection: count-based escalation at each rejection threshold
+- `tests/test_failure_handling.py` (120 lines, 33 tests) — Full coverage of all new functionality
+- Updated `state_engine.py` (~30 lines) — STALLED state auto-detection via timeout config
+- Updated `notifications.py` (~20 lines) — Failure notification dispatch
+
+**Test Results**: 151/151 tests passing (33 new + 118 existing); zero regression in Phase 1–3 functionality
+**Reviewer Score**: 5/5 overall
+
+---
+

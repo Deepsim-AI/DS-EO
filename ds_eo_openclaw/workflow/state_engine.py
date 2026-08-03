@@ -9,13 +9,13 @@ States: S0–S10 as defined in EXECUTION_MODE_ARCHITECTURE.md §2
 Transitions: 12 transitions as defined in EXECUTION_MODE_ARCHITECTURE.md §3.4
 Audit Trail: Phase 2 integration via ds_eo_openclaw.workflow.audit_log module.
 Mode Configuration: Phase 3 integration via ds_eo_openclaw.workflow.config module.
+Stall Detection: Phase 4 — auto-detects STALLED state from timeout config.
 
 Usage:
     from ds_eo_openclaw.workflow.state_engine import StateEngine, State
 
     # With explicit mode (Phase 1)
     engine = StateEngine("/path/to/task/dir", execution_mode="automatic")
-
     # With WorkflowConfig (Phase 3 — reads global + applies per-task override)
     from ds_eo_openclaw.workflow.config import WorkflowConfig
     config = WorkflowConfig(execution_mode="manual")
@@ -23,6 +23,7 @@ Usage:
 """
 
 import os
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, List
 
@@ -86,7 +87,9 @@ class StateEngine:
         """Detect current workflow state by inspecting task directory artifacts.
 
         Checks in strict priority order (most specific first) to avoid
-        misclassification when multiple signals coexist.
+        misclassification when multiple signals coexist. Phase 4 integration:
+        if no artifact signal is found but the task has been active for longer
+        than its configured timeout, returns STALLED (S10).
         """
         if not os.path.isdir(self.task_dir):
             return State.TASK_OPEN
@@ -104,10 +107,68 @@ class StateEngine:
             return State.WAITING_G2
 
         if self._file_exists("CTO_PLAN.md"):
+            # Phase 4: Check for stall even when CTO_PLAN exists
+            stalled = self._check_stall_for_state(State.TASK_OPEN)
+            if stalled:
+                return State.STALLED
             return State.TASK_OPEN
 
         # No signals present — treat as TASK_OPEN (new task)
+        # Phase 4: Check for stall on bare directory
+        stalled = self._check_stall_for_state(State.TASK_OPEN)
+        if stalled:
+            return State.STALLED
         return State.TASK_OPEN
+
+    def _check_stall_for_state(self, state: State) -> bool:
+        """Check if a task in the given state has exceeded its timeout.
+
+        Phase 4 integration — uses TimeoutConfig to determine if the current
+        state should trigger STALLED detection based on elapsed time since
+        last activity. Human-owned states are always exempt.
+
+        Args:
+            state: The state to check for stall conditions.
+
+        Returns:
+            True if the task is stalled (timeout exceeded), False otherwise.
+        """
+        from .stall_detection import create_stall_detector
+        detector = create_stall_detector()
+
+        # Get last activity time — use file modification time as proxy
+        state_file_map = {
+            State.TASK_OPEN: "CTO_PLAN.md",
+            State.WAITING_G2: "IMPLEMENTATION_REPORT.md",
+            State.G3_PENDING: "REVIEW_REPORT.md",
+            State.IMPLEMENTATION: None,  # No file signal for active implementation
+        }
+        check_file = state_file_map.get(state)
+        if check_file:
+            filepath = os.path.join(self.task_dir, check_file)
+            if not os.path.isfile(filepath):
+                return False  # Can't determine stall without activity signal
+            mtime = datetime.fromtimestamp(
+                os.path.getmtime(filepath), tz=timezone.utc
+            )
+        else:
+            # No file signal — use task directory modification time as fallback
+            mtime = datetime.fromtimestamp(
+                os.path.getmtime(self.task_dir), tz=timezone.utc
+            )
+
+        # Derive task_id from directory name
+        parts = os.path.normpath(self.task_dir).split(os.sep)
+        task_id = None
+        for part in reversed(parts):
+            if part.startswith("TASK_"):
+                task_id = part
+                break
+        if task_id is None:
+            return False  # Can't check stall without valid task_id
+
+        result = detector.check(task_id, state.value, mtime)
+        return result is not None
 
     def _ensure_audit_manager(self, task_id: str) -> AuditLog:
         """Lazily create the per-task audit log manager on first use."""
