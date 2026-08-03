@@ -264,6 +264,30 @@ When a handoff fails verification (missing artifacts, incomplete reports, unclea
 
 ---
 
+
+---
+
+## Implementer Report Enforcement — Strengthened (Updated §9.0)
+
+**Recurring violation**: Across TASK_DS_EO_020 and TASK_DS_EO_022, the Implementer completed code changes and tests but did NOT produce IMPLEMENTATION_REPORT.md at completion time. In both cases, user intervention was required to request the report. This is no longer tolerated.
+
+### Rule 1: Report as part of the completion action — not a separate step
+When the Implementer finishes code changes and tests, **IMPLEMENTATION_REPORT.md must be written before any other action**. It is not optional. The implementer may not claim "implementation complete" until the report exists on disk.
+
+### Rule 2: Automated pre-review gate
+Before any Reviewer begins work on a task, the IMPLEMENTATION_REPORT.md MUST exist AND its timestamp must be earlier than the REVIEW_REPORT.md timestamp (or review start time). If the file does not exist when the Reviewer first accesses the task directory, the Reviewer MUST:
+1. Send `PM_STATUS_UPDATE` with status="BLOCKED" and message "IMPLEMENTATION_REPORT.md missing — Implementer has not completed reporting step"
+2. Return the task to the Implementer without reviewing code
+3. Log in BOUNDARY_VIOLATION.md that the implementation report was deferred past completion time
+
+### Rule 3: Process violation classification
+- **Severity**: High — delays review by definition, wastes Reviewer effort if they start before the report exists
+- **Tracking**: Count of Implementer-report-deferrals across tasks becomes a measurable process metric
+- **Escalation**: If two or more Implementers in the same session defer reports, escalate to CTO for protocol enforcement
+
+### Rule 4: No retroactive production accepted as valid
+A report produced after user request — even if it predates review — is flagged with a note in BOUNDARY_VIOLATION.md documenting "IMPLEMENTATION_REPORT.md produced via user request, not at completion time." This flags the Implementer's behavior for CTO evaluation.
+
 ## Related Protocols
 
 - `communication_protocol.md` — Message format standards

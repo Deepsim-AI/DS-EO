@@ -61,6 +61,8 @@ Required fields:
 
 ### 4. Task Closed (`PM_CLOSED`)
 
+**Artifact Requirement**: A file named `PM_CLOSED.md` MUST be written to the task directory as part of Post-G4 closure. This is the persistent record of the PM_CLOSED message — not optional, not just a chat message. Every task directory must have exactly one `PM_CLOSED.md`.
+
 Sent by: PM → User / relevant parties (completion notification)  
 Required fields:
 

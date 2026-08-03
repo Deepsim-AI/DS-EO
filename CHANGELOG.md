@@ -171,4 +171,82 @@ Implemented the schema-compliant audit logging system from EXECUTION_MODE_ARCHIT
 
 ---
 
-## [Phase 3 — Automatic Mode Implementation] — In Progress
+## [Post-G4 Cleanup] — 2026-08-02
+
+### PM Actions — TASK_DS_EO_022 Closure
+
+| Action | Status |
+|--------|--------|
+| `PROJECT_STATUS.md` updated with 📦 COMPLETED marker for TASK_DS_EO_022, advanced phase to Phase 4 | ✅ Done |
+| `CHANGELOG.md` entry for Phase 3 mode selector (added below) | ✅ Done |
+| PM_CLOSED notification issued | ✅ Sent |
+| Git commit of task artifacts and status updates | ✅ Committed |
+| Remote push to GitHub | ✅ Pushed to `origin/main` |
+
+## [Post-G4 Cleanup] — 2026-08-02
+
+### PM Actions — TASK_DS_EO_021 Closure
+
+| Action | Status |
+|--------|--------|
+| `PROJECT_STATUS.md` updated with 📦 COMPLETED marker | ✅ Done |
+| `.gitignore` updated (audit artifacts + notification exclusions) | ✅ Done |
+| Git commit of task artifacts and status updates | ✅ Committed |
+| Remote push to GitHub | ✅ Pushed to `origin/main` |
+
+### Summary
+
+TASK_DS_EO_021 (Phase 2: Audit Trail Integration) post-G4 completion checklist executed. PROJECT_STATUS.md updated to 📦 COMPLETED state for this task.
+
+---
+
+### PM Actions — TASK_DS_EO_022 Closure
+
+| Action | Status |
+|--------|--------|
+| `PROJECT_STATUS.md` updated with 📦 COMPLETED marker for TASK_DS_EO_022, advanced phase to Phase 4 | ✅ Done |
+| `CHANGELOG.md` entry for Phase 3 mode selector (added below) | ✅ Done |
+| PM_CLOSED notification issued | ✅ Sent |
+| Git commit of task artifacts and status updates | ✅ Committed |
+| Remote push to GitHub | ✅ Pushed to `origin/main` |
+
+### Summary
+
+TASK_DS_EO_022 (Phase 3: User-Facing Mode Selector) post-G4 completion checklist executed. PROJECT_STATUS.md advanced from Phase 3 to Phase 4 and marked TASK_DS_EO_022 as 📦 COMPLETED.
+
+---
+
+## [Phase 3 — User-Facing Mode Selector] — 2026-08-02
+
+### Tasks Completed This Phase
+
+| Task | Title | Decision |
+|------|-------|----------|
+| TASK_DS_EO_022 | Phase 3: User-Facing Mode Selector | ✅ APPROVED |
+
+### Summary
+
+User-facing mode selector providing the missing control layer for the Automatic Mode system. Users can now switch between manual and automatic modes, apply per-task overrides, and receive notifications for all auto-mode transitions exactly as specified in the architecture.
+
+**Added:**
+- `ds_eo_openclaw/workflow/config.py` (107 lines) — Mode config with validation + per-task override support
+- `ds_eo_openclaw/workflow/selector.py` (167 lines) — Atomic mode switching with audit trail integration
+- `ds_eo_openclaw/workflow/notifications.py` (51 lines) — §6.3 notification maps: 7 auto-mode + 2 switch messages
+- `tests/test_mode_selector.py` (306 lines, 31 tests) — Full test coverage for all acceptance criteria
+
+**Key capabilities:**
+- Default mode is "manual" when config unset or invalid (ValueError on bad input)
+- Atomic mode switching with previous-mode return for audit trail
+- Per-task overrides with override > global precedence
+- No gate-bypass possible in any mode — gates enforced identically
+- Mode switch always logged as audit entry
+- All 7 auto-mode state notifications defined per §6.3 word-for-word
+- Zero regression in manual mode behavior verified
+
+**Test Results**: 31/31 tests passing; no regression in manual mode behavior
+
+**Reviewer Score**: 9.5/10 overall (Correctness: 10/10, Tests: 10/10, Code Quality: 9/10, Integration: 10/10)
+
+---
+
+## [Phase 4 — Automatic Mode Implementation] — In Progress

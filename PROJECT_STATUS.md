@@ -1,7 +1,7 @@
 # DS-EO Project Status
 
 **Last Updated**: 2026-08-02  
-**Current Phase**: Phase 3 — User-Facing Mode Selector (Design Pending)  
+**Current Phase**: Phase 4 — Per-Task Override Configuration (Design Pending)  
 
 ---
 
@@ -14,9 +14,35 @@
 
 ## Completed Tasks
 
-### TASK_DS_EO_021 — Phase 2: Audit Trail Integration ✅ (APPROVED)
+### TASK_DS_EO_022 — Phase 3: User-Facing Mode Selector 📦 (COMPLETED)
+**Date Completed**: 2026-08-02
+**Decision**: APPROVED (Gate G4)
+**PM Status**: Closed — Post-G4 cleanup completed 2026-08-02
+
+**Summary**: User-facing mode selector providing control layer for the Automatic Mode system — users can now switch between manual and automatic modes, apply per-task overrides, and receive notifications for all auto-mode transitions. Default mode is "manual" when config unset or invalid; no gate-bypass possible in any mode.
+
+**Changes**:
+- Created `ds_eo_openclaw/workflow/config.py` (107 lines) — Mode config with validation + per-task override support
+- Created `ds_eo_openclaw/workflow/selector.py` (167 lines) — Atomic mode switching with audit trail integration
+- Created `ds_eo_openclaw/workflow/notifications.py` (51 lines) — §6.3 notification maps: 7 auto-mode + 2 switch messages
+- Created `tests/test_mode_selector.py` (306 lines, 31 tests) — Full coverage for all acceptance criteria
+
+**Test Results**: 31/31 tests passing; no regression in manual mode behavior
+
+**Reviewer Score**: 9.5/10 overall (Correctness: 10/10, Tests: 10/10, Code Quality: 9/10, Integration: 10/10)
+
+**Artifacts**:
+- `docs/development/reports/TASK_DS_EO_022/CTO_PLAN.md`
+- `docs/development/reports/TASK_DS_EO_022/IMPLEMENTATION_REPORT.md`
+- `docs/development/reports/TASK_DS_EO_022/REVIEW_REPORT.md` (Score: 9.5/10)
+- `docs/development/reports/TASK_DS_EO_022/CTO_APPROVAL.md`
+
+---
+
+### TASK_DS_EO_021 — Phase 2: Audit Trail Integration 📦 (COMPLETED)
 **Date Completed**: 2026-08-02  
 **Decision**: APPROVED (Gate G4)  
+**PM Status**: Closed — Post-G4 cleanup completed 2026-08-02
 
 **Summary**: Schema-compliant audit logging system implementing EXECUTION_MODE_ARCHITECTURE.md §10.2 — every workflow transition produces a fully reconstructable record with all 14 required fields, integrity hash chain, and atomic persistence. Integrated with Phase 1 state engine for both auto-advance and manual transitions.
 
@@ -105,7 +131,8 @@
 | Phase 2 — Self-Hosting | 2026-07-28 | DS-EO develops DS-EO; TASK_20260729_001, TASK_DS_EO_003 completed |
 | Post-G4 Governance Migration | 2026-07-30 | TASK_DS_EO_015+017: full protocol & governance overhaul |
 | Phase 1 — PM Workflow State Engine | 2026-08-02 | TASK_DS_EO_020: core state engine implementation (Phase 1 of TASK_DS_EO_019) |
-| Phase 2 — Audit Trail Integration | 2026-08-02 ---
+| Phase 2 — Audit Trail Integration | 2026-08-02 |
+| Phase 3 — User-Facing Mode Selector | 2026-08-02
 
 ### TASK_DS_EO_018 — Document Consistency Sweep ✅ (APPROVED)
 **Date Completed**: 2026-07-31  
