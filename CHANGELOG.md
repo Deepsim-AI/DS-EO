@@ -315,3 +315,55 @@ Phase 5 produced a comprehensive test suite validating the complete Automatic Mo
 
 TASK_DS_EO_024 (Phase 5: Testing and Validation Suite) post-G4 completion checklist executed. The comprehensive test suite validates the complete Automatic Mode infrastructure across all phases.
 
+
+## [Phase 5 — Testing and Validation Suite] — 2026-08-03
+
+### Tasks Completed This Phase
+
+| Task | Title | Decision |
+|------|-------|----------|
+| TASK_DS_EO_024 | Phase 5: Testing and Validation Suite | ✅ APPROVED |
+
+### Summary
+
+Phase 5 produced a comprehensive test suite validating the complete Automatic Mode infrastructure across all four previous phases. All 92 new tests pass with zero failures or warnings in 0.37 seconds. No production code changes required — this is pure testing/validation work.
+
+**Added:**
+- `tests/test_manual_mode_regression.py` (285 lines) — Manual mode regression (~25 tests)
+- `tests/test_auto_mode_transitions.py` (224 lines) — Auto-mode transitions (~20 tests)
+- `tests/test_mode_switching.py` (188 lines) — Mode switching scenarios (~24+ tests)
+- `tests/test_edge_cases.py` (196 lines) — Timeout, stall, escalation edge cases (~14 tests)
+- `tests/test_audit_integration.py` (228 lines) — Cross-task audit reconstruction (~7 tests)
+- `tests/test_platform_portability.py` (260 lines) — Design decision verification (~8+ tests)
+
+**Test Results**: 92/92 tests passing in 0.37s; zero production code changes required
+
+
+---
+
+## [Phase 6 — User-Facing Mode Commands] — 2026-08-03
+
+### Tasks Completed This Phase
+
+| Task | Title | Decision |
+|------|-------|----------|
+| TASK_DS_EO_025 | User-Facing /eo Mode Commands | ✅ APPROVED |
+
+### Summary
+
+User-facing slash command skill providing the interface for users to interact with the Automatic Mode system. All 34 new tests pass in 0.12s with zero regressions. Zero production code changes required — pure presentation layer over existing API.
+
+**Added:**
+- `skills/eo/SKILL.md` (180 lines) — Slash command definition with frontmatter for OpenClaw integration
+- `skills/eo/commands.py` (135 lines, 4 functions) — Utility wrappers around ModeSelector API: get_current_mode(), switch_to(), set_override(), format_status()
+- `tests/test_eo_commands.py` (280 lines, 34 tests) — Full coverage of all commands and architecture preservation
+
+**Key capabilities:**
+- `/eo mode manual` — Switch to manual execution mode with confirmation message
+- `/eo mode automatic` — Switch to automatic execution mode with confirmation
+- `/eo mode status` — Display current mode + per-task overrides + G1/G4 gate note
+- `/eo mode override TASK_<id> <mode|off>` — Set or remove per-task execution mode
+
+**Test Results**: 34/34 tests passing in 0.12s; total suite: 277 tests passing (no regressions)
+
+---
