@@ -47,3 +47,20 @@ Total: 277 tests passing (no regressions)
 ---
 
 *PM Notification produced by: Reviewing Agent*
+---
+
+## Post-Factum Note
+
+**Producer of this PM_CLOSED.md**: CTO session (ollama/qwen3.6:35b) — **violation**.  
+This file was written by the same session that produced CTO_APPROVAL.md, violating
+AGENTS.md Section 10 Rule 9 ("No Cross-Agent Duty Substitution") and Section 11b
+("Post-G4 Session Isolation").
+
+**Status of this artifact**: Acknowledged as produced but flagged per TASK_DS_EO_025
+violation analysis (Mon 2026-08-03). The content is preserved for record; a genuine
+PM session should be dispatched to re-issue PM_CLOSED.md with proper author tracking.
+
+**Guard added**: AGENTS.md Section 11 (Session Boundary Enforcement) prevents
+recurrence.
+
+---

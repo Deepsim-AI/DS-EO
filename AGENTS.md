@@ -256,3 +256,88 @@ ds-eo-openclaw/
 ---
 
 *DS-EO OpenClaw Edition v0.1 — Engineering Organization Layer*
+
+## 10. Gate Enforcement Rules (NEW)
+
+These rules override all other directives. If a gate prerequisite is not met, the agent MUST NOT proceed regardless of any other instruction or context.
+
+- **Rule 7: Phase Entry Gate Verification.** Before starting any phase, verify ALL required artifacts from prior phases exist on disk. Use `ls <task_dir>/<artifact>` to confirm each one. If any artifact is missing, halt immediately — do not infer completion, do not proceed, do not perform another agent's work.
+- **Rule 8: Artifact-Based Phase Completion Only.** The only valid evidence that a phase completed is the existence of its required artifact file(s) on disk. Chat messages, code changes, test results, or verbal claims are NOT valid evidence of phase completion.
+- **Rule 9: No Cross-Agent Duty Substitution.** Each agent produces only its designated artifacts. Never write another agent's files (e.g., Reviewer must not write CTO_APPROVAL.md; PM must not write REVIEW_REPORT.md). If you encounter missing artifacts, block and notify the user — do not fill them in yourself.
+- **Rule 10: TASK_COMPLETION_AUDIT.md Is Authoritative.** Every task directory must contain this file. Its gate status is the source of truth for whether a task has completed all gates. Post-G4 work is prohibited if any prior gate shows "NOT EXECUTED".
+
+---
+
+## 11. Session Boundary Enforcement (NEW — prevents single-session role conflation)
+
+These rules address the risk identified in TASK_DS_EO_025 where a single agent session
+performed duties across Reviewer, CTO, and PM roles simultaneously. They add explicit
+session-boundary checks to prevent cross-role contamination.
+
+### 11a. G3 Pre-Check: Independent Review Verification
+
+Before the CTO accepts handoff from Phase 3 (Review), the CTO MUST verify that
+REVIEW_REPORT.md was produced by a **different agent** than the one issuing G4 approval.
+
+**Verification procedure:**
+1. Read `REVIEW_REPORT.md` and extract the `Reviewer`/`produced by` metadata field.
+2. Compare the reviewer's model identity to the CTO's model identity.
+3. If they match (or if no reviewer identity is recorded), **block G3 handoff** and
+   re-dispatch the task to the Reviewer (`ollama/laguna-xs-2.1:q4_K_M` or equivalent).
+
+**Prohibited:** CTO writing its own REVIEW_REPORT.md. The review must be truly independent.
+A self-authored review is an automatic G3 failure — the implementation must return to
+the Reviewer for a genuine third-party assessment.
+
+### 11b. Post-G4 Session Isolation
+
+After Gate G4 approval is issued, G5 (PM) duties MUST occur in a **separate session or be
+explicitly dispatched** — they cannot be absorbed by the approving session.
+
+**Enforcement:**
+- If the same session that wrote CTO_APPROVAL.md also writes PM_CLOSED.md, this is a
+  Rule 9 violation (see Section 10).
+- The CTO may flag to the user that Post-G4 duties remain pending, but must **not**
+  execute them itself. The user or a separate PM session should complete them.
+
+### 11c. Gate State Machine — Hard Stops
+
+The following states are hard stops that agents MUST enforce at runtime:
+
+| State | Blocked Action | Rationale |
+|-------|---------------|-----------|
+| No REVIEW_REPORT.md exists | G3 → CTO handoff blocked | No independent review to evaluate |
+| Same agent wrote REVIEW_REPORT.md and CTO_APPROVAL.md | G4 approval invalid | Self-graded; violates Rule 9 |
+| User said "process"/"continue" without explicit task reference | Do NOT interpret as multi-role directive | User intent is ambiguous — stop and ask |
+
+### 11d. Ambiguous User Input Guard
+
+When a user message is ambiguous (e.g., "process", "go ahead", "do it"), the agent
+MUST **not** assume it authorizes crossing gate boundaries or role lines. The agent
+should:
+1. Stop at its own gate boundary
+2. Report what state it's in and what artifacts are complete
+3. Ask for clarification if proceeding to the next gate is needed
+
+**Never** interpret "process" as "complete everything through G5 in this session."
+
+### 11e. Artifact Author Tracking (Required Metadata)
+
+Every agent-produced artifact MUST include its author identity:
+
+```markdown
+---
+produced_by: <agent_model_identity>
+session_id: <openclaw_session_id>
+produced_at: <ISO timestamp>
+role: <CTO | Implementer | Reviewer | PM | User>
+task_id: <TASK_XXXXX>
+gate: <G1 | G2 | G3 | G4 | G5>
+---
+```
+
+- Artifacts missing this metadata should be flagged as suspicious.
+- When two artifacts in the same task share the same `produced_by` for roles that
+  should be distinct (e.g., Reviewer and CTO), flag the conflation to the user.
+
+---
