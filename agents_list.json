@@ -19,7 +19,9 @@
         "memory_search",
         "memory_get",
         "exec",
-        "process"
+        "process",
+        "sessions_spawn",
+        "sessions_send"
       ],
       "deny": [
         "write",
@@ -92,14 +94,21 @@
       "allow": [
         "group:fs",
         "web_search",
-        "web_fetch"
+        "web_fetch",
+        "exec",
+        "write",
+        "sessions_list",
+        "session_status",
+        "memory_search",
+        "memory_get"
       ],
       "deny": [
-        "write",
+        "process",
         "edit",
         "apply_patch",
-        "exec",
-        "process"
+        "browser",
+        "canvas",
+        "nodes"
       ]
     }
   }
