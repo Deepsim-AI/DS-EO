@@ -13,24 +13,37 @@ DS-EO operates on a fundamental separation between two layers:
 
 **Critical rule**: Never conflate the two layers. The CTO is not a replacement for the CEO Agent. The engineering organization develops software; the runtime product runs at deployment time.
 
-### Role Definitions
+### Dispatcher / Workflow Engine Layer (v0.4)
 
-The four-role engineering organization model:
+The dispatcher is the single orchestration layer for all task routing:
 
 ```
-CTO (Architect & Decision Authority)
+Gateway Bindings (entry points only)
     │
-    ├─→ Dispatches work to → Implementer (Code Changes)
-    │                          Reviewer (Quality Assurance)
-    │
-    └─→ Aggregates outputs → Final approval decision
+    ├── /eo.task ──► PM  ──[G0_ENTRY]──► CTO (S1_PLANNING)
+    ├── /eo.approve ──► CTO (G1 plan review)
+    └── /eo.review ──► Reviewer (G3 review trigger)
+    
+PM Dispatcher Engine
+    │  reads: workflow_defs/default.yaml + agents_list.json
+    │  writes: docs/dispatchers/<TASK_ID>/dispatcher_state.json
+    │  
+    ├── G1_APPROVE ──► sessions_spawn(implementer, context="isolated")
+    ├── G2_COMPLETE ──► sessions_spawn(reviewer, context="isolated")  
+    ├── G3_APPROVE ──► sessions_spawn(cto, context="isolated")
+    ├── G3_CHANGES ──► S2_IMPLEMENTATION (revision loop)
+    ├── G4_APPROVE ──► S5_COMPLETE + PM_CLOSED
+    └── G4_REJECT ──► S2_IMPLEMENTATION (deep rejection)
+
+All internal routing is data-driven from YAML. No workflow logic in gateway config.
 ```
 
 #### CTO / Architect 🏗️
 
 - **Model**: Configurable (default: `ollama/qwen3.6:35b`)
 - **Role**: Architecture review, task planning, final approval authority
-- **Tool Policy**: Read-only for source code (`tools.deny`: write, edit, apply_patch)
+- **Tool Policy**: `sessions_spawn`, `sessions_send` (delegation to Implementer), `exec`, `process`, read access; write only in task directories (behavioral boundary)
+- **Key Responsibility**: Never modify source code directly — that is the Implementer's role. Delegates work via dispatcher engine.
 - **Key Responsibility**: Never modify source code — that is the Implementer's role
 
 #### Code Implementer 💻
@@ -51,8 +64,8 @@ CTO (Architect & Decision Authority)
 
 - **Model**: Configurable (default: `ollama/qwen3.6:35b`)
 - **Role**: Process oversight — task lifecycle, status tracking, release management
-- **Tool Policy**: Read + write to docs/ and reports/ only (`tools.allow`: group:fs scoped; no git operations)
-- **Key Constraint**: No source code modifications — process coordination only
+- **Tool Policy**: `exec` (dispatcher invocation, file checks), `write` (designated PM paths), `sessions_list`, `session_status`, `memory_search`, `memory_get`, `group:fs` for state inspection
+- **Key Constraint**: No source code modifications; no independent architectural decisions. Uses dispatcher engine for task orchestration per [PM_DISPATCHER_SKILL.md](dispatcher/PM_DISPATCHER_SKILL.md)
 
 ### Development Workflow
 
@@ -87,7 +100,7 @@ TASK_<YYYYMMDD>_<NNN>/
 
 ### Protocol Hierarchy
 
-Protocols exist in two layers:
+Protocols exist in three layers:
 
 ```
 ~/.openclaw/protocols/*.md     ← Global standards (authoritative)
@@ -95,7 +108,10 @@ Protocols exist in two layers:
                               DS-EO package defines these as source of truth
                                     ↓
 <project>/docs/development/protocols/*.md  ← Project-level adaptations (optional)
-```
+
+dispatcher/binding_defs/          ← Gateway entry-point bindings (YAML, applied to openclaw.json)
+workflow_defs/default.yaml        ← Data-driven G0-G4 gate machine definition (dispatcher engine reads this)
+
 
 DS-EO defines its own authoritative protocol copies in the package. Installation deploys them to both global (`~/.openclaw/protocols/`) and per-project locations. The global versions serve as the source of truth for all projects using DS-EO.
 
@@ -179,6 +195,20 @@ DS-EO installs by merging configuration and deploying files — it never modifie
 ### v0.3 — Automatic Mode (completed)
 
 Full workflow engine with automatic mode support, audit trail, user-facing mode selector, failure/stall handling, and slash command skill. See [CHANGELOG.md](CHANGELOG.md) for details on all 6 implementation phases.
+
+### v0.4 — Dispatcher/Workflow Engine Layer (in-progress)
+
+PM-driven programmatic orchestration replacing direct CTO dispatch:
+- `dispatcher/registry.py` — Agent registry with SHA256 integrity checksums
+- `dispatcher/engine.py` — G0-G4 gate machine (data-driven from YAML workflow definitions)
+- `dispatcher/state_manager.py` — Persistent per-task state, atomic writes, audit log appender
+- `dispatcher/dispatch.py` — Unified API for PM task lifecycle management
+- `dispatcher/session_dispatch/` — sessions_spawn wrapper for isolated agent handoffs
+- Gateway bindings expose entry points only; all internal routing lives in dispatcher (design constraint)
+- PM tool policy expanded: exec, write, sessions_list, memory access
+- CTO tool policy expanded: sessions_spawn, sessions_send for delegation
+
+### v1.0 — Platform Abstraction
 
 ### v1.0 — Platform Abstraction
 

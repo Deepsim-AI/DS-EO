@@ -11,10 +11,16 @@ A reusable engineering organization framework that transforms an AI agent platfo
 DS-EO provides:
 
 - **Engineering roles** with clear responsibilities and tool policies
+- **Dispatcher/Workflow Engine** — PM-driven programmatic task orchestration
+  across G0–G4 gates via `sessions_spawn()` with isolated contexts
+- **Gateway bindings** — minimal entry points (`/eo.task`, `/eo.approve`,
+  `/eo.review`) that route to the PM; no workflow logic in gateway config
 - **Communication protocols** for agent-to-agent messaging
 - **Development workflows** with formal approval gates
 - **Review processes** with scoring rubrics
 - **Task lifecycle management** from planning through delivery
+- **Persistent state** per-task (dispatcher_state.json + dispatch_log.jsonl)
+  that survives gateway restarts and enables audit trails
 - **Portable configuration** that installs into any OpenClaw host
 
 ## Architecture: Two-Layer Model
@@ -22,10 +28,23 @@ DS-EO provides:
 DS-EO separates the **engineering organization** (who builds) from the **runtime product** (what is built):
 
 ```
-User Request
+User Request (/eo task → PM)
     │
     ▼
-Engineering Organization (CTO → Implementer → Reviewer → CTO)
+┌─────────────────────┐     ┌───────────────────────────┐
+│  Dispatcher Engine   │ ←── │ Gateway Bindings (entry)  │
+│  /eo.task, G0–G4    │     │ /eo.task → PM             │
+│  sessions_spawn()   │     │ /eo.approve → CTO         │
+│  state persistence  │     │ /eo.review → Reviewer     │
+└──────────┬──────────┘     └───────────────────────────┘
+           │
+    Agent Spawns (isolated sessions)
+           ▼
+┌─────────────────────┐
+│  PM ← CTO →         │
+│  Implementer ↔      │
+│  Reviewer           │
+└─────────────────────┘
     │
     ▼
 Runtime Product (CEO Agent, Research, Writer, etc.)
@@ -141,7 +160,26 @@ ds-eo-openclaw/
 ├── examples/                    # Usage examples
 │   └── minimal-workflow.md        # "From request to delivery" walkthrough
 │
-└── ds_eo_openclaw/              # Python package (v0.3 — Automatic Mode)
+├── dispatcher/                  # Dispatcher/Workflow Engine layer (v0.4)
+│   ├── ARCHITECTURE.md           # Architecture overview
+│   ├── IMPLEMENTATION_PLAN.md    # Build plan with priorities and risks
+│   ├── PROTOCOL.md               # Runtime contract between components
+│   ├── STATE_SCHEMA.md           # Persistent state file formats
+│   ├── SKILL.md                  # PM-facing dispatcher skill instructions
+│   ├── PM_DISPATCHER_SKILL.md    # Operational guide for PM agent
+│   ├── registry.py              # Agent registry loader with checksum validation
+│   ├── engine.py                 # G0-G4 gate machine (data-driven from YAML)
+│   ├── state_manager.py          # Per-task persistent state + audit logs
+│   ├── dispatch.py               # Unified dispatcher API for PM orchestration
+│   ├── session_dispatch/         # sessions_spawn wrapper for agent handoffs
+│   │   └── engine.py
+│   ├── binding_defs/             # Gateway entry-point bindings (YAML)
+│   │   └── entry_points.yaml
+│   ├── workflow_defs/            # Data-driven workflow definitions
+│   │   └── default.yaml          # G0-G4 gate machine definition
+│   └── __init__.py              # Package initialization
+│
+├── ds_eo_openclaw/              # Python package (v0.3 — Automatic Mode)
     ├── __init__.py              # Package initialization
     └── workflow/
         ├── __init__.py
@@ -167,9 +205,36 @@ ds-eo-openclaw/
 
 ## Development Workflow
 
+### Canonical Flow (PM-driven programmatic orchestration)
+
 ```
-User Request → PM Lifecycle Coordination → CTO Plan (G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4)
+/eo task → PM dispatches CTO (S0→S1)
+    │
+    ├── G1: User approves CTO_PLAN.md
+    │   └── Dispatcher delegates to Implementer (S2) via sessions_spawn()
+    │       ├── Implementation complete → dispatcher routes to Reviewer (S3)
+    │       ├── Review approved → dispatcher routes to CTO for G4 (S4)
+    │       └── User approves → PM completes S5 (PM_CLOSED + cleanup)
+    │
+    └── Rejection loops: any gate can route work back to Implementer (S2)
+        Dispatcher handles phase backtracking automatically
 ```
+
+### How It Works
+
+1. **Entry point**: Gateway binding routes `/eo task` → PM agent
+2. **Task creation**: `Dispatcher.open_task()` creates S0_OPEN state + snapshots agent registry checksum
+3. **Planning**: CTO writes CTO_PLAN.md; user approves via G1
+4. **Implementation**: Dispatcher spawns Implementer with isolated context via `sessions_spawn(agent="implementer", context="isolated")`
+5. **Review**: Reviewer independently verifies; REVIEW_REPORT.md produced
+6. **Final approval**: CTO issues G4 decision; user confirms; PM runs S5 cleanup
+7. **Completion**: PM_CLOSED.md written, project status updated, Git push (with user confirmation)
+
+### Routing Design Principle
+
+**Gateway bindings expose only entry points — all workflow routing lives inside DS-EO.**
+
+The dispatcher engine reads `workflow_defs/default.yaml` to determine phase transitions, authority requirements, and artifact prerequisites. No routing logic is embedded in OpenClaw gateway configuration. This keeps the routing contract portable across platforms.
 
 Four formal approval gates ensure quality at every phase transition. See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
 
@@ -178,6 +243,17 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
 - **v0.1** (completed): Extract, package, and install DS-EO OpenClaw Edition
 - **v0.2** (completed): Protocol & governance consistency migration
 - **v0.3** (completed): Automatic Mode — full workflow engine, audit trail, mode selector, failure handling, and slash command skill
+- **v0.4** (in-progress): Dispatcher/Workflow Engine layer
+  - `dispatcher/registry.py` — Agent registry loader with SHA256 integrity checksums
+  - `dispatcher/engine.py` — G0-G4 gate machine state machine (data-driven from YAML)
+  - `dispatcher/state_manager.py` — Persistent per-task state with atomic writes + audit logs
+  - `dispatcher/dispatch.py` — Unified dispatcher API for PM-driven task orchestration
+  - `dispatcher/session_dispatch/` — `sessions_spawn()` wrapper for agent-to-agent handoffs
+  - `dispatcher/binding_defs/` — Gateway entry-point bindings (PM only, no workflow logic)
+  - `dispatcher/PM_DISPATCHER_SKILL.md` — Operational guide for PM agent use of dispatcher
+  - PM tool policy updated: exec + write + sessions_list + memory access
+  - CTO tool policy updated: sessions_spawn + sessions_send for delegation
+  - All internal routing lives in dispatcher, not gateway config (design constraint met)
 - **v1.0** (planned): Platform abstraction layer for multi-platform editions
 - **Future**: Additional platform editions (Claude, Codex, Gemini)
 

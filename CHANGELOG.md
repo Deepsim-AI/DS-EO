@@ -4,6 +4,64 @@ All notable changes to DS-EO OpenClaw Edition will be documented in this file.
 
 ## [0.1.0] — 2026-07-28
 
+## [v0.4 — Dispatcher/Workflow Engine Layer] — 2026-08-05
+
+### Added
+
+#### Dispatcher Core (`dispatcher/`)
+- **registry.py** — Agent registry loader with SHA256 integrity checksum validation
+  - Loads agents_list.json, resolves agent targets (model, workspace, tool policy)
+  - Detects registry drift and blocks operations on mismatch
+- **engine.py** — G0-G4 gate machine state machine (data-driven from YAML workflow definitions)
+  - 6 phases (S0-S5), 9 transitions with authority/artifact requirements
+  - Prompt template resolution and rendering per transition type
+  - Stall detection (phase duration + idle threshold)
+- **state_manager.py** — Persistent per-task state with atomic writes
+  - Create/read/validate/update lifecycle
+  - Immutable transition history + dispatch_log.jsonl append-only audit trail
+  - Registry integrity verification on every read
+- **dispatch.py** — Unified dispatcher API for PM-driven task orchestration
+  - `initialize()`, `open_task()`, `advance_g1/g2/g3/g4()` lifecycle methods
+  - `get_task_status()`, `check_all_stalls()`, `get_task_transition_log()`
+  - Full G0→G4 verified end-to-end; rejection loops (G3_CHANGES, G4_REJECT) confirmed
+- **session_dispatch/engine.py** — sessions_spawn wrapper for agent-to-agent handoffs
+  - Prompt composition: role identity + transition context + workflow template + task artifacts
+  - Parallel dispatch with yield-wait for completions
+  - All handoffs use `context="isolated"` per protocol mandate
+
+#### Gateway Bindings (`binding_defs/`)
+- **entry_points.yaml** — Minimal gateway entry-point bindings (PM only)
+  - /eo.task → PM, /eo.approve → CTO, /eo.review → Reviewer
+  - No workflow logic in gateway config (design constraint met)
+
+#### Documentation
+- **ARCHITECTURE.md** — Architecture overview with dispatcher layer diagram
+- **IMPLEMENTATION_PLAN.md** — 5-phase build plan with priorities and risks
+- **PROTOCOL.md** — Runtime contract between dispatcher components
+- **STATE_SCHEMA.md** — Per-task state file formats (dispatcher_state.json, dispatch_log.jsonl)
+- **SKILL.md** — PM-facing dispatcher skill overview
+- **PM_DISPATCHER_SKILL.md** — Operational guide for PM agent to use dispatcher
+
+### Tool Policy Changes
+- **PM**: Added exec, write, sessions_list, session_status, memory_search, memory_get
+- **CTO**: Added sessions_spawn, sessions_send (for delegation to Implementer)
+- All changes committed and verified
+
+### Verified Test Suite
+- Full G0→G1→G2→G3→G4 lifecycle end-to-end: ✓
+- G3 rejection loop → S2_IMPLEMENTATION: ✓
+- G4 deep rejection → S2_IMPLEMENTATION: ✓
+- Registry checksum drift detection: ✓
+- Atomic state writes + audit log integrity: ✓
+- 13 files, ~4,402 lines total across dispatcher package
+
+### Design Decisions
+- **PM-driven programmatic orchestration**: PM is the canonical routing mechanism
+- **Gateway bindings expose entry points only**: No workflow logic in openclaw.json
+- **All internal routing lives in dispatcher**: Reads workflow_defs/default.yaml at runtime
+- **context="isolated" mandate**: Every cross-phase handoff gets no session history bleed
+
+
 ### Added
 - Initial package structure with all core components
 - Three engineering roles: CTO, Implementer, Reviewer (portable prompts)

@@ -11,6 +11,20 @@ tags: [execution-mode, manual-mode, automatic-mode, mode-switching]
 
 This skill provides user-facing slash commands for managing DS-EO workflow execution modes. It wraps the existing `ModeSelector` API with clean function interfaces and produces formatted output for display to users.
 
+
+## Routing Architecture Note
+
+This skill operates at the **entry point layer** only. The `/eo` commands route to agents via
+gateway bindings — they do NOT contain workflow logic.
+
+All internal task orchestration is handled by the **Dispatcher/Workflow Engine** (`dispatcher/`):
+- PM drives task lifecycle via `Dispatcher.open_task()` + `advance_g1/g2/g3/g4()`
+- Gateway bindings only expose `/eo.task → PM`, `/eo.approve → CTO`, `/eo.review → Reviewer`
+- No routing logic in OpenClaw gateway config (all workflow routing is inside the dispatcher)
+
+See [dispatcher/ARCHITECTURE.md](../dispatcher/ARCHITECTURE.md) for full design details.
+
+
 ## Available Commands
 
 ### `/eo mode manual`
