@@ -1,0 +1,85 @@
+# ============================================================
+# DS-EO Dispatcher — Gateway Entry Point Bindings
+# 
+# These are ENTRY POINT ONLY bindings for the OpenClaw gateway.
+# They route external requests to the PM agent — no workflow logic.
+# All internal routing (S0→S1→S2→S3→S4→S5) is handled by the
+# dispatcher engine, NOT in these bindings.
+#
+# Location: dispatcher/binding_defs/entry_points.yaml
+# How to apply: Merge into ~/.openclaw/openclaw.json under "bindings" key
+# ============================================================
+
+name: ds-eo-gateway-entry-points
+version: "1.0"
+description: >
+  Minimal gateway bindings for DS-EO entry points only.
+  PM receives all inbound requests and dispatches internally via dispatcher engine.
+
+# --- Entry Point Bindings ---
+bindings:
+  # /eo task → PM starts a new task (G0)
+  - agentId: "pm"
+    match:
+      channel: "webchat"
+      peer:
+        kind: "command"
+        id: "/eo.task"
+
+  # /eo approve → CTO handles G1 plan approval
+  - agentId: "cto"
+    match:
+      channel: "webchat"
+      peer:
+        kind: "command"
+        id: "/eo.approve"
+
+  # /eo review → Reviewer handles G3 review trigger
+  - agentId: "reviewer"
+    match:
+      channel: "webchat"
+      peer:
+        kind: "command"
+        id: "/eo.review"
+
+# --- Notes ---
+notes:
+  application: >
+    These bindings go into the `bindings` array at the root level of
+    ~/.openclaw/openclaw.json (or OPENCLAW_CONFIG_PATH). Do NOT merge
+    them into agents.list or any other config section.
+
+  example_openclaw_json: |
+    {
+      "agents": { ... },
+      "bindings": [
+        {
+          "agentId": "pm",
+          "match": {
+            "channel": "webchat",
+            "peer": { "kind": "command", "id": "/eo.task" }
+          }
+        },
+        {
+          "agentId": "cto",
+          "match": {
+            "channel": "webchat",
+            "peer": { "kind": "command", "id": "/eo.approve" }
+          }
+        },
+        {
+          "agentId": "reviewer",
+          "match": {
+            "channel": "webchat",
+            "peer": { "kind": "command", "id": "/eo.review" }
+          }
+        }
+      ]
+    }
+
+  gateway_update_command: >
+    After merging, restart the gateway:
+    openclaw gateway restart
+    
+    Verify bindings are active:
+    openclaw agents list --bindings
