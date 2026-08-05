@@ -1,0 +1,273 @@
+# ============================================================
+# DS-EO Standard Workflow Definition
+# Single source of truth for G0-G4 gate machine routing logic.
+# Read by the dispatcher engine at runtime — not hard-coded.
+# ============================================================
+
+name: ds-eo-standard
+version: "1.0"
+description: >
+  The canonical DS-EO development workflow with four gates (G1-G4)
+  and six phases (S0-S5). Agent routing is data-driven from this file.
+
+# ----------------------------------------------------------
+# Agent Registry — matches agents_list.json; engine cross-validates
+# ----------------------------------------------------------
+agents:
+  cto:
+    model: ollama/qwen3.6:35b
+    role: architect
+    label: "CTO / Architect"
+    emoji: "🏗️"
+    tool_policy_key: tools_allow_cto
+    description: >
+      Architecture review, task planning, final approval authority.
+      Read-only on source code; write access in task directories only.
+
+  implementer:
+    model: ollama/ornith:35b
+    role: coder
+    label: "Code Implementer"
+    emoji: "💻"
+    tool_policy_key: tools_allow_implementer
+    profile: coding
+    description: >
+      Execute approved plans with full file system access.
+      Follows CTO plan exactly — no independent architectural decisions.
+
+  reviewer:
+    model: ollama/laguna-xs-2.1:q4_K_M
+    role: auditor
+    label: "Senior Code Reviewer"
+    emoji: "🔍"
+    tool_policy_key: tools_allow_reviewer
+    description: >
+      Independent quality verification. May only write REVIEW_REPORT.md
+      in the current task directory. Never modifies source code.
+
+  pm:
+    model: ollama/qwen3.6:35b
+    role: coordinator
+    label: "Project Manager"
+    emoji: "📋"
+    tool_policy_key: tools_allow_pm
+    description: >
+      Process oversight — task lifecycle coordination, status tracking,
+      release management, and Git persistence of approved work.
+
+# ----------------------------------------------------------
+# Phases (state nodes)
+# ----------------------------------------------------------
+phases:
+  S0_OPEN:
+    label: "Task Open"
+    agent: pm
+    description: PM creates task skeleton and notifies CTO
+    transitions_to: [S1_PLANNING]
+
+  S1_PLANNING:
+    label: "Planning"
+    agent: cto
+    description: CTO analyzes requirements, produces CTO_PLAN.md
+    transitions_to: [S2_IMPLEMENTATION, S1_PLANNING]
+
+  S2_IMPLEMENTATION:
+    label: "Implementation"
+    agent: implementer
+    description: Implementer executes approved plan with full FS access
+    transitions_to: [S3_REVIEW, S2_IMPLEMENTATION]
+
+  S3_REVIEW:
+    label: "Review"
+    agent: reviewer
+    description: Reviewer independently verifies implementation quality
+    transitions_to: [S4_APPROVAL, S2_IMPLEMENTATION]
+
+  S4_APPROVAL:
+    label: "Final Approval"
+    agent: cto
+    description: CTO makes final approve/reject based on review findings
+    transitions_to: [S5_COMPLETE, S2_IMPLEMENTATION]
+
+  S5_COMPLETE:
+    label: "Complete"
+    agent: pm
+    description: PM completes post-G4 cleanup and archives task
+    transitions_to: []
+    # Terminal phase — no outgoing transitions
+
+# ----------------------------------------------------------
+# Transitions (gate decisions)
+# ----------------------------------------------------------
+transitions:
+  # === Phase Entry (G0) ===
+  G0_ENTRY:
+    from: null
+    to: S0_OPEN
+    agent: pm
+    event: TASK_OPEN
+    description: "PM creates new task and opens it for planning"
+    requires_artifacts: []
+    auto_dispatch: true
+
+  # === Gate G1 (Planning → Implementation) ===
+  G1_APPROVE:
+    from: S1_PLANNING
+    to: S2_IMPLEMENTATION
+    agent: implementer
+    event: DELEGATE
+    description: "User approves plan; CTO delegates to Implementer"
+    authority: user
+    requires_artifacts: ["CTO_PLAN.md", "G1_APPROVAL.md"]
+    auto_dispatch: false
+
+  G1_REJECT:
+    from: S1_PLANNING
+    to: S1_PLANNING
+    agent: cto
+    event: PLAN_REVISED
+    description: "CTO revises plan based on user feedback"
+
+  # === Gate G2 (Implementation → Review) ===
+  G2_COMPLETE:
+    from: S2_IMPLEMENTATION
+    to: S3_REVIEW
+    agent: reviewer
+    event: IMPL_COMPLETE
+    description: "Implementer declares complete; task goes to review"
+    authority: implementer
+    requires_artifacts: ["IMPLEMENTATION_REPORT.md"]
+    auto_dispatch: false
+
+  G2_INCOMPLETE:
+    from: S2_IMPLEMENTATION
+    to: S2_IMPLEMENTATION
+    agent: implementer
+    event: REVISION_REQUESTED
+    description: "CTO finds gaps; returns to Implementer"
+
+  # === Gate G3 (Review → Approval) ===
+  G3_APPROVE:
+    from: S3_REVIEW
+    to: S4_APPROVAL
+    agent: cto
+    event: REVIEW_COMPLETE
+    description: "Reviewer recommends approval; CTO reviews findings"
+    authority: reviewer
+    requires_artifacts: ["REVIEW_REPORT.md"]
+    auto_dispatch: false
+
+  G3_CHANGES:
+    from: S3_REVIEW
+    to: S2_IMPLEMENTATION
+    agent: implementer
+    event: REVISION_REQUESTED
+    description: "Reviewer requests changes; returns to Implementer"
+
+  # === Gate G4 (Approval → Complete) ===
+  G4_APPROVE:
+    from: S4_APPROVAL
+    to: S5_COMPLETE
+    agent: pm
+    event: PM_CLOSED
+    description: "User approves final implementation; PM completes closure"
+    authority: user
+    requires_artifacts: ["CTO_PLAN.md", "IMPLEMENTATION_REPORT.md", "REVIEW_REPORT.md", "CTO_APPROVAL.md"]
+    auto_dispatch: false
+
+  G4_REJECT:
+    from: S4_APPROVAL
+    to: S2_IMPLEMENTATION
+    agent: implementer
+    event: REVISION_REQUESTED
+    description: "CTO rejects on final review; returns to Implementer"
+
+# ----------------------------------------------------------
+# Stall Detection Rules
+# ----------------------------------------------------------
+stall_detection:
+  enabled: true
+  max_phase_duration_minutes: 480
+  idle_threshold_minutes: 120
+  action: TASK_STALLED
+  escalation_agent: cto
+  notification_agent: pm
+
+# ----------------------------------------------------------
+# Prompt Templates (referenced by transitions)
+# ----------------------------------------------------------
+prompt_templates:
+  delegation_prompt: |
+    You are the Implementer. A task has been delegated to you by the CTO.
+
+    Task: {task_id}
+    Title: {title}
+    Spec Ref: {spec_ref}
+    Acceptance Criteria:
+    {acceptance_criteria}
+
+    Constraints:
+    {constraints}
+
+    Instructions:
+    1. Read CTO_PLAN.md in the task directory for full implementation details
+    2. Implement exactly as specified — no independent architectural decisions
+    3. Run all tests and document results
+    4. Write IMPLEMENTATION_REPORT.md with files changed, test results, known issues
+    5. Declare completion when work is done
+
+    Important: Follow the CTO's plan exactly. If you encounter ambiguity, stop and ask the CTO.
+
+  review_request: |
+    You are the Senior Code Reviewer. An implementation has been submitted for your review.
+
+    Task: {task_id}
+    Spec Ref: {spec_ref}
+    Implementation Report: {report_path}
+
+    Your job:
+    1. Verify implementation against CTO_PLAN.md requirements
+    2. Assess code quality, architecture adherence, test coverage
+    3. Write REVIEW_REPORT.md in the task directory with scoring rubric
+    4. Recommend: APPROVE | APPROVE_WITH_COMMENTS | REQUEST_CHANGES
+
+    Important: You may only write REVIEW_REPORT.md. Do not modify any other files.
+
+  approval_request: |
+    You are the CTO / Architect. A review has been completed for task {task_id}.
+
+    Reviewer Recommendation: {reviewer_recommendation}
+    Review Report: {report_path}
+    Implementation Report: {impl_report_path}
+
+    Your job:
+    1. Review both reports carefully
+    2. Make final G4 decision: APPROVE or REJECT
+    3. Write CTO_APPROVAL.md in the task directory
+
+  plan_revision: |
+    You are the CTO / Architect. The user has requested changes to the plan for task {task_id}.
+
+    Feedback: {user_feedback}
+
+    Revise CTO_PLAN.md addressing all concerns and resubmit for G1 approval.
+
+# ----------------------------------------------------------
+# Tool Policy Keys (maps to gateway config sections)
+# ----------------------------------------------------------
+tool_policies:
+  tools_allow_cto:
+    allow: [group:fs, web_search, web_fetch, sessions_list, session_status, memory_search, memory_get, exec, process]
+    deny: [write, edit, apply_patch]
+
+  tools_allow_implementer:
+    allow: [group:fs, group:runtime, group:web, group:sessions, group:memory]
+    profile: coding
+
+  tools_allow_reviewer:
+    allow: [group:fs, web_search, web_fetch, exec, process, sessions_list, session_status, memory_search, memory_get]
+    deny: [write, edit, apply_patch]
+
+  tools_allow_pm:
+    allow: [group:fs, web_search, web_fetch]
+    deny: [write, edit, apply_patch, exec, process]
