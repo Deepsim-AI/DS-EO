@@ -6,12 +6,16 @@
 ---
 
 ## Active Tasks
-
-| Task ID | Title | Status | Agent | Last Update |
-|---------|-------|--------|-------|-------------|
+| **TASK_DS_EO_026** | Fix Dispatcher spawn_agent() Real OpenClaw Session Creation | 📦 Closed (Infra Defect Found & Resolved) | CTO+Implementer+Reviewer+PM | 2026-08-05 |
+| **TASK_DAL_002** | Content Inventory + IA | 🔴 Blocked by DS-EO spawn_agent() mock defect | CTO | 2026-08-05 |
 
 ---
 
+## OpenCLaw Config Fix (2026-08-05)
+
+The gateway config had invalid bindings (`peer.kind: "command"` is not a valid value). Fixed to `peer.kind: "direct"` (valid values: direct, group, channel, dm, acp). Backup at `.openclaw/openclaw.json.bak.pre-fix-*`.
+
+---
 ## Completed Tasks
 
 ### TASK_DS_EO_025 — Phase 6: User-Facing /eo Mode Commands 📦 (COMPLETED)

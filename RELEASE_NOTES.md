@@ -1,5 +1,26 @@
 # DS-EO OpenClaw Edition — Release Notes
 
+
+## v0.3.0 — Dispatcher Session Bridge Infrastructure 🔧 (Released 2026-08-05)
+
+### Breaking Fix: spawn_agent() No Longer Returns Mock Success
+
+**Critical infrastructure fix** — the Dispatcher's `spawn_agent()` now creates **real OpenClaw agent sessions** with automatic verification. Previous behavior returned mock success without creating any session, which was a critical reliability defect discovered during TASK_DAL_002.
+
+### What Changed
+- Added `dispatcher/session_dispatch/bridge.py` — real session creation via OpenClaw's gateway/session mechanisms
+- Added `dispatcher/session_dispatch/verify.py` — automatic session existence/status verification
+- Updated `SessionDispatcher.spawn_agent()` to use bridge + verification
+- Updated `check_completion()` to query real session status
+
+### Reliability Impact
+- Dispatcher now distinguishes real sessions from mock responses automatically
+- Every spawn operation is verified before returning success
+- TASK_DAL_002 and all future automatic-mode tasks are unblocked (pending host verification)
+
+### Config Fix (also included)
+- Fixed `bindings[*].peer.kind` from invalid `"command"` to valid `"direct"` in `.openclaw/openclaw.json`
+
 **Version**: 0.2.0  
 **Release Date**: July 31, 2026  
 **Author**: Dr. Shouke Wei (魏守科), Founder & CTO  
