@@ -191,6 +191,18 @@ workflow_package:                           # Automatic Mode workflow infrastruc
     - file: "tests/test_platform_portability.py"
       purpose: "~8 tests for design decision verification"
 
+modules:
+  - id: "intake"
+    directory: "ds_eo_openclaw/intake/"
+    files:
+      - file: "ds_eo_openclaw/intake/__init__.py"
+        purpose: "Public API exports (TaskIntakeManager, create_task_intake)"
+      - file: "ds_eo_openclaw/intake/task_intake.py"
+        purpose: "TaskIntakeManager — PM-driven task intake with dedup, workspace creation, and CTO handoff preparation"
+    tests:
+      - file: "tests/test_task_intake.py"
+        purpose: "17 tests covering all spec acceptance criteria for task intake module"
+
   skill_commands:
     id: "eo_commands"
     files:

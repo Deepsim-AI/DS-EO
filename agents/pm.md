@@ -194,6 +194,117 @@ If any field is missing, the handoff is NOT_READY with reason: "Missing required
 
 ---
 
+## Task Intake
+
+The PM serves as the front door for all user requests. When a user sends a task request, you use the **Task Intake Manager** to create an organized task workspace before any other agent gets involved.
+
+### What You Have (Updated)
+
+| Capability | Status | Location |
+|-----------|--------|----------|
+| PM Agent Definition | ✅ Complete | `agents/pm.md` |
+| Dispatcher Engine | ✅ Complete | `dispatcher/dispatch.py` |
+| State Manager | ✅ Complete | `dispatcher/state_manager.py` |
+| Workflow Definitions | ✅ Complete | `dispatcher/workflow_defs/default.yaml` |
+| PM Dispatcher Skill | ✅ Complete | `dispatcher/PM_DISPATCHER_SKILL.md` |
+| State Engine (v2) | ✅ Complete | `ds_eo_openclaw/workflow/state_engine.py` |
+| Agent Registry | ✅ Complete | `dispatcher/registry.py` |
+| **Task Intake Manager** | ✅ **Complete** | **`ds_eo_openclaw/intake/task_intake.py`** |
+
+### Usage: Creating a Task via Intake
+
+```python
+from ds_eo_openclaw.intake import TaskIntakeManager
+
+# Initialize with workspace root path
+mgr = TaskIntakeManager(workspace_root="/path/to/workspace")
+
+# Create task from user request
+success, result = mgr.create_task_intake(
+    request_text="Add rate limiting to the API",
+    user_files=["/tmp/api_spec.md"],  # optional
+    mode="manual",  # "manual" or "automatic"
+)
+
+if success:
+    task_id = result["task_id"]        # e.g., "TASK_20260807_001"
+    workspace_path = result["workspace_path"]
+    print(f"Task created: {task_id}")
+    print(f"Workspace at: {workspace_path}")
+else:
+    error = result.get("error", "Unknown error")
+    if result.get("duplicate_found"):
+        matching = result["matching_task"]
+        print(f"Duplicate detected: {matching['task_id']} ({matching['similarity']:.0%} similarity)")
+        print("Consider using add_materials_to_existing() instead.")
+    else:
+        print(f"Failed to create task: {error}")
+```
+
+### Usage: Adding Materials After Intake
+
+```python
+# Add supplementary files or notes to an existing task
+success, result = mgr.add_materials_to_existing(
+    task_id="TASK_20260807_001",
+    materials={
+        "api_design_notes": "Additional design notes from the team...",
+        "reference_doc": "/path/to/reference.md",  # file path
+    }
+)
+```
+
+### Usage: Checking for Duplicates
+
+```python
+# Find potential duplicate tasks before creating new one
+matches = mgr.find_semantic_matches("Add rate limiting to the API")
+for match in matches:
+    print(f"{match['task_id']}: {match['similarity']:.0%} similarity — {match['description'][:80]}...")
+```
+
+### Usage: Preparing for CTO Handoff
+
+```python
+# Verify task is ready for CTO review
+ready, info = mgr.prepare_cto_handoff("TASK_20260807_001")
+if ready:
+    print(f"Task workspace at {info['workspace_path']} is ready for CTO.")
+else:
+    missing = info["missing_artifacts"]
+    print(f"Missing artifacts: {missing}")
+```
+
+### What Intake Creates
+
+When `create_task_intake()` succeeds, it creates BOTH locations simultaneously:
+
+```
+docs/dispatchers/TASK_<ID>/           ← Dispatcher state (for lifecycle management)
+  └── dispatcher_state.json
+
+docs/development/reports/TASK_<ID>/   ← Task report artifacts (for agent work)
+  ├── TASK_REQUEST.md                 ← User's verbatim request preserved
+  ├── PM_ANALYSIS.md                  ← PM interpretation/summary
+  ├── INPUTS/                         ← User-provided files organized here
+  └── MANIFEST.md                     ← Task metadata and artifact listing
+```
+
+### Key Behaviors
+
+1. **Deduplication**: Before creating a new task, checks existing tasks for semantic similarity (Jaccard keyword overlap ≥ 0.7). If a match is found, returns the matching task info instead of creating a duplicate.
+2. **Task ID Assignment**: Uses `TASK_<YYYYMMDD>_<NNN>` convention per AGENTS.md §3. Scans existing directories to find next available number for today's date.
+3. **Atomic Creation**: Creates both dispatcher and reports directories together. On failure, rolls back via `_cleanup_partial()`.
+4. **Mode-Agnostic**: Intake output is identical regardless of "manual" or "automatic" mode. Mode only affects post-intake auto-advance behavior (handled by Dispatcher).
+
+### Important Notes
+
+- The Task Intake Manager does NOT advance workflow state — it produces artifacts; the Dispatcher handles lifecycle transitions.
+- All writes go to `docs/` and `docs/dispatchers/` directories only. No source code access needed.
+- The module is intentionally independent of gate mechanics (G1-G4) and the workflow state machine.
+
+---
+
 ## Related
 
 - [Agent workspace](/concepts/agent-workspace)
@@ -202,3 +313,4 @@ If any field is missing, the handoff is NOT_READY with reason: "Missing required
 - CTO Agent definition: `agents/cto.md`
 - Implementer Agent definition: `agents/implementer.md`
 - Reviewer Agent definition: `agents/reviewer.md`
+- Task Intake Manager module: `ds_eo_openclaw/intake/task_intake.py`

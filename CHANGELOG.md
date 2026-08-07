@@ -4,6 +4,35 @@ All notable changes to DS-EO OpenClaw Edition will be documented in this file.
 
 ## [0.1.0] — 2026-07-28
 
+## [v0.5 — Task Intake Manager Layer] — 2026-08-07
+
+### TASK_DS_EO_029: PM Task Intake for User-Directed Workspace Creation
+
+#### Added
+
+**Task Intake Module (`ds_eo_openclaw/intake/`) [NEW]**
+- `__init__.py` — Public API exports (`TaskIntakeManager`, `create_task_intake`)
+- `task_intake.py` (~808 lines) — `TaskIntakeManager` class with:
+  - `_next_task_id()` — Sequential task ID per day (TASK_YYYYMMDD_NNN)
+  - `create_task_intake()` — End-to-end workspace creation (dispatcher state + reports dir)
+  - `_deduplicate()` / `find_semantic_matches()` — Jaccard similarity dedup (threshold 0.7)
+  - `_create_report_dir()` — Skeleton with TASK_REQUEST.md, PM_ANALYSIS.md, INPUTS/, MANIFEST.md
+  - `add_materials_to_existing()` — Post-intake file/content addition
+  - `prepare_cto_handoff()` — Ensures all artifacts present for CTO reading
+  - Verbatim user request preservation in TASK_REQUEST.md
+  - User-provided file organization into INPUTS/ subdirectory
+- `tests/test_task_intake.py` [NEW] — 25 tests (all passing)
+
+**Agent Documentation Updates**
+- `agents/pm.md` — Task Intake section with usage examples (lines 212-316)
+- `ds_eo_manifest.yaml` — Added intake module entry under `modules.intake`
+
+#### Integration Notes
+- Zero changes to state machine, gate mechanics, or existing workflow modules
+- All writes scoped to docs/ and reports/ directories only
+- Mode-agnostic: works identically in both manual and automatic execution modes
+- Intentionally independent of dispatcher's gate machinery — creates artifacts; Dispatcher handles lifecycle transitions
+
 ## [v0.4 — Dispatcher/Workflow Engine Layer] — 2026-08-05
 
 ### Added
@@ -256,4 +285,75 @@ TASK_DS_EO_019 delivered architecture design for configurable workflow execution
 | examples/minimal-workflow.md updated with /eo skill and auto-mode refs | ✅ Done |
 | Git commit | ✅ Committed |
 | Remote push to origin/main | ✅ Pushed |
+
+---
+
+## [v0.4.1 — Failure Detection and Recovery Layer] — 2026-08-07
+
+### TASK_DS_EO_028: Failure Detection and Recovery for Auto Mode
+
+#### Added
+
+**Recovery Engine (`workflow/recovery_engine.py`) [NEW]**
+- `FailureInfo` class — serializable failure metadata (type, message, timestamp)
+- `RecoveryAction` enum: RETRY_STAGE, RESUME_STAGE, WAIT_FOR_HUMAN, ABORT_WORKFLOW
+- `RecoveryEngine` class with data-driven `_POLICY_TABLE` mapping
+  - Failure type × retries_exhausted × is_post_g4 → RecoveryAction lookup
+  - `detect_failure()` — checks FAILED/STALLED states, missing artifacts, verification failures, interruptions (all 6 types from spec §5)
+  - `determine_recovery()` — policy table lookup with unknown-failure fallback to WAIT_FOR_HUMAN
+  - `execute_recovery()` — state transition with safety validation
+  - `is_safe_to_resume()` — validates G1/G2/G3 artifacts before resuming
+  - `_history_log` — in-memory audit trail of all recovery actions
+
+**Recovery State Persistence (`workflow/recovery_state.py`) [NEW]**
+- `RecoveryStateManager` class with save/load/can_resume/clear/delete lifecycle
+- Persists to `recovery_state.json` alongside dispatcher state
+- Validates required fields (task_id, mode, current_gate, status) on resume
+- Blocks resume from COMPLETED or manual mode states
+
+**State Engine Extensions (`workflow/state_engine.py`)**
+- 4 new states: FAILED, RETRYING, WAITING_FOR_HUMAN, RESUMED
+- 7 new transition rules for failure/recovery paths (total: 19 transitions)
+
+**Notifications (`workflow/notifications.py`)**
+- 4 recovery notification types added: retry_initiated, retry_exhausted, workflow_escalated, recovery_resumed
+- `get_recovery_notification()` lookup function
+
+#### Tests
+- `tests/test_recovery_engine.py` [NEW] — 42 tests across policy table validation, failure info serialization, engine initialization, recovery execution paths, persistence round-trip, resume safety, retry limits, timeout handling, history log integrity, state machine integration, gate bypass prevention
+- 4 existing test expectations updated for new state values
+- **348 total tests passing, 0 failures**
+
+#### Test Results
+| Category | Tests | Coverage |
+|----------|-------|----------|
+| Policy table validation | 4 | All failure types, determinism, exhaustion |
+| FailureInfo serialization | 2 | to_dict round-trip |
+| Engine initialization | 3 | Default, custom, negative max_retries |
+| Recovery execution paths | 10 | All policy actions verified |
+| Persistence round-trip | 6 | save/load/can_resume/clear/delete |
+| Resume safety checks | 4 | Artifact validation, blocked transitions |
+| Retry limit enforcement | 6 | max_retries=0,1,2 boundary conditions |
+| History log integrity | 3 | Recording, ordering, filtering |
+| State machine integration | 8 | Transitions within state engine context |
+| Gate bypass prevention | 2 | Direct recovery→completed blocked |
+| Manual mode regression | 2 | Manual mode still functional |
+
+**Reviewer Score**: 5/5
+
+#### Key Capabilities
+- **Deterministic recovery**: Data-driven policy table, no if/else chains
+- **Configurable retry limits**: `max_retries` parameter tested at boundaries
+- **Persistent state**: Full save/load round-trip survives process interruption
+- **Resume preserves work**: Validates G1/G2/G3 artifacts before resuming
+- **Human escalation**: Retry exhaustion transitions to WAITING_FOR_HUMAN state
+- **Safety**: Direct RECOVERING→COMPLETED transition blocked and tested
+- **Minimal change**: All modifications are additive — 4 new states, 7 transitions, 2 new modules (~460 lines), 1 test file (~490 lines)
+
+#### Non-Goals Confirmed Not Implemented
+- ❌ No AI-based failure diagnosis (rule-based policy only)
+- ❌ No distributed scheduling
+- ❌ No web dashboard
+- ❌ No notification delivery (types defined, not dispatched)
+- ❌ No architectural refactoring of existing modules
 

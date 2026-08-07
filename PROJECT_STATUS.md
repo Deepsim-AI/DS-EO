@@ -1,7 +1,7 @@
 # DS-EO Project Status
 
-**Last Updated**: 2026-08-03T10:30:00-07:00  
-**Current Phase**: Phase 6 — User-Facing Mode Commands (Complete)  
+**Last Updated**: 2026-08-07T13:51:00-07:00  
+**Current Phase**: Phase 7 — Failure Detection and Recovery (Complete)  
 
 ---
 
@@ -9,7 +9,7 @@
 | **TASK_DS_EO_026** | Fix Dispatcher spawn_agent() Real OpenClaw Session Creation | 📦 Closed (Infra Defect Found & Resolved) | CTO+Implementer+Reviewer+PM | 2026-08-05 |
 | **TASK_DAL_002** | Content Inventory + IA | 🔴 Blocked by DS-EO spawn_agent() mock defect | CTO | 2026-08-05 |
 | **TASK_DS_EO_027** | DS-EO Workflow Supervisor / Watchdog | 📋 Planning (G1 Awaiting) | CTO | 2026-08-05 |
-
+| **TASK_DS_EO_029** | PM Task Intake Manager — workspace creation & dedup | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
 
 ---
 
@@ -20,6 +20,53 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 ---
 ## Completed Tasks
 
+### TASK_DS_EO_029 — PM Task Intake Manager 📦 (COMPLETED)
+**Date Completed**: 2026-08-07T13:51:00-07:00  
+**Decision**: APPROVED (Gate G4)  
+**Reviewer Score**: 5/5  
+
+**Summary**: PM-driven task intake system enabling the PM to receive user requests, create organized task workspaces (dispatcher state + reports directory), perform semantic duplicate detection, organize user-provided materials, and prepare tasks for CTO handoff. The `TaskIntakeManager` module is intentionally independent of the dispatcher's gate machinery.
+
+**Changes:**
+- `ds_eo_openclaw/intake/__init__.py` [NEW] — Public API exports (25 lines)
+- `ds_eo_openclaw/intake/task_intake.py` [NEW] — TaskIntakeManager class with full feature set; ~808 lines
+  - Task ID assignment (sequential per day)
+  - Workspace creation (dispatcher state + reports skeleton)
+  - Verbatim user request preservation in TASK_REQUEST.md
+  - Semantic duplicate detection via Jaccard similarity (threshold 0.7)
+  - User file organization into INPUTS/
+  - CTO handoff preparation with manifest/README
+- `tests/test_task_intake.py` [NEW] — 25 tests covering all acceptance criteria
+- `agents/pm.md` — Updated with Task Intake section and usage examples (lines 212-316)
+- `ds_eo_manifest.yaml` — Added intake module entry (modules.intake block)
+
+**Test Results**: 25/25 tests passing in 0.16s; zero regressions
+
+**Safety verification**: No changes to state machine, gate mechanics, or existing workflow modules. All writes scoped to docs/ and reports/ directories only.
+
+---
+### TASK_DS_EO_028 — Failure Detection and Recovery for Auto Mode 📦 (COMPLETED)
+**Date Completed**: 2026-08-07T07:35:00-07:00  
+**Decision**: APPROVED (Gate G4)  
+**Reviewer Score**: 5/5  
+**Commit**: 31ef935
+
+**Summary**: Failure detection and recovery engine for automatic workflow execution. Implements 4 new workflow states (FAILED, RETRYING, WAITING_FOR_HUMAN, RESUMED), a data-driven recovery policy table, configurable retry limits, persistent recovery state for resume after interruption, and safe human escalation. All changes are additive — no existing modules refactored.
+
+**Changes:**
+- `ds_eo_openclaw/workflow/state_engine.py` — 4 new states + 7 new transitions (additive)
+- `ds_eo_openclaw/workflow/recovery_engine.py` [NEW] — RecoveryEngine class with failure detection, policy table lookup, and execution; ~320 lines
+- `ds_eo_openclaw/workflow/recovery_state.py` [NEW] — RecoveryStateManager for persistent save/load/clear lifecycle; ~140 lines
+- `ds_eo_openclaw/workflow/notifications.py` — Added 4 recovery notification types
+- `ds_eo_openclaw/workflow/__init__.py` — Exported new modules
+- `tests/test_recovery_engine.py` [NEW] — 42 tests covering all failure/recovery paths; ~490 lines
+- `tests/` — 4 existing test expectation updates
+
+**Test Results**: 348/348 tests passing, 0 failures (42 new + 4 updated expectations)
+
+**Safety verification**: Direct RECOVERING→COMPLETED transition blocked; resume validates G1/G2/G3 artifacts; retry limits enforced at boundaries (max_retries=0,1,2); manual mode regression tests pass.
+
+---
 ### TASK_DS_EO_025 — Phase 6: User-Facing /eo Mode Commands 📦 (COMPLETED)
 **Date Completed**: 2026-08-03T10:15:00-07:00  
 **Decision**: APPROVED (Gate G4)  
