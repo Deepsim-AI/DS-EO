@@ -4,7 +4,7 @@
       "model": {
         "primary": "<MODEL_CTO>",
         "fallbacks": [
-          "ollama/ornith:35b"
+          "ollama/gemma4:31b"
         ]
       }
     },

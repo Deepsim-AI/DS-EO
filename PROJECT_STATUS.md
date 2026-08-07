@@ -8,6 +8,8 @@
 ## Active Tasks
 | **TASK_DS_EO_026** | Fix Dispatcher spawn_agent() Real OpenClaw Session Creation | 📦 Closed (Infra Defect Found & Resolved) | CTO+Implementer+Reviewer+PM | 2026-08-05 |
 | **TASK_DAL_002** | Content Inventory + IA | 🔴 Blocked by DS-EO spawn_agent() mock defect | CTO | 2026-08-05 |
+| **TASK_DS_EO_027** | DS-EO Workflow Supervisor / Watchdog | 📋 Planning (G1 Awaiting) | CTO | 2026-08-05 |
+
 
 ---
 

@@ -42,7 +42,7 @@ class TestConfigMergeSafety(unittest.TestCase):
                 "defaults": {
                     "model": {
                         "primary": "ollama/qwen3.6:35b",
-                        "fallbacks": ["ollama/ornith:35b"]
+                        "fallbacks": ["ollama/gemma4:31b"]
                     }
                 },
                 "list": [
@@ -83,7 +83,7 @@ class TestConfigMergeSafety(unittest.TestCase):
                 "default": False,
                 "id": "implementer",
                 "name": "Code Implementer",
-                "model": "ollama/ornith:35b",
+                "model": "ollama/gemma4:31b",
                 "workspace": "/test/workspace",
                 "tools": {"allow": ["group:fs"], "deny": []}
             },

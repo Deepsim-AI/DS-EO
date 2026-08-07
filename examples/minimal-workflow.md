@@ -8,37 +8,35 @@ This walkthrough demonstrates a complete task cycle using DS-EO on OpenClaw. It 
 
 A user requests: "Switch to automatic execution mode and run the pending TASK_20260803_001 task."
 
-### Workflow Overview (Automatic Mode)
-
-```
-User → PM → CTO (Plan, G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4) → PM Post-G4 Closure
-```
-
-The Project Manager coordinates task lifecycle throughout. The CTO owns all technical decisions.
-
-**Execution mode**: The user can switch between `manual` and `automatic` via `/eo mode <mode>` commands. In automatic mode, the workflow state engine auto-advances through gates after each phase completes. In manual mode, each gate requires explicit user approval.
-
 ---
+
+# ───────────────────────────────────────────────
+# MANUAL MODE — Step by Step
+# ───────────────────────────────────────────────
 
 ## Phase 1: Planning (CTO)
 
 ### User sends request to PM
 
+The user is on their own chat session (e.g., webchat). They send:
+
 ```
-User → PM Agent:
-"Switch to automatic mode and execute the pending TASK_20260803_001 task."
+/eo task "Switch to automatic execution mode and execute TASK_20260803_001"
 ```
+
+This routes to the **PM agent** via gateway binding.
 
 ### PM creates task lifecycle and delegates to CTO
 
 The PM:
 1. Creates a new task skeleton in the project tracker
-2. Sends `TASK_OPEN` message (see `communication_protocol.md`) to CTO with user request
-3. Monitors status — does not make technical decisions
+2. Sends `TASK_OPEN` message (see `communication_protocol.md`) to CTO
+3. Spawns an isolated CTO session with the task context
+4. **The user waits** — nothing visible happens until the CTO finishes
 
 ### CTO creates task and writes plan
 
-The CTO:
+The CTO (in its own isolated session):
 1. Receives TASK_OPEN from PM
 2. Creates `docs/development/reports/TASK_20260728_001/` directory
 3. Reads the relevant spec (or derives one from the request)
@@ -77,171 +75,217 @@ leading to runtime errors downstream.
 
 ### Gate G1: User Approves Plan
 
-If in manual mode, the user responds via chat. In automatic mode, if the user previously set `/eo mode automatic`, this transition occurs without user input once the plan is written.
+**The user must review the plan and take explicit action.** In manual mode nothing auto-advances. The user sees the CTO's work through one of two channels:
+- PM reports back: "CTO plan is ready for your review — see `docs/development/reports/TASK_20260728_001/CTO_PLAN.md`"
+- User reads the file directly
 
-User (manual mode) responds: `APPROVE`
+The user responds with either:
+```
+APPROVE                    ← Proceeds to implementation
+REVISE: [specific feedback] ← Returns to CTO for revision
+```
 
 ---
 
-## Phase 2: Implementation (Implementer)
+# ───────────────────────────────────────────────
+# AUTOMATIC MODE — Step by Step (Full Session Lifecycle)
+# ───────────────────────────────────────────────
 
-### PM sends TASK_ASSIGNED to Implementer
+The automatic mode uses **isolated sessions** — each agent gets its own session. The user interacts only at two gates (G1 and G4). Here is the complete session lifecycle:
 
-The PM forwards the delegation from CTO:
+## Session Timeline
+
 ```
-PM → Implementer Agent:
-TASK_ASSIGNED — Task: TASK_20260728_001
-Plan: docs/development/reports/TASK_20260728_001/CTO_PLAN.md
-Status: In Progress
-```
-
-### Implementer executes the plan
-
-1. Reads `CTO_PLAN.md`, confirms understanding of acceptance criteria
-2. Modifies `config/parse.py` — adds validation helpers, integrates them
-3. Creates `tests/test_parse_validation.py` with test cases for each criterion
-4. Runs tests: all pass
-5. Writes `IMPLEMENTATION_REPORT.md`:
-
-```markdown
-# Implementation Report — TASK_20260728_001
-
-## Summary
-Added input validation to configuration parser per CTO plan.
-
-## Changes Made
-| File | Action | Description |
-|------|--------|-------------|
-| config/parse.py | Modified | Added _validate_string() and _validate_int() helpers |
-| tests/test_parse_validation.py | Created | 12 test cases covering validation paths |
-
-## Acceptance Criteria Verification
-| # | Criterion | Met? | Evidence |
-|---|-----------|------|----------|
-| 1 | Empty strings raise ValueError | Yes | Test validates empty string → ValueError raised |
-| 2 | Strings >256 chars raise ValueError | Yes | Test sends 300-char string, verifies error message contains length |
-| 3 | Non-integer numeric inputs rejected | Yes | Test sends "abc" for int field, verifies format example in error |
-| 4 | Existing tests pass | Yes | All 23 existing tests PASS (0 regressions) |
-| 5 | ≥90% validation path coverage | Yes | 12 new tests cover all validator branches |
-
-## Test Results
-- New tests: 12/12 PASS
-- Existing tests: 23/23 PASS
-- Total: 35/35 PASS, 0 FAIL
-
-## Deviation Analysis
-No deviations from the approved plan.
+Session A: User → PM                    ← User initiates via /eo task
+Session B: PM → CTO (spawned isolated)  ← CTO creates plan
+Session C: User reviews + says APPROVE  ← Gate G1 — USER interaction
+Session D: PM → Implementer (spawned)   ← Implementer writes code
+Session E: PM → Reviewer (spawned)      ← Reviewer verifies
+Session F: PM → CTO (spawned)           ← CTO makes final decision
+Session G: User reviews + says APPROVE  ← Gate G4 — USER interaction
+Session H: PM Post-G4 cleanup            ← Auto-complete
 ```
 
-### Gate G2: Implementation Complete
+### Step 1: User initiates (Session A — User/PM)
 
-If in automatic mode, the state engine detects that `IMPLEMENTATION_REPORT.md` exists and auto-advances to Review. In manual mode, the user signals completion.
+The user is on their own chat session. They send:
+
+```
+/eo task "Add input validation to config parser"
+```
+
+**What happens:**
+- Gateway routes `/eo task` → PM agent (via binding)
+- PM creates the task skeleton: `docs/dispatchers/TASK_20260805_001/`
+- PM writes `dispatcher_state.json` with S0_OPEN state
+- PM spawns an isolated CTO session
+
+**User sees:** The PM replies in their session: "Task TASK_20260805_001 created. CTO is writing the plan."
+
+### Step 2: CTO writes plan (Session B — CTO, isolated)
+
+The CTO (in a new, isolated session — user never sees this session):
+- Receives TASK_OPEN context via spawn payload
+- Creates task directory, reads spec, writes `CTO_PLAN.md`
+
+**User sees:** Nothing during planning. The PM monitors the artifact and later reports status.
+
+### Step 3: Gate G1 — User approves (Session A — User/PM)
+
+The PM auto-detects that CTO_PLAN.md exists (`detect_state()` returns G1_WAITING) and notifies the user:
+
+```
+Status: Plan submitted for review
+Artifact: docs/development/reports/TASK_20260805_001/CTO_PLAN.md
+Action required: Approve or request revision.
+```
+
+**The user MUST read CTO_PLAN.md and respond.** In automatic mode, the PM does NOT approve on the user's behalf. The user replies in their session with:
+```
+APPROVE
+```
+
+### Step 4: Implementation (Session D — Implementer, isolated)
+
+After user says APPROVE:
+- PM spawns an isolated Implementer session via `sessions_spawn(agent="implementer", context="isolated")`
+- The Implementer writes code per the CTO's plan
+- The Implementer runs tests and writes `IMPLEMENTATION_REPORT.md`
+
+**User sees:** A status message from the system (via auto-notification):
+```
+Status: G2 passed automatically — Review started
+Artifact: IMPLEMENTATION_REPORT.md produced at docs/development/reports/TASK_20260805_001/
+```
+The user does NOT see the Implementer's session content.
+
+### Step 5: Review (Session E — Reviewer, isolated)
+
+PM auto-detects `IMPLEMENTATION_REPORT.md` exists → auto-advances to REVIEW state → spawns isolated Reviewer session.
+
+The Reviewer inspects code quality and writes `REVIEW_REPORT.md`.
+
+**User sees:**
+```
+Status: Review complete. Awaiting CTO G3 evaluation.
+Recommendation: APPROVE_WITH_COMMENTS (score 4.65/5)
+Artifact: docs/development/reports/TASK_20260805_001/REVIEW_REPORT.md
+```
+
+### Step 6: Final approval decision (Session F — CTO, isolated)
+
+PM auto-detects `REVIEW_REPORT.md` exists → spawns isolated CTO session for G4.
+
+The CTO reviews both reports independently and writes `CTO_APPROVAL.md`.
+
+**User sees:** Nothing during the CTO's G4 evaluation. The PM notifies when ready for the user's decision.
+
+### Step 7: Gate G4 — User approves (Session A — User/PM)
+
+The system notifies the user that a final decision is ready:
+
+```
+Status: Final approval required
+Artifact: docs/development/reports/TASK_20260805_001/CTO_APPROVAL.md
+Decision: CTO recommends APPROVE (score 4.65/5)
+Action required: Approve to complete, or reject for rework.
+```
+
+**The user MUST review and respond.** They reply in their session with:
+```
+APPROVE
+```
+
+### Step 8: Post-G4 cleanup (Session H — PM)
+
+After user says APPROVE at G4:
+- PM auto-advances to S5_COMPLETE via `advance_g4(approved=True)`
+- PM updates `PROJECT_STATUS.md`, `CHANGELOG.md`
+- PM writes `PM_CLOSED.md`
+- PM commits to Git (requires user confirmation for remote push)
+
+**User sees:**
+```
+Status: Task completed, cleanup in progress.
+All artifacts verified. Changelog updated.
+Ready for git push — please confirm target repo and branch.
+```
 
 ---
 
-## Phase 3: Review (Reviewer)
+# ───────────────────────────────────────────────
+# Summary of User Interactions
+# ───────────────────────────────────────────────
 
-### PM sends TASK_IN_REVIEW to Reviewer
+## Manual Mode — User Must Do Everything
 
-The PM forwards the handoff:
-```
-PM → Reviewer Agent:
-TASK_IN_REVIEW — Task: TASK_20260728_001
-Implementer Report: docs/development/reports/TASK_20260728_001/IMPLEMENTATION_REPORT.md
-Status: In Review
-```
+| Step | What User Does | Session They're In |
+|------|---------------|-------------------|
+| 1 | Send `/eo task` with request | Their own session (routes to PM) |
+| 2 | Read CTO_PLAN.md, say "APPROVE" | Their session |
+| 3 | Verify IMPLEMENTATION_REPORT.md is correct | Check file directly or ask PM |
+| 4 | Say "implementation done" to PM | Their session (triggers G2 advance) |
+| 5 | Read REVIEW_REPORT.md, advise on review findings | Their session |
+| 6 | Say "advance to review" to PM | Their session (triggers G3 advance) |
+| 7 | Read CTO_APPROVAL.md, say "APPROVE" at G4 | Their session |
+| 8 | Confirm git push repo + branch | Their session |
 
-### Reviewer inspects implementation
+**User touches:** Every gate and transition explicitly.
 
-Reviewer produces `REVIEW_REPORT.md` directly in the task directory (no CTO copy step):
+## Automatic Mode — User Only Touches G1 and G4
 
-1. Reads `CTO_PLAN.md` to understand what was supposed to be built
-2. Runs `git diff` — compares actual changes against plan
-3. Runs all tests — confirms no regressions
-4. Inspects code quality — checks naming, structure, error messages
-5. Applies scoring rubric:
+| Step | What User Does | Session They're In |
+|------|---------------|-------------------|
+| 1 | Send `/eo task` with request | Their own session (routes to PM) |
+| 2–3 | Read CTO_PLAN.md, say "APPROVE" at G1 | Their session — **first required interaction** |
+| 4–6 | (No action needed) | System auto-advances through all intermediate phases |
+| 7 | Read CTO_APPROVAL.md, say "APPROVE" at G4 | Their session — **second required interaction** |
+| 8 | Confirm git push repo + branch | Their session |
 
-| Dimension | Weight | Score | Evidence |
-|-----------|--------|-------|----------|
-| Specification Compliance | 40% | 5/5 | All 5 acceptance criteria met with evidence |
-| Code Quality | 25% | 4/5 | Clean implementation; error messages could include field names |
-| Architecture Adherence | 25% | 5/5 | Validation helpers follow existing pattern; no layer violations |
-| Test Coverage & Regression | 10% | 5/5 | Comprehensive new tests, zero regressions |
-| **Weighted Overall** | **100%** | **4.65/5** | (5×0.4) + (4×0.25) + (5×0.25) + (5×0.1) = 4.65 |
-
-### Reviewer issues recommendation: APPROVE_WITH_COMMENTS
-```
-Scoring: Overall 4.65/5, no dimension below 2 → APPROVE threshold met
-Comments: Error messages could include the field name for better debugging
-Reviewer produces REVIEW_REPORT.md directly in task directory.
-```
-
-### Gate G3: Review Passes
-
-In automatic mode, once `REVIEW_REPORT.md` exists with a passing score, the state engine auto-advances to Approval. In manual mode, the user must explicitly approve.
+**User touches:** Only gates G1 and G4. Everything between (implementation, review, CTO evaluation) happens automatically via isolated agent sessions. The user can check status at any time by asking the PM: "What's the current status of TASK_20260805_001?"
 
 ---
 
-## Phase 4: Final Approval (CTO)
+## Where Messages Go — Session Routing Reference
 
-### CTO makes final decision
+| Event | From Agent | To Agent (via) | User Sees It? |
+|-------|-----------|----------------|---------------|
+| Task created | PM | CTO (via `sessions_spawn`) | No — CTO's session is isolated |
+| Plan ready | CTO → PM | PM reports to user | Yes (summary from PM) |
+| G1 approve | User | PM (direct) | Yes — in user's own session |
+| Implementer delegated | PM | Implementer (via `sessions_spawn`) | No — Implementer's session is isolated |
+| Review started (auto) | StateEngine auto-detects | PM notifies user | Yes ("G2 passed automatically") |
+| Review complete (auto) | StateEngine auto-detects | PM notifies user | Yes ("Review complete. Awaiting CTO G3 evaluation.") |
+| G4 decision ready | CTO → PM | PM notifies user | Yes — with recommendation summary |
+| Task completed (auto) | StateEngine auto-detects | PM notifies user | Yes ("Task completed, cleanup in progress") |
 
-The CTO reviews both reports independently:
-- Spec compliance: Confirmed — all criteria met
-- Code quality: Agrees with Reviewer — minor improvement possible but not blocking
-- Architecture: Confirmed — no layer violations, follows existing patterns
-- Two-layer boundary: Verified — only development code modified, no runtime agent changes
+### Key Principle: Isolated Sessions
 
-### CTO issues decision: APPROVE
+Every cross-phase handoff uses `sessions_spawn(agent="...", context="isolated")`. This means:
+- The user's session is **never** the Implementer's session or the Reviewer's session
+- Each agent works in its own isolated context — no shared chat history between phases
+- The user only interacts with PM (for task management) and directly at G1/G4 gates
+- Status messages about intermediate phases come from the PM, not from the executing agents
 
-```markdown
-# APPROVAL — Task: TASK_20260728_001
+### Auto-Mode User Notifications (from `notifications.py`)
 
-**Date**: 2026-07-28
-**Reviewing Agent**: CTO
+These are automatically sent by the StateEngine/PM to the user's chat surface:
 
-**Summary**: Implementation approved. Input validation added per spec with comprehensive tests.
-
-**Basis for Decision**:
-- Reviewer's recommendation: APPROVE_WITH_COMMENTS (score 4.65/5)
-- Spec compliance: All 5 acceptance criteria met
-- Code quality: Clean implementation matching project patterns
-- Architecture adherence: No unauthorized changes, layer boundaries preserved
-
-**Next Steps**:
-1. Update changelog with new validation feature
-2. Communicate to user that task is complete
-3. Archive task artifacts
-```
-
-### Gate G4: Approval Complete
-
-In automatic mode, once `CTO_APPROVAL.md` exists, the state engine auto-advances to STALLED (waiting for Post-G4). The PM must execute post-G4 duties in a separate session.
+| When | Notification Message |
+|------|---------------------|
+| Plan submitted for review | "Plan submitted for review" |
+| G2 passed, reviewer assigned | "G2 passed automatically — Reviewer assigned" |
+| Review complete, CTO evaluating | "Review complete. Awaiting CTO G3 evaluation." |
+| Task completed, cleanup started | "Task completed, cleanup in progress" |
+| Changes requested (revision loop) | "Changes requested: [reason] — rework required" |
+| Blocker detected | "BLOCKER: [details]" (urgent priority) |
+| Task stalled (timeout) | "STALLED: last activity [timestamp], exceeded timeout" (warning priority) |
 
 ---
 
-## Summary
+## Notes
 
-| Phase | Agent | Artifact Produced | Gate | PM Action |
-|-------|-------|-------------------|------|-----------|
-| Planning | CTO | `CTO_PLAN.md` | G1 (User approves) | Creates task, sends TASK_OPEN to CTO |
-| Implementation | Implementer | `IMPLEMENTATION_REPORT.md` | G2 (Complete verified) | Sends TASK_ASSIGNED to Implementer |
-| Review | Reviewer | `REVIEW_REPORT.md` | G3 (Review passes) | Sends TASK_IN_REVIEW to Reviewer, updates status |
-| Approval | CTO | `CTO_APPROVAL.md` | G4 (Final approve) | Updates status to "Completed" after approval |
-
-**Execution modes**: Users can toggle between manual and automatic mode at any time using `/eo mode <mode>`. Per-task overrides are also supported via `/eo mode override TASK_<id> <mode|off>`.
-
-**Total time**: Depends on implementation complexity. The workflow ensures quality at every step through formal gates and independent verification.
-
-### Full Workflow Diagram
-
-```
-User Request → PM Lifecycle Coordination → CTO Plan (G1) → Implementer (G2) → Reviewer (G3) → CTO Approve (G4) → PM Post-G4 Verification
-```
-
-### Notes
-
-- **Automatic mode**: State engine auto-advances through phases once artifacts are produced. No manual intervention needed.
-- **Manual mode**: User must explicitly approve at each gate.
 - **Post-G4 isolation**: Per AGENTS.md §11b, PM closure duties occur in a separate session from G4 approval.
 - **Artifact author tracking**: All agent-produced artifacts include `produced_by` metadata (AGENTS.md §11e). Self-authored reviews across roles are prohibited.
+- **Mode switching**: Users can toggle between manual and automatic mode at any time using `/eo mode <mode>`. Per-task overrides are also supported via `/eo mode override TASK_<id> <mode|off>`.
+- **Automatic mode does NOT mean "no user involvement"** — the user still approves at gates G1 and G4. Automatic means the state engine handles everything *between* those gates automatically.

@@ -73,6 +73,14 @@ This finding feeds into the **Workflow Supervisor/Watchdog** capability:
 - Every spawn operation should automatically verify the returned session key
 - Phantom sessions should be caught at the dispatcher level, not discovered later
 
+
+### Tasks in v0.3
+| Task | Title | Status | 
+|------|-------|--------|
+| TASK_DS_EO_026 | Fix Dispatcher spawn_agent() Real OpenClaw Session Creation | ✅ Closed | 
+| **TASK_DS_EO_027** | **Workflow Supervisor / Watchdog** | **📋 Planning (G1 Awaiting)** |
+
+
 ---
 
 ## v1.0 — Platform Abstraction Layer 🌐

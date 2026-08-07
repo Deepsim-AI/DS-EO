@@ -1,0 +1,53 @@
+{
+  "version": "0.1.0",
+  "taskId": "TASK_20260805_TEST",
+  "current_phase": "S5_COMPLETE",
+  "workflow_version": "1.0",
+  "agent_registry_checksum": "abc123def456",
+  "registry_agents": [],
+  "created_at": "2026-08-05T18:37:16.520117+00:00",
+  "updated_at": "2026-08-05T18:37:16.530442+00:00",
+  "completed_at": "2026-08-05T18:37:16.530442+00:00",
+  "phase_history": [
+    {
+      "phase": "S0_OPEN",
+      "entered_at": "2026-08-05T18:37:16.520117+00:00",
+      "left_at": "2026-08-05T18:37:16.523820+00:00",
+      "agent": ""
+    },
+    {
+      "phase": "S1_PLANNING",
+      "entered_at": "2026-08-05T18:37:16.523820+00:00",
+      "left_at": null,
+      "agent": "pm"
+    }
+  ],
+  "transition_history": [
+    {
+      "id": "txn_test_001",
+      "transition_name": "G0_ENTRY",
+      "from_phase": null,
+      "to_phase": "S1_PLANNING",
+      "timestamp": "2026-08-05T10:00:00+00:00",
+      "triggered_by_agent": "pm",
+      "event_type": "TASK_OPEN",
+      "payload_summary": "New task for testing",
+      "artifacts_verified": [],
+      "result": "success"
+    }
+  ],
+  "stall_checks": {
+    "last_check": "2026-08-05T18:37:16.523820+00:00",
+    "last_artifact_update": null,
+    "stalled": false,
+    "stall_alert_sent_at": null,
+    "current_phase_entered": "2026-08-05T18:37:16.523820+00:00"
+  },
+  "pending_work": {
+    "task_id": "TASK_20260805_TEST",
+    "assigned_to": "",
+    "work_type": "",
+    "spawn_session_key": null,
+    "spawned_at": null
+  }
+}

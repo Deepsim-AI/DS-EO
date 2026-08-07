@@ -58,6 +58,26 @@ FAILURE_NOTIFICATIONS = {
     },
 }
 
+# Recovery notification types (TASK_DS_EO_028, §11 of spec)
+RECOVERY_NOTIFICATIONS = {
+    "retry_initiated": {
+        "message": "Retry initiated: [failure_type] at gate [gate]. Attempt [count]/[max_retries].",
+        "priority": "info",
+    },
+    "retry_exhausted": {
+        "message": "Retry limit exhausted for [task_id] at gate [gate]: [failure_type]. Escalating to human.",
+        "priority": "high",
+    },
+    "workflow_escalated": {
+        "message": "Workflow escalated: task=[task_id], gate=[gate], failure=[type]. Diagnostic attached.",
+        "priority": "urgent",
+    },
+    "recovery_resumed": {
+        "message": "Recovery resumed for [task_id]: loaded state from [gate], resuming from checkpoint.",
+        "priority": "info",
+    },
+}
+
 
 def get_mode_switch_notification(from_mode: str, to_mode: str) -> str | None:
     """Return the notification message for a mode switch, or None if not defined."""
@@ -82,3 +102,19 @@ def get_failure_notification(failure_type: str) -> dict | None:
         Dict with 'message' and 'priority' keys, or None if type not found.
     """
     return FAILURE_NOTIFICATIONS.get(failure_type)
+
+
+def get_recovery_notification(recovery_type: str) -> dict | None:
+    """Return the recovery notification config (message + priority), or None.
+
+    TASK_DS_EO_028 integration — looks up recovery-type notifications for
+    retry, escalation, and resume events in automatic mode.
+
+    Args:
+        recovery_type: Recovery event category (retry_initiated, retry_exhausted,
+            workflow_escalated, recovery_resumed).
+
+    Returns:
+        Dict with 'message' and 'priority' keys, or None if type not found.
+    """
+    return RECOVERY_NOTIFICATIONS.get(recovery_type)

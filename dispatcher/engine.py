@@ -93,8 +93,12 @@ class WorkflowEngine:
         self.transitions: dict = {}   # transition_name -> transition config
         self.stall_config: dict = {}  # stall detection settings
         self.prompt_templates: dict = {}  # name -> template string
-        self.tool_policies: dict = {}  # key -> policy dict
+        self.tool_policies: dict = {}
         self._loaded: bool = False
+
+        # Supervisor overlay state (TASK_DS_EO_027)
+        self._supervisor_overlay: Optional[str] = None  # Global overlay state
+        self._task_overlay_states: dict = {}  # task_id -> overlay state
 
     def load_workflow(self) -> bool:
         """
@@ -395,6 +399,65 @@ class WorkflowEngine:
                 state.reason = f"Idle for {idle_mins:.0f} minutes (threshold: {idle_threshold_mins}m)"
 
         return state
+
+    # ====================================================================
+    # Supervisor Overlay Integration (TASK_DS_EO_027)
+    # ====================================================================
+
+    def get_supervisor_overlay_state(self, task_id: str = None) -> Optional[str]:
+        """
+        Get the current supervisor overlay state for a task.
+
+        The overlay state runs alongside the core S0-S5 phase tracking and
+        reflects whether the supervisor is actively monitoring, has detected
+        a stall, or needs human intervention.
+
+        Args:
+            task_id: Task ID (optional — returns global overlay if omitted)
+
+        Returns:
+            Overlay state string or None if not applicable.
+        """
+        # In production this reads from dispatcher_state.json supervisor_metadata
+        return self._supervisor_overlay
+
+    def set_supervisor_overlay(self, task_id: str, new_state: str) -> bool:
+        """
+        Set the supervisor overlay state for a task.
+
+        Args:
+            task_id: Task ID
+            new_state: One of SUPERVISING, AGENT_STALLED, AGENT_FAILED,
+                       HUMAN_INTERVENTION, TASK_ABORTED
+
+        Returns:
+            True if the transition was valid.
+        """
+        valid_states = ["SUPERVISING", "AGENT_STALLED", "AGENT_FAILED",
+                        "HUMAN_INTERVENTION", "TASK_ABORTED"]
+        
+        if new_state not in valid_states:
+            return False
+
+        # Validate transition rules
+        current = self._supervisor_overlay
+        allowed_transitions = {
+            "SUPERVISING": ["AGENT_STALLED", "HUMAN_INTERVENTION"],
+            "AGENT_STALLED": ["HUMAN_INTERVENTION", "SUPERVISING"],
+            "AGENT_FAILED": ["HUMAN_INTERVENTION", "TASK_ABORTED"],
+            "HUMAN_INTERVENTION": ["SUPERVISING", "TASK_ABORTED"],
+            "TASK_ABORTED": [],  # Terminal — no outgoing transitions
+        }
+
+        if current and new_state not in allowed_transitions.get(current, []):
+            return False
+
+        if task_id:
+            self._task_overlay_states[task_id] = new_state
+        else:
+            self._supervisor_overlay = new_state
+
+        return True
 
     # ====================================================================
     # Minimal YAML parser (fallback when PyYAML unavailable)

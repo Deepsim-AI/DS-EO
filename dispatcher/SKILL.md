@@ -114,6 +114,76 @@ Run stall checks periodically (during heartbeat or on task status queries):
 
 ---
 
+## Supervisor / Watchdog (TASK_DS_EO_027)
+
+The Workflow Supervisor monitors spawned agent sessions during **automatic mode** and auto-recovers stalled or failed agents. In manual mode it operates in observer-only mode.
+
+### Key Concepts
+
+- **Overlay States**: SUPERVISING, AGENT_STALLED, AGENT_FAILED, HUMAN_INTERVENTION, TASK_ABORTED
+- **Heartbeat**: Supervisor polls each active agent at `heartbeat_interval_seconds` (default: 120s)
+- **No-Progress Detection**: Zero artifact changes for `no_progress_timeout` seconds → NO_PROGRESS → STALLED
+- **Retry with Backoff**: Stalled agents are retried up to `retry_attempts` times with exponential backoff
+- **Escalation**: When retries exhausted, user receives full summary and can choose: retry / abort / continue
+
+### How the Supervisor Works
+
+1. When a task enters automatic mode, Supervisor starts monitoring all spawned agent sessions
+2. On each heartbeat cycle:
+   - Verify each agent session is alive (anti-phantom check)
+   - Scan deliverable directory for artifact changes vs baseline
+   - If zero changes since last scan → NO_PROGRESS state
+   - If no progress exceeds `no_progress_timeout` → STALLED → attempt recovery
+3. Recovery: re-dispatch with original prompt + stall context; new session verified alive before counting as retry
+4. If retries exhausted → HUMAN_INTERVENTION state → notify user with full report
+5. User responds: `/eo.retry` (next retry), `/eo.abort` (clear all, write failure report), or `/eo.continue` (let current agent finish)
+
+### Supervisor Configuration
+
+Defaults (from `config-templates/supervisor_config.example.json`):
+```json
+{
+  "heartbeat_interval_seconds": 120,
+  "no_progress_timeout_seconds": 300,
+  "hard_timeout_seconds": 900,
+  "retry_attempts": 2,
+  "retry_backoff_seconds": [60, 180],
+  "notification_channels": ["webchat"]
+}
+```
+
+Per-task overrides go in the task spec YAML:
+```yaml
+task_spec:
+  supervisor:
+    heartbeat_interval_seconds: 60
+    retry_attempts: 3
+```
+
+### Supervisor vs Manual Mode
+
+| Behavior | Automatic Mode | Manual Mode |
+|----------|---------------|-------------|
+| Heartbeat monitoring | Active | Observer-only (warns) |
+| Auto-retry stalled agents | Yes | No |
+| Auto-escalate to user | Yes | No (user-initiated only) |
+| State machine modification | Full lifecycle | None (human-controlled) |
+
+### Supervisor Events the PM Should Know About
+
+| Event | Severity | What PM Does |
+|-------|----------|-------------|
+| STALL_DETECTED | WARNING | Acknowledge; monitor if user handles it |
+| RETRY_INITIATED | INFO | Log for audit trail |
+| ESCALATION | CRITICAL | Notify user with summary and actionable commands |
+| TASK_ABORTED | WARNING | Write FAILURE_REPORT.md; update project status |
+
+### Supervisor State Persistence
+
+Overlay states are persisted in `dispatcher_state.json` under `supervisor_metadata`. The PM should read this section when checking task health.
+
+---
+
 ## State Management Rules
 
 - **Read state before every action** — never cache

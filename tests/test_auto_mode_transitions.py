@@ -99,7 +99,7 @@ class TestAllAutoModeTransitions:
         engine = StateEngine("/fake", execution_mode="automatic")
         matrix = StateEngine.get_transition_matrix()
         total = sum(len(dests) for dests in matrix.values())
-        assert total == 12, f"Expected 12 transitions, got {total}"
+        assert total == 19, f"Expected 19 transitions, got {total}"
 
     def test_auto_advance_produces_audit_on_s0_to_s1(self, fake_task_dir_with_cto_plan):
         """S0→S1 auto-advance creates audit entry with correct gateStatus."""
@@ -169,7 +169,7 @@ class TestAutoManualParity:
 
         matrix = StateEngine.get_transition_matrix()
         total_transitions = sum(len(dests) for dests in matrix.values())
-        assert total_transitions == 12
+        assert total_transitions == 19
 
 
 # --------------------------------------------------------------------------- #

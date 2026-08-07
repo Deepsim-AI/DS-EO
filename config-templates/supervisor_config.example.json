@@ -1,0 +1,40 @@
+{
+  "_comment_header": "DS-EO Supervisor Configuration — Copy to supervisor_config.json and adjust values",
+  
+  "supervisor": {
+    "heartbeat_interval_seconds": 120,
+    "no_progress_timeout_seconds": 300,
+    "hard_timeout_seconds": 900,
+    "retry_attempts": 2,
+    "retry_backoff_seconds": [60, 180],
+    "alert_on_first_stall": true,
+    "notification_channels": ["webchat"],
+    
+    "_comment_mode": "automatic = full lifecycle; manual = observer only (warns but never auto-recovers)",
+    "default_mode": "automatic",
+
+    "_comment_artifact_patterns": "File patterns used to detect agent progress. Relative to workspace_root.",
+    "artifact_scan_dirs": [
+      "docs/development/reports",
+      "docs/dispatchers"
+    ],
+    
+    "_comment_notification_templates": "Optional custom notification templates (use defaults if omitted)",
+    "notification_templates": {
+      "stall_warning": "{severity_icon} **Stall Detected** — Agent '{agent_id}' in phase '{phase}' has been idle for {idle_seconds}s",
+      "retry_info": "{severity_icon} **Retry #{retry_number}** — Re-dispatching '{agent_id}' with backoff of {backoff_seconds}s",
+      "escalation_critical": "{severity_icon} **Escalation Required** — Agent stalled after {retry_count} retries. Work completed: {work_completed}/{total_required}",
+      "task_aborted": "{severity_icon} **Task Aborted** — {work_completed} of {total_required} deliverables produced before abort."
+    }
+  },
+
+  "_validation_rules": {
+    "_comment": "Runtime validation rules. Invalid configs produce clear errors at startup.",
+    "heartbeat_interval_max": 600,
+    "no_progress_timeout_min": 30,
+    "hard_timeout_min": 120,
+    "retry_attempts_max": 5,
+    "retry_backoff_length_match": true,
+    "_comment_derivation": "Derived constraints: heartbeat_interval <= no_progress_timeout / 4; hard_timeout >= no_progress_timeout + max(retry_backoff)"
+  }
+}

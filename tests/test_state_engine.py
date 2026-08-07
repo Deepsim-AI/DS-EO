@@ -100,7 +100,7 @@ class TestTransitionValidation(unittest.TestCase):
     def test_count_of_permitted_transitions(self):
         """Exactly 12 transitions must be permitted (per spec)."""
         count = sum(len(dests) for dests in StateEngine.get_transition_matrix().values())
-        self.assertEqual(count, 12, f"Expected 12 transitions, got {count}")
+        self.assertEqual(count, 19, f"Expected 19 transitions, got {count}")
 
 
 class TestAutoAdvance(unittest.TestCase):
@@ -146,16 +146,18 @@ class TestAutoAdvance(unittest.TestCase):
 
 
 class TestStateEnum(unittest.TestCase):
-    """Verify the State enum has all 11 states defined."""
+    """Verify the State enum has all 15 states defined (11 original + 4 recovery)."""
 
     def test_all_states_present(self):
         expected_names = [
             "TASK_OPEN", "G1_WAITING", "IMPLEMENTATION", "WAITING_G2",
             "REVIEW", "G3_PENDING", "FINAL_APPROVAL", "COMPLETED",
-            "CHANGES_REQD", "BLOCKED", "STALLED"
+            "CHANGES_REQD", "BLOCKED", "STALLED",
+            # Recovery/failure states (TASK_DS_EO_028)
+            "FAILED", "RETRYING", "WAITING_FOR_HUMAN", "RESUMED"
         ]
         actual_names = [s.name for s in State]
-        self.assertEqual(len(actual_names), 11, f"Expected 11 states, got {len(actual_names)}")
+        self.assertEqual(len(actual_names), 15, f"Expected 15 states, got {len(actual_names)}")
         for name in expected_names:
             self.assertIn(name, actual_names, f"Missing state: {name}")
 

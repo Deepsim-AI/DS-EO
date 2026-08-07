@@ -31,7 +31,7 @@ from .audit_log import AuditLog
 
 
 class State(Enum):
-    """All 11 workflow states (S0–S10)."""
+    """All workflow states (S0–S14). Includes 11 original + 5 recovery/failure states."""
     TASK_OPEN = "TASK_OPEN"                     # S0
     G1_WAITING = "G1_WAITING"                   # S1
     IMPLEMENTATION = "IMPLEMENTATION"            # S2
@@ -43,6 +43,10 @@ class State(Enum):
     CHANGES_REQD = "CHANGES_REQD"                # S8
     BLOCKED = "BLOCKED"                          # S9
     STALLED = "STALLED"                          # S10
+    FAILED = "FAILED"                            # S11 — Workflow failed detection triggered
+    RETRYING = "RETRYING"                        # S12 — Currently in retry loop
+    WAITING_FOR_HUMAN = "WAITING_FOR_HUMAN"      # S13 — Requires human intervention
+    RESUMED = "RESUMED"                          # S14 — Successfully resumed from recovery
 
 
 class StateEngine:
@@ -67,6 +71,21 @@ class StateEngine:
         (State.FINAL_APPROVAL, State.COMPLETED): "G4",
         (State.FINAL_APPROVAL, State.IMPLEMENTATION): "G4",
         (State.CHANGES_REQD, State.IMPLEMENTATION): None,
+        # Recovery transitions
+        (State.STALLED, State.FAILED): None,
+        (State.TASK_OPEN, State.FAILED): None,          # Failure detected before any phase
+        (State.TASK_OPEN, State.RETRYING): None,      # Recovery enters retry from start
+        (State.FAILED, State.WAITING_FOR_HUMAN): None,
+        (State.WAITING_FOR_HUMAN, State.RETRYING): None,
+                (State.RETRYING, State.WAITING_G2): None,
+        (State.RETRYING, State.IMPLEMENTATION): None,
+        (State.RETRYING, State.WAITING_FOR_HUMAN): None,
+        (State.G1_WAITING, State.WAITING_FOR_HUMAN): None,
+        (State.IMPLEMENTATION, State.WAITING_FOR_HUMAN): None,
+        (State.WAITING_G2, State.WAITING_FOR_HUMAN): None,
+        (State.REVIEW, State.WAITING_FOR_HUMAN): None,
+        (State.G3_PENDING, State.WAITING_FOR_HUMAN): None,
+        (State.FINAL_APPROVAL, State.WAITING_FOR_HUMAN): None,
     }
 
     def __init__(self, task_dir: str, execution_mode: str = "manual"):
@@ -276,6 +295,22 @@ class StateEngine:
             (State.FINAL_APPROVAL, State.COMPLETED),    # CTO approves at G4
             (State.FINAL_APPROVAL, State.IMPLEMENTATION),# CTO rejects at G4 — rework required
             (State.CHANGES_REQD, State.IMPLEMENTATION),  # Rework resubmitted
+            # Recovery transitions (§12 states)
+            (State.STALLED, State.FAILED),
+            (State.TASK_OPEN, State.FAILED),              # Failure detected before any phase
+            (State.TASK_OPEN, State.RETRYING),          # Recovery enters retry from start
+            (State.FAILED, State.WAITING_FOR_HUMAN),   # Failure escalates to human
+            (State.WAITING_FOR_HUMAN, State.RETRYING),  # Human triggers retry
+                        (State.RETRYING, State.WAITING_G2),         # Retry resumes G2 check
+            (State.RETRYING, State.IMPLEMENTATION),     # Retry resumes implementation
+            (State.RETRYING, State.WAITING_FOR_HUMAN),  # Retry fails → human
+            # Allow any active state to enter WAITING_FOR_HUMAN during recovery
+            (State.G1_WAITING, State.WAITING_FOR_HUMAN),
+            (State.IMPLEMENTATION, State.WAITING_FOR_HUMAN),
+            (State.WAITING_G2, State.WAITING_FOR_HUMAN),
+            (State.REVIEW, State.WAITING_FOR_HUMAN),
+            (State.G3_PENDING, State.WAITING_FOR_HUMAN),
+            (State.FINAL_APPROVAL, State.WAITING_FOR_HUMAN),
         }
         return (from_state, to_state) in allowed
 
@@ -456,7 +491,7 @@ class StateEngine:
         Useful for documentation, UI rendering, and validation.
         """
         return {
-            "TASK_OPEN": ["G1_WAITING"],
+            "TASK_OPEN": ["G1_WAITING", "FAILED", "RETRYING"],
             "G1_WAITING": ["IMPLEMENTATION", "CHANGES_REQD"],
             "IMPLEMENTATION": ["WAITING_G2"],
             # WAITING_G2 has conditional transitions (resolved at runtime)
@@ -465,6 +500,10 @@ class StateEngine:
             "G3_PENDING": ["FINAL_APPROVAL", "CHANGES_REQD"],
             "FINAL_APPROVAL": ["COMPLETED", "IMPLEMENTATION"],
             "CHANGES_REQD": ["IMPLEMENTATION"],
+            # Recovery states
+            "FAILED": ["WAITING_FOR_HUMAN"],
+            "RETRYING": ["WAITING_G2", "IMPLEMENTATION", "WAITING_FOR_HUMAN"],
+            "WAITING_FOR_HUMAN": ["RETRYING"],
         }
 
     @staticmethod

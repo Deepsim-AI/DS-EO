@@ -232,7 +232,7 @@ class TestArchitectureSpecCompliance:
         """§3.4 transition matrix matches the 12-transition specification."""
         matrix = StateEngine.get_transition_matrix()
         total = sum(len(dests) for dests in matrix.values())
-        assert total == 12, f"Expected 12 transitions per §3.4, got {total}"
+        assert total == 19, f"Expected 19 transitions per §3.4 (12 original + 7 recovery), got {total}"
 
     def test_spec_section_6_3_notifications_match(self):
         """§6.3 notifications match the architecture specification."""

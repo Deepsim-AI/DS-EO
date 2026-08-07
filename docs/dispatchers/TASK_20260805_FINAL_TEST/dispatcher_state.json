@@ -1,0 +1,188 @@
+{
+  "version": "0.1.0",
+  "taskId": "TASK_20260805_FINAL_TEST",
+  "current_phase": "S5_COMPLETE",
+  "workflow_version": "1.0",
+  "agent_registry_checksum": "f53a49d2524df64344bea4c9f9967b2a7f3e6861dd752ae33cc4a306d62b7a15",
+  "registry_agents": [
+    {
+      "id": "cto",
+      "name": "CTO / Architect",
+      "model": "ollama/qwen3.6:35b",
+      "workspace": "/home/deepsim/ds-eo-openclaw",
+      "default": true,
+      "tools_allow_count": 11,
+      "tools_deny_count": 3
+    },
+    {
+      "id": "implementer",
+      "name": "Code Implementer",
+      "model": "ollama/ornith:35b",
+      "workspace": "/home/deepsim/ds-eo-openclaw",
+      "default": false,
+      "tools_allow_count": 5,
+      "tools_deny_count": 0
+    },
+    {
+      "id": "reviewer",
+      "name": "Senior Code Reviewer",
+      "model": "ollama/laguna-xs-2.1:q4_K_M",
+      "workspace": "/home/deepsim/ds-eo-openclaw",
+      "default": false,
+      "tools_allow_count": 9,
+      "tools_deny_count": 3
+    },
+    {
+      "id": "pm",
+      "name": "Project Manager",
+      "model": "ollama/qwen3.6:35b",
+      "workspace": "/home/deepsim/ds-eo-openclaw",
+      "default": false,
+      "tools_allow_count": 9,
+      "tools_deny_count": 6
+    }
+  ],
+  "created_at": "2026-08-05T19:12:18.293012+00:00",
+  "updated_at": "2026-08-05T19:12:18.340428+00:00",
+  "completed_at": "2026-08-05T19:12:18.340428+00:00",
+  "phase_history": [
+    {
+      "phase": "S0_OPEN",
+      "entered_at": "2026-08-05T19:12:18.293012+00:00",
+      "left_at": "2026-08-05T19:12:18.296493+00:00",
+      "agent": ""
+    },
+    {
+      "phase": "S1_PLANNING",
+      "entered_at": "2026-08-05T19:12:18.303224+00:00",
+      "left_at": "2026-08-05T19:12:18.306850+00:00",
+      "agent": "pm"
+    },
+    {
+      "phase": "S2_IMPLEMENTATION",
+      "entered_at": "2026-08-05T19:12:18.306850+00:00",
+      "left_at": "2026-08-05T19:12:18.316918+00:00",
+      "agent": "cto"
+    },
+    {
+      "phase": "S3_REVIEW",
+      "entered_at": "2026-08-05T19:12:18.316918+00:00",
+      "left_at": "2026-08-05T19:12:18.326756+00:00",
+      "agent": "implementer"
+    },
+    {
+      "phase": "S4_APPROVAL",
+      "entered_at": "2026-08-05T19:12:18.326756+00:00",
+      "left_at": "2026-08-05T19:12:18.336825+00:00",
+      "agent": "reviewer"
+    },
+    {
+      "phase": "S5_COMPLETE",
+      "entered_at": "2026-08-05T19:12:18.336825+00:00",
+      "left_at": null,
+      "agent": "pm"
+    }
+  ],
+  "transition_history": [
+    {
+      "id": "txn_TASK_20260805_FINAL_TEST_g0",
+      "transition_name": "G0_ENTRY",
+      "from_phase": null,
+      "to_phase": "S0_OPEN",
+      "timestamp": "2026-08-05T19:12:18.296254+00:00",
+      "triggered_by_agent": "pm",
+      "event_type": "TASK_OPEN",
+      "payload_summary": "New task: specs/FINAL_TEST.md (P1)",
+      "artifacts_verified": [],
+      "result": "success"
+    },
+    {
+      "id": "TASK_20260805_FINAL_TEST_s0_s1",
+      "transition_name": "G0_ENTRY",
+      "from_phase": "S0_OPEN",
+      "to_phase": "S1_PLANNING",
+      "timestamp": "2026-08-05T19:12:18.303027+00:00",
+      "triggered_by_agent": "pm",
+      "event_type": "PLAN_ASSIGNED",
+      "payload_summary": "",
+      "artifacts_verified": [],
+      "result": "success"
+    },
+    {
+      "id": "txn_TASK_20260805_FINAL_TEST_g1",
+      "transition_name": "G1_APPROVE",
+      "from_phase": "S1_PLANNING",
+      "to_phase": "S2_IMPLEMENTATION",
+      "timestamp": "2026-08-05T19:12:18.306674+00:00",
+      "triggered_by_agent": "cto",
+      "event_type": "DELEGATE",
+      "payload_summary": "Plan approved by user \u2014 delegating to Implementer",
+      "artifacts_verified": [
+        "CTO_PLAN.md"
+      ],
+      "result": "success"
+    },
+    {
+      "id": "txn_TASK_20260805_FINAL_TEST_g2",
+      "transition_name": "G2_COMPLETE",
+      "from_phase": "S2_IMPLEMENTATION",
+      "to_phase": "S3_REVIEW",
+      "timestamp": "2026-08-05T19:12:18.316755+00:00",
+      "triggered_by_agent": "implementer",
+      "event_type": "IMPL_COMPLETE",
+      "payload_summary": "Implementation complete \u2014 ready for review",
+      "artifacts_verified": [
+        "IMPLEMENTATION_REPORT.md"
+      ],
+      "result": "success"
+    },
+    {
+      "id": "txn_TASK_20260805_FINAL_TEST_g3",
+      "transition_name": "G3_APPROVE",
+      "from_phase": "S3_REVIEW",
+      "to_phase": "S4_APPROVAL",
+      "timestamp": "2026-08-05T19:12:18.326596+00:00",
+      "triggered_by_agent": "reviewer",
+      "event_type": "REVIEW_COMPLETE",
+      "payload_summary": "Review approved \u2014 forwarding to CTO for final decision",
+      "artifacts_verified": [
+        "REVIEW_REPORT.md"
+      ],
+      "result": "success"
+    },
+    {
+      "id": "txn_TASK_20260805_FINAL_TEST_g4",
+      "transition_name": "G4_APPROVE",
+      "from_phase": "S4_APPROVAL",
+      "to_phase": "S5_COMPLETE",
+      "timestamp": "2026-08-05T19:12:18.336648+00:00",
+      "triggered_by_agent": "pm",
+      "event_type": "PM_CLOSED",
+      "payload_summary": "G4 approved by user \u2014 completing task closure",
+      "artifacts_verified": [
+        "CTO_PLAN.md",
+        "IMPLEMENTATION_REPORT.md",
+        "REVIEW_REPORT.md",
+        "CTO_APPROVAL.md"
+      ],
+      "result": "success"
+    }
+  ],
+  "stall_checks": {
+    "last_check": "2026-08-05T19:12:18.336825+00:00",
+    "last_artifact_update": null,
+    "stalled": false,
+    "stall_alert_sent_at": null,
+    "current_phase_entered": "2026-08-05T19:12:18.336825+00:00"
+  },
+  "pending_work": {
+    "task_id": "TASK_20260805_FINAL_TEST",
+    "assigned_to": "",
+    "work_type": "",
+    "spawn_session_key": null,
+    "spawned_at": null
+  },
+  "spec_ref": "specs/FINAL_TEST.md",
+  "priority": "P1",
+  "notes": ""
+}
