@@ -35,6 +35,36 @@ All notable changes to DS-EO OpenClaw Edition will be documented in this file.
 
 ## [v0.4 — Dispatcher/Workflow Engine Layer] — 2026-08-05
 
+### TASK_DS_EO_031: PM Model Specialization — Separate from CTO
+
+#### Changed
+
+**Model Binding Updates (5 files)**
+- `~/.openclaw/openclaw.json` — PM model changed from `ollama/qwen3.6:35b` → `ollama/gpt-oss:20b`
+- `ds_eo_manifest.yaml` — PM `default_model` updated + comment revised
+- `agents_list.json` — PM entry model updated
+- `agents/pm.md` — Default suggestion + specialization rationale added
+- `AGENTS.md` — Engineering org document updated to reflect PM/CTO model separation
+
+**Protocol Enhancements (3 files)**
+- `protocols/GATE_AUTHORITY_MATRIX.md` — Added G0 (Intake Handoff) gate
+- `protocols/delegation_protocol.md` — Added §5.0 Role Boundary Enforcement During Task Intake
+- `protocols/handoff_protocol.md` — Added Transition 0c: PM → CTO handoff spec
+
+**Implementation Enhancement (1 file)**
+- `ds_eo_openclaw/intake/task_intake.py` — Added `IntakeBoundaryError`, `IntakeBoundaryState` classes to mechanically enforce intake boundaries at runtime
+
+#### Rationale
+
+Addresses the role-boundary problem observed in TASK_DS_EO_030 where PM and CTO sharing `qwen3.6:35b` caused PM to drift into CTO-level analysis (architecture review, gap analysis, planning artifacts). Assigning `gpt-oss:20b` to PM provides:
+1. **Practical specialization** — lighter model for coordination/oversight work
+2. **Mechanical role boundary** — different models = different session isolation
+
+#### Risk Assessment
+
+- Low — gpt-oss:20b already installed; changes are configuration-only; all files git-tracked for rollback
+
+
 ### Added
 
 #### Dispatcher Core (`dispatcher/`)

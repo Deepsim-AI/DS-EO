@@ -1,6 +1,6 @@
 # DS-EO Project Status
 
-**Last Updated**: 2026-08-07T13:51:00-07:00  
+**Last Updated**: 2026-08-07T14:25:00-07:00  
 **Current Phase**: Phase 7 — Failure Detection and Recovery (Complete)  
 
 ---
@@ -10,6 +10,8 @@
 | **TASK_DAL_002** | Content Inventory + IA | 🔴 Blocked by DS-EO spawn_agent() mock defect | CTO | 2026-08-05 |
 | **TASK_DS_EO_027** | DS-EO Workflow Supervisor / Watchdog | 📋 Planning (G1 Awaiting) | CTO | 2026-08-05 |
 | **TASK_DS_EO_029** | PM Task Intake Manager — workspace creation & dedup | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
+| **TASK_DS_EO_031** | PM Model Specialization (Model Separation) | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
+| **TASK_DS_EO_030** | Session Health & Lifecycle Management | 🔵 Planning (G1 Submitted) | CTO | 2026-08-07 |
 
 ---
 
@@ -20,6 +22,28 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 ---
 ## Completed Tasks
 
+
+### TASK_DS_EO_031 — PM Model Specialization 📦 (COMPLETED)
+**Date Completed**: 2026-08-07T18:38:00-07:00  
+**Decision**: APPROVED (Gate G4)  
+**Reviewer Score**: 5/5  
+
+**Summary**: Separated PM from CTO model binding to prevent role-boundary drift. PM now uses `ollama/gpt-oss:20b` instead of `ollama/qwen3.6:35b`, providing both practical specialization and mechanical session isolation. Also added G0 intake gate, §5.0 boundary enforcement rules, runtime IntakeBoundaryError/IntakeBoundaryState classes, and PM→CTO transition 0c handoff spec.
+
+**Changes:**
+- `~/.openclaw/openclaw.json` — PM model: `qwen3.6:35b` → `gpt-oss:20b`
+- `ds_eo_manifest.yaml` — PM `default_model` + comment updated
+- `agents_list.json` — PM entry model updated
+- `agents/pm.md` — Model suggestion + specialization rationale
+- `AGENTS.md` — Engineering org document reflects model separation
+- `protocols/GATE_AUTHORITY_MATRIX.md` — Added G0 Intake Handoff gate
+- `protocols/delegation_protocol.md` — §5.0 Role Boundary Enforcement (intake)
+- `protocols/handoff_protocol.md` — Transition 0c: PM → CTO handoff
+- `ds_eo_openclaw/intake/task_intake.py` — `IntakeBoundaryError` + `IntakeBoundaryState` runtime enforcement
+
+**Test Results**: All existing tests pass; no regressions
+
+---
 ### TASK_DS_EO_029 — PM Task Intake Manager 📦 (COMPLETED)
 **Date Completed**: 2026-08-07T13:51:00-07:00  
 **Decision**: APPROVED (Gate G4)  
