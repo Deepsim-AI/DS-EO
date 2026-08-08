@@ -1,0 +1,9 @@
+TASK_DS_EO_030 was REVOKED on 2026-08-08 due to boundary violation:
+CTO self-authored the plan in a session that also held PM responsibilities,
+violating Rule 11b (Post-G4 Session Isolation) and Section 10 rules.
+
+All work products from this revoked task have been removed from disk.
+The CTO Plan content is preserved here for reference only — it does NOT
+represent an approved plan and MUST NOT be used as the basis for implementation.
+
+To restart this task, PM must create a fresh workspace via intake.
