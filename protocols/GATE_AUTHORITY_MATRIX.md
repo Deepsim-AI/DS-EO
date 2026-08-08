@@ -59,3 +59,18 @@ This checklist is the authoritative source for Gate G2 prerequisites. Both `comp
 - `completion_protocol.md` — Per-role completion checklists; references G2 Gate Checklist above
 - `handoff_protocol.md` — Phase transition requirements; references G2 Gate Checklist for Transition 2
 - `communication_protocol.md` — Message formats for gate transitions
+
+---
+
+## Zeroth Gate (G0) — Intake Handoff (NEW — TASK_DS_EO_030 fix)
+
+| Gate | Phase From → To | Who Owns the Gate | Decision Authority | Required Artifacts | Transition Conditions |
+|------|-----------------|-------------------|-------------------|-------------------|---------------------|
+| G0 | User Request → Ready for CTO | PM (admin only) | PM creates workspace, then STOP. **PM does NOT plan, analyze architecture, or design solutions.** | `TASK_REQUEST.md` (verbatim), `MANIFEST.md`, task directory structure | PM completes intake per delegation_protocol.md §5.0 and outputs READY_FOR_CTO status. IMMEDIATE STOP after this point. |
+
+### G0 Enforcement Rules
+1. **PM may create workspace scaffolding only** — directories, verbatim request preservation, file organization. No technical planning.
+2. **CTO creates the authoritative task directory and ID** per delegation_protocol.md §Step 1. (Note: TaskIntakeManager creates scaffolding; CTO owns the actual task artifact.)
+3. **PM must not write `CTO_PLAN.md` under any circumstances** — this is CTO-exclusive.
+4. **If PM writes `CTO_PLAN.md`, this is a process violation** that must be documented in `BOUNDARY_VIOLATION.md` and the CTO must re-do the plan independently.
+

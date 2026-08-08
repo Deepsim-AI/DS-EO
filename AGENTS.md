@@ -82,7 +82,7 @@ All references to these components are relative to this workspace root (`/home/d
 
 ### Project Manager 📋
 
-- **Model**: `ollama/qwen3.6:35b`
+- **Model**: `ollama/gpt-oss:20b` (changed from qwen3.6:35b for specialization)
 - **Role**: Process oversight — task lifecycle coordination, status tracking, release management, Post-G4 completion, and Git persistence of approved work.
 - **Tool Policy**: Read + write for deliverables — `tools.allow`: group:fs, exec (git operations only), write, web_search, web_fetch; `tools.deny`: edit/apply_patch to non-designated paths, no general shell commands outside git
 - **Responsibilities**:

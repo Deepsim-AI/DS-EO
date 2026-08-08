@@ -88,7 +88,7 @@
       "emoji": "\ud83d\udccb",
       "name": "PM"
     },
-    "model": "ollama/qwen3.6:35b",
+    "model": "ollama/gpt-oss:20b",
     "workspace": "/home/deepsim/ds-eo-openclaw",
     "tools": {
       "allow": [

@@ -26,6 +26,49 @@ TASK_ID_PATTERN = re.compile(r"^TASK_(\d{8})_(\d+)$")
 DUPLICATE_THRESHOLD = 0.7          # Keyword overlap ratio to flag as duplicate
 INTAKE_STATES = ["NEW", "INTAKE", "AWAITING_USER_INPUT", "READY_FOR_CTO"]
 REPORTS_DIR_NAME = "docs/development/reports"
+
+
+class IntakeBoundaryError(Exception):
+    """Raised when a PM attempts to continue task intake beyond its role boundary.
+    
+    This is a mechanical enforcement of the DS-EO delegation protocol:
+    the TaskIntakeManager is designed for administrative workspace creation only.
+    After it returns READY_FOR_CTO, no further actions are permitted — 
+    CTO must independently perform all planning work.
+    
+    See protocols/delegation_protocol.md §5.0 (Role Boundary Enforcement During Task Intake)
+    and agents/pm.md lines 174-228 (Mechanical Boundary Enforcement).
+    """
+    pass
+
+
+class IntakeBoundaryState:
+    """Tracks whether the current intake session has already returned READY_FOR_CTO.
+    
+    Prevents post-intake role collapse where a PM continues to perform CTO duties
+    after receiving the handoff signal.
+    """
+    
+    def __init__(self):
+        self._intake_complete = False
+    
+    def is_complete(self) -> bool:
+        return self._intake_complete
+    
+    def mark_complete(self):
+        self._intake_complete = True
+    
+    def raise_if_complete(self):
+        if self._intake_complete:
+            raise IntakeBoundaryError(
+                "Task intake already completed. Status is READY_FOR_CTO. "
+                "The PM must NOT continue with any additional work beyond intake artifact creation. "
+                "This is a role-boundary violation per delegation_protocol.md §5.0. "
+                "Please dispatch to the CTO for independent technical analysis and planning."
+            )
+
+
+
 DISPATCHERS_DIR_NAME = "docs/dispatchers"
 
 
@@ -801,6 +844,11 @@ def create_task_intake(
     One-shot convenience function for PM task intake.
 
     Creates a TaskIntakeManager and calls create_task_intake().
+    
+    WARNING: This is designed as a single-invocation entry point for PM agents.
+    Once it returns READY_FOR_CTO, it will refuse further calls to enforce
+    the role boundary (PM must NOT continue with CTO duties).
+    For multiple task creations in the same process, use TaskIntakeManager directly.
 
     Args:
         workspace_root: DS-EO workspace root path.
@@ -811,9 +859,13 @@ def create_task_intake(
     Returns:
         (success, result_dict) — same as TaskIntakeManager.create_task_intake().
     """
+    _global_boundary.raise_if_complete()
     mgr = TaskIntakeManager(workspace_root=workspace_root)
-    return mgr.create_task_intake(
+    success, result = mgr.create_task_intake(
         request_text=request_text,
         user_files=user_files,
         mode=mode,
     )
+    if success:
+        _global_boundary.mark_complete()
+    return success, result

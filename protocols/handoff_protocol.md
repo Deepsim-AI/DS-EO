@@ -509,3 +509,73 @@ Write this file whenever:
 | **Low** | Minor process deviations that don't affect task integrity | Log for process improvement review; no user notification required |
 
 ---
+
+---
+
+### Transition 0c: PM → CTO (Pre-Plan Handoff — TASK_DS_EO_030 fix)
+
+**Trigger**: PM has completed task intake and workspace preparation.
+
+**PM Output** (the ONLY thing the PM may produce during this transition):
+```json
+{
+    "type": "READY_FOR_CTO",
+    "taskId": "TASK_<YYYYMMDD>_<NNN>",
+    "workspacePath": "<path to reports directory>",
+    "artifactsAvailable": ["TASK_REQUEST.md", "MANIFEST.md", "PM_ANALYSIS.md"],
+    "status": "INTAKE_COMPLETE",
+    "pmStopReason": "Intake boundary reached. CTO must independently perform technical analysis.",
+    "pmAnalysisIsUserRequestOnly": true,
+    "pmDidNotPerformArchitecturalAnalysis": true
+}
+```
+
+**CTO Verification Before Planning**:
+1. Confirm `TASK_REQUEST.md` exists and contains the verbatim user request.
+2. Read `PM_ANALYSIS.md` — but treat it as **user-submitted context**, not authoritative planning content.
+3. Perform independent architectural analysis of the repository.
+4. Produce `CTO_PLAN.md` independently, without copying or relying on any PM-authored planning artifacts.
+
+**Boundary Enforcement**: If the CTO finds that `PM_ANALYSIS.md` contains architectural analysis (rather than request interpretation), the CTO must note this in `BOUNDARY_VIOLATION.md` but still proceed with independent analysis. The user should be notified of the boundary violation.
+
+**Prohibited PM Actions During This Transition**:
+- ❌ Writing `CTO_PLAN.md`
+- ❌ Performing architectural analysis
+- ❌ Designing technical solutions
+- ❌ Selecting implementation components
+- ❌ Submitting G1 or any gate approval
+
+DELEGATION_FIX
+echo "handoff_protocol.md updated with PM→CTO transition"
+
+---
+
+### Transition 0c: PM → CTO (Pre-Plan Handoff)
+
+**Trigger**: PM has completed task intake and workspace preparation.
+
+**PM Output** (the ONLY thing the PM may produce during this transition):
+```json
+{
+    "type": "READY_FOR_CTO",
+    "taskId": "TASK_<YYYYMMDD>_<NNN>",
+    "workspacePath": "<path to reports directory>",
+    "artifactsAvailable": ["TASK_REQUEST.md", "MANIFEST.md"],
+    "status": "INTAKE_COMPLETE",
+    "pmStopReason": "Intake boundary reached. CTO must independently perform technical analysis.",
+    "pmDidNotPerformArchitecturalAnalysis": true
+}
+```
+
+**CTO Verification Before Planning**:
+1. Confirm `TASK_REQUEST.md` exists and contains the verbatim user request.
+2. Read `PM_ANALYSIS.md` — but treat it as **user-submitted context**, not authoritative planning content.
+3. Perform independent architectural analysis of the repository.
+4. Produce `CTO_PLAN.md` independently.
+
+**Prohibited PM Actions**:
+- Writing `CTO_PLAN.md` or any planning artifact
+- Architectural analysis, gap analysis, design decisions
+- Selecting implementation components/files
+- Submitting G1 or any gate approval
+

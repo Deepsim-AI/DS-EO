@@ -49,7 +49,7 @@ roles:                                       # Engineering organization roles
     emoji: "📋"
     prompt_file: "agents/pm.md"
     description: "Process oversight — task lifecycle, status tracking, release management."
-    default_model: "ollama/qwen3.6:35b"       # Same model family as CTO; identity is in persona, not model
+    default_model: "ollama/gpt-oss:20b"       # Model specialization: PM uses lighter model for coordination work
     model_placeholder: "<MODEL_PM>"
     tool_profile: "generic"                    # Read + write to docs/ and reports/ only — no git operations
 

@@ -11,7 +11,7 @@
 | **TASK_DS_EO_027** | DS-EO Workflow Supervisor / Watchdog | 📋 Planning (G1 Awaiting) | CTO | 2026-08-05 |
 | **TASK_DS_EO_029** | PM Task Intake Manager — workspace creation & dedup | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
 | **TASK_DS_EO_031** | PM Model Specialization (Model Separation) | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
-| **TASK_DS_EO_030** | Session Health & Lifecycle Management | 🔵 Planning (G1 Submitted) | CTO | 2026-08-07 |
+| **TASK_DS_EO_030** ~~Session Health | **TASK_DS_EO_030** | Session Health & Lifecycle Management | 🔵 Planning (G1 Submitted) | CTO | 2026-08-07 | Lifecycle Management~~ | ⛔ REVOKED (Boundary violation, user-initiated retest from PM with new model) | — | 2026-08-07 |
 
 ---
 

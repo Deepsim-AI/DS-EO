@@ -162,3 +162,41 @@ The delegation creates an implicit contract. The Implementer must:
 - `communication_protocol.md` — Message format standards
 - `completion_protocol.md` — What Implementer must deliver at completion
 - `handoff_protocol.md` — Phase transition requirements
+
+---
+
+## Role Boundary Enforcement During Task Intake (NEW §5.0 — TASK_DS_EO_030 fix)
+
+**Problem**: PM agents using `TaskIntakeManager` have been observed performing CTO planning work during task creation — analyzing architecture, designing solutions, selecting components, and writing `CTO_PLAN.md`. This violates the separation of concerns between intake (PM) and planning (CTO).
+
+### Rule 1: Intake is Administrative Only
+
+The Task Intake Manager creates workspace scaffolding (directories, file structure, verbatim request preservation). It does **not** produce technical plans. Any agent using it must stop at workspace creation and hand off to CTO.
+
+### Rule 2: PM May Not Write `CTO_PLAN.md` Under Any Circumstances
+
+| Actor | May write `CTO_PLAN.md`? |
+|-------|--------------------------|
+| CTO   | ✅ Yes — exclusively |
+| PM    | ❌ No — even if they understand the architecture |
+| Implementer | ❌ No |
+| Reviewer | ❌ No |
+| Any other agent | ❌ No |
+
+### Rule 3: Mechanical Enforcement of Intake Boundaries
+
+When any agent completes task intake via `TaskIntakeManager.create_task_intake()`, they **must** perform a self-audit before producing any further output:
+
+1. List every action taken during this session
+2. For each action, check: "Is this creating/organizing workspace artifacts? If YES → OK. If NO → boundary violation."
+3. If any non-intake actions are found, **halt and document** in `BOUNDARY_VIOLATION.md`
+4. Output only the standardized READY_FOR_CTO status line
+
+### Rule 4: Same-Model Role Separation
+
+When PM and CTO use the same model (e.g., `ollama/qwen3.6:35b`), role separation depends **entirely** on prompt boundaries, not model identity. Agents must recognize this risk and be extra vigilant about self-monitoring for role conflation. A self-authored CTO artifact by a PM is an automatic process violation regardless of model identity.
+
+### Rule 5: Independent CTO Planning Required
+
+Even when the PM's task workspace contains preliminary analysis or suggested approaches, the CTO **must independently** inspect the repository, perform their own technical analysis, and produce an authoritative `CTO_PLAN.md`. The CTO must not rely on or reference PM-authored planning content as authoritative — only as user-submitted context.
+
