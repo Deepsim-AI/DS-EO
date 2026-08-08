@@ -32,6 +32,48 @@ All notable changes to DS-EO OpenClaw Edition will be documented in this file.
 - All writes scoped to docs/ and reports/ directories only
 - Mode-agnostic: works identically in both manual and automatic execution modes
 - Intentionally independent of dispatcher's gate machinery — creates artifacts; Dispatcher handles lifecycle transitions
+## [v0.6 — Session Health and Lifecycle Management] — 2026-08-08
+
+### TASK_20260808_001: Session Health and Lifecycle Management System
+
+#### Added
+
+**Session Health Module (`ds_eo_openclaw/session_health/`) [NEW]**
+- `__init__.py` — Public API exports
+- `enums.py` (~80 lines) — SessionHealthState (11 states), LifecycleAction (11 actions), MonitorStatus (3 statuses) with computed properties
+- `config.py` (~100 lines) — YAML-based configuration with conservative defaults:
+  - stale_after_seconds: 3600, oversized_context_kb: 51200
+  - max_compaction_attempts: 2, error_threshold: 3
+  - orphan_inactive_seconds: 7200, monitoring_interval_seconds: 300
+  - observe_by_default: true (dry-run default per spec §23)
+- `discoverer.py` (~250 lines) — Session discovery extending LivenessChecker with 8 health indicators (age, inactivity, context size, compaction state, execution state, error history, task state, recovery history)
+- `classifier.py` (~200 lines) — Deterministic multi-signal → single classification + explainability
+  - Active task protection rule prioritized highest
+  - Ordered priority for all 12 health states
+- `policy.py` (~200 lines) — Health→action policy map with 3 safety layers:
+  - Layer 1: Active task protection (NO_ACTION + safety_override)
+  - Layer 2: Protected session override (WARN not destructive)
+  - Layer 3: Failed compaction → ESCALATE via RecoveryEngine
+- `executor.py` (~200 lines) — Action execution with verify-then-persist pattern
+  - COMPACT verifies context reduction post-execution
+  - All actions return ActionResult with verified status
+  - Monitor status check prevents execution in OBSERVING mode
+- `monitor.py` (~150 lines) — Scheduling loop: discover→classify→policy→execute→audit
+- `audit.py` (~120 lines) — Persistent per-cycle audit log (JSON format, extends audit_log.py patterns)
+
+**Test Suite (`tests/test_session_health.py`) [NEW]**
+- 38 tests covering enums, classification, policy, config, discoverer, and end-to-end pipeline
+- All passing in 0.18s; zero regressions
+
+**Infrastructure Updates:**
+- `ds_eo_openclaw/intake/task_intake.py` — Added session health metadata to MANIFEST.md format
+- `agents/pm.md` — Documented session health capability for PM awareness
+- `ds_eo_manifest.yaml` — Added session_health module entry
+
+#### Known Limitations
+- COMPACT `_perform_compaction()` integration with real OpenClaw API pending (Phase 7)
+- RecoveryEngine injection required for ESCALATE actions; operator must configure
+- Threshold calibration from real session data during Phase 6 deployment
 
 ## [v0.4 — Dispatcher/Workflow Engine Layer] — 2026-08-05
 

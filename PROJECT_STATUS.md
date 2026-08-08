@@ -1,6 +1,6 @@
 # DS-EO Project Status
 
-**Last Updated**: 2026-08-07T14:25:00-07:00  
+**Last Updated**: 2026-08-08T16:13:00-07:00  
 **Current Phase**: Phase 7 — Failure Detection and Recovery (Complete)  
 
 ---
@@ -11,6 +11,7 @@
 | **TASK_DS_EO_027** | DS-EO Workflow Supervisor / Watchdog | 📋 Planning (G1 Awaiting) | CTO | 2026-08-05 |
 | **TASK_DS_EO_029** | PM Task Intake Manager — workspace creation & dedup | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
 | **TASK_DS_EO_031** | PM Model Specialization (Model Separation) | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
+| **TASK_20260808_001** | Session Health & Lifecycle Management | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-08 |
 | **TASK_DS_EO_030** ~~Session Health | **TASK_DS_EO_030** | Session Health & Lifecycle Management | 🔵 Planning (G1 Submitted) | CTO | 2026-08-07 | Lifecycle Management~~ | ⛔ REVOKED (Boundary violation, user-initiated retest from PM with new model) | — | 2026-08-07 |
 
 ---
@@ -155,6 +156,32 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 **Summary**: Core workflow state engine with 11-state machine, auto-advance support, and proper authority boundaries.
 
 ---
+
+### TASK_20260808_001 — Session Health and Lifecycle Management System 📦 (COMPLETED)
+**Date Completed**: 2026-08-08T16:13:00-07:00  
+**Decision**: APPROVED (Gate G4)  
+**Reviewer Score**: B+ → A- threshold  
+
+**Summary**: Comprehensive session health monitoring system providing discovery, deterministic classification, configurable policy with safety layers, safe lifecycle action execution, and audit trail. Builds on LivenessChecker as discovery foundation; delegates to RecoveryEngine for escalation. Defaults to OBSERVING mode (dry-run) for safe deployment.
+
+**Changes:**
+- `ds_eo_openclaw/session_health/__init__.py` [NEW] — Public API exports
+- `ds_eo_openclaw/session_health/enums.py` [NEW] — SessionHealthState (11 states), LifecycleAction (11 actions), MonitorStatus (3 statuses); ~80 lines
+- `ds_eo_openclaw/session_health/config.py` [NEW] — YAML config with conservative defaults; ~100 lines
+- `ds_eo_openclaw/session_health/discoverer.py` [NEW] — Session discovery extending LivenessChecker; ~250 lines
+- `ds_eo_openclaw/session_health/classifier.py` [NEW] — Deterministic classification + explainability; ~200 lines
+- `ds_eo_openclaw/session_health/policy.py` [NEW] — Health→action policy with 3 safety layers; ~200 lines
+- `ds_eo_openclaw/session_health/executor.py` [NEW] — Action execution + verify-then-persist; ~200 lines
+- `ds_eo_openclaw/session_health/monitor.py` [NEW] — Scheduling loop orchestrating the pipeline; ~150 lines
+- `ds_eo_openclaw/session_health/audit.py` [NEW] — Persistent per-cycle audit trail; ~120 lines
+- `ds_eo_openclaw/intake/task_intake.py` [MODIFIED] — Session health metadata section added to MANIFEST.md format
+- `tests/test_session_health.py` [NEW] — 38 tests covering all acceptance criteria; ~490 lines
+- `agents/pm.md` — Documented session health capability
+- `ds_eo_manifest.yaml` — Added session_health module entry
+
+**Test Results**: 38/38 tests passing in 0.18s; zero regressions
+
+**Safety verification**: Active task protection verified correct; protected session override works; OBSERVING mode blocks all execution by default; COMPACT verify-then-persist pattern present. _COMPACT integration requires real OpenClaw API (post-deployment)._
 
 ## Phase History
 
