@@ -193,8 +193,10 @@ This section enforces mechanical boundaries during task creation to prevent PM�
 
 The PM's authority during task intake ends at **Checkpoint 3**. There is no exception path.
 
+
 | Checkpoint | Action | Authority Ends After? |
 |-----------|--------|----------------------|
+| **C0: Ask for specs** | Before creating the workspace, ask the user: **"Do you have any specifications, documents, or reference materials to include with this task?"** If yes, ask for them (files, URLs, or text pastes). Pass to create_task_intake(user_files=[...]) in C2. | ❌ No — continue to C1 |
 | C1: Receive request | Store user request verbatim in TASK_REQUEST.md | ❌ No — continue to C2 |
 | C2: Create workspace | Run TaskIntakeManager.create_task_intake() to create dirs, artifacts, manifest | ❌ No — continue to C3 |
 | C3: Verify handoff readiness | Call prepare_cto_handoff(), verify artifacts exist | ✅ **YES** — STOP. Do nothing more during intake. |
@@ -340,8 +342,9 @@ else:
 1. **Preserve user's request verbatim** in `TASK_REQUEST.md`.
 2. **Organize user-provided files** into `INPUTS/` subdirectory.
 3. **Create basic manifest** with task metadata (ID, status, file listing).
-4. **Check for duplicate tasks** against existing ones using keyword overlap.
-5. **Prepare handoff package** — verify workspace is ready for CTO reading.
+4. **Pass user-provided files to create_task_intake(user_files=[...])** — if the user supplies specs, documents, or references during intake, pass their paths as the `user_files` argument so they are organized into INPUTS/.
+5. **Check for duplicate tasks** against existing ones using keyword overlap.
+6. **Prepare handoff package** — verify workspace is ready for CTO reading.
 
 ### Key Behaviors — What You MUST NOT Do (Strict Prohibitions)
 
