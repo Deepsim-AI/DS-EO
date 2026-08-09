@@ -492,3 +492,8 @@ The CTO plan was rewritten as an upstream bug report for OpenClaw's `resolveSess
 - All thresholds configurable via YAML
 - Monitor starts in OBSERVING mode (dry-run) by default
 - Priority-ordered classification implemented across 8 health indicators
+
+### TASK_20260808_034: Administrative Closure of Tasks 032 & 033
+
+Both investigation tasks closed via G4 approve. No DS-EO code changes were needed — findings are upstream OpenClaw issues and config fixes already applied (compaction.timeoutSeconds→300, reserveTokensFloor→48000). All work documented in INVESTIGATION.md files in their respective task directories.
+

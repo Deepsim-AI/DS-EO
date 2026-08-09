@@ -1,6 +1,6 @@
 # DS-EO Project Status
 
-**Last Updated**: 2026-08-08T16:13:00-07:00  
+**Last Updated**: 2026-08-08T23:07:00-07:00  
 **Current Phase**: Phase 7 — Failure Detection and Recovery (Complete)  
 
 ---
@@ -182,6 +182,12 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 **Test Results**: 38/38 tests passing in 0.18s; zero regressions
 
 **Safety verification**: Active task protection verified correct; protected session override works; OBSERVING mode blocks all execution by default; COMPACT verify-then-persist pattern present. _COMPACT integration requires real OpenClaw API (post-deployment)._
+
+### TASK_20260808_034 — Administrative Closure of Tasks 032 & 033 📦 (COMPLETED)
+**Date Completed**: 2026-08-08T23:07:00-07:00  
+**Decision**: APPROVED (Gate G4)  
+
+**Summary**: Administrative closure of two investigation tasks. TASK_20260808_032 (Run Abort State Sync and Token Accounting Bugs) found no DS-EO code changes needed — both issues are upstream OpenClaw bugs documented in INVESTIGATION.md. TASK_20260808_033 (Cross-Role Compaction Timeout) completed with config fix already applied (compaction.timeoutSeconds→300, reserveTokensFloor→48000). No further DS-EO work needed.
 
 ## Phase History
 
