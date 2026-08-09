@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
 
+from .openclaw_api import OpenClawAPI
+
 
 # --------------------------------------------------------------------------- #
 # Data structures
@@ -89,6 +91,39 @@ class SessionDiscoverer:
                 )
 
         self.workspace_root = os.path.abspath(workspace_root)
+        # Phase 7: real OpenClaw API client for context size queries
+        self.api_client = OpenClawAPI()
+
+    def _get_real_context_size(self, session_key: str) -> Optional[int]:
+        """Query the actual session store for precise byte counts.
+
+        Phase 7: Uses OpenClaw API to get real context size instead of estimating from files.
+        Falls back to existing estimation logic if API unavailable.
+
+        Args:
+            session_key: The session key to query.
+
+        Returns:
+            Context size in KB, or None if the API is unavailable and estimation fails.
+        """
+        # Phase 7: try real OpenClaw API first
+        info = self.api_client.get_session_info(session_key)
+        if info.get("success") and info.get("context_size_bytes"):
+            try:
+                return int(info["context_size_bytes"]) // 1024  # bytes → KB
+            except (ValueError, TypeError):
+                pass  # Fall through to estimation fallback
+
+        # Fallback: existing estimation logic from _estimate_context_size
+        task_id = self._extract_task_id_from_session(session_key)
+        if not task_id:
+            return None
+
+        reports_base = os.path.join(
+            self.workspace_root, "docs", "development", "reports"
+        )
+        task_dir = os.path.join(reports_base, task_id)
+        return self._estimate_context_size(task_dir)
 
     def discover_all_sessions(self) -> list[SessionHealthData]:
         """

@@ -20,6 +20,7 @@ from .config import SessionHealthConfig, get_default_config
 from .discoverer import SessionDiscoverer, SessionHealthData
 from .classifier import HealthClassifier, ClassificationResult
 from .policy import HealthPolicy, PolicyDecision
+from .openclaw_api import OpenClawAPI
 from .executor import SessionHealthExecutor, ActionResult
 from .monitor import SessionHealthMonitor, CycleReport, SessionActionRecord
 from .audit import SessionHealthAuditLog, SessionHealthAuditEvent
@@ -37,6 +38,7 @@ __all__ = [
     "ClassificationResult",
     "HealthPolicy",
     "PolicyDecision",
+    "OpenClawAPI",
     "SessionHealthExecutor",
     "ActionResult",
     "SessionHealthMonitor",
