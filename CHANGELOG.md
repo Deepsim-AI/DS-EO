@@ -497,3 +497,16 @@ The CTO plan was rewritten as an upstream bug report for OpenClaw's `resolveSess
 
 Both investigation tasks closed via G4 approve. No DS-EO code changes were needed — findings are upstream OpenClaw issues and config fixes already applied (compaction.timeoutSeconds→300, reserveTokensFloor→48000). All work documented in INVESTIGATION.md files in their respective task directories.
 
+## [v0.8 — Session Health Real OpenClaw API Integration] — 2026-08-09
+
+### TASK_DS_EO_035: Phase 7 — Session Health Real OpenClaw API Integration
+
+#### Added
+
+- **OpenClaw CLI integration** for session‑health lifecycle actions (COMPACT, ARCHIVE, CLOSE). The executor now calls `openclaw` via a thin wrapper in `ds_eo_openclaw/session_health/openclaw_api.py`, replacing earlier stubs.
+- Updated `executor.py` to invoke the real CLI and handle subprocess errors.
+- New tests (`tests/test_session_health_api_integration.py`) mock the subprocess calls and confirm correct command construction; all 8 tests pass.
+
+#### Known Limitations
+
+- COMPACT, ARCHIVE, and CLOSE rely on the OpenClaw CLI being available in the runtime environment. Deployment integration is pending.
