@@ -171,3 +171,25 @@ ds-eo-core/                    ← Platform-independent roles, protocols, templa
 
 *Roadmap maintained by CTO (ollama/qwen3.6:35b)*  
 *Last updated: 2026-07-28*
+
+---
+
+## v0.4 — Workflow Supervisor / Auto-Dispatch (In Progress) 🔄
+
+### Objective
+
+Build the **real `spawn_agent()`** infrastructure that makes `/eco automatic mode` work end-to-end:
+- Replace dispatcher's stub spawn with real OpenClaw session creation
+- Add verification layer so phantom sessions are caught at dispatch time
+- Unblock TASK_DAL_002 (deferred pending this phase)
+
+### Tasks in v0.4
+| Task | Title | Status |
+|------|-------|--------|
+| **TASK_DS_EO_038** | Phase 8 — Real `spawn_agent()` with OpenClaw CLI integration | **📋 G1 Awaiting (this task)** |
+
+### Success Criteria
+
+- [ ] PM can auto-advance a task and the Implementer receives real session with actual work
+- [ ] All existing tests pass (no regressions from stub→real change)
+- [ ] TASK_DAL_002 fully completes via automatic mode (proving end-to-end automation works)
