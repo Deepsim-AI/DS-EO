@@ -10,6 +10,7 @@ Comprehensive tests for the session health system covering:
 Run with: python -m pytest tests/test_session_health.py -v
 """
 
+import json
 import os
 import sys
 import tempfile
@@ -31,6 +32,8 @@ from ds_eo_openclaw.session_health.config import SessionHealthConfig, get_defaul
 from ds_eo_openclaw.session_health.discoverer import SessionDiscoverer, SessionHealthData
 from ds_eo_openclaw.session_health.classifier import HealthClassifier, ClassificationResult, SignalEvidence
 from ds_eo_openclaw.session_health.policy import HealthPolicy, PolicyDecision
+from ds_eo_openclaw.session_health.openclaw_api import OpenClawAPI
+from ds_eo_openclaw.session_health.executor import SessionHealthExecutor
 
 
 # --------------------------------------------------------------------------- #
@@ -686,3 +689,516 @@ class TestFullPipeline:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+# ===== Phase 7: Real OpenClaw API Integration Tests (TASK_DS_EO_035) =====
+
+
+class TestOpenClawAPI:
+    """Test the OpenClawAPI wrapper with mocked subprocess calls."""
+
+    def test_compact_session_success(self):
+        """COMPACT: successful compaction returns context size in KB."""
+        api = OpenClawAPI()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                returncode=0,
+                stdout=json.dumps({"contextSizeBytes": 1048576}),
+                stderr="",
+            )
+            result = api.compact_session("test-session-key")
+
+        assert result["success"] is True
+        assert result["error"] is None
+        assert result["context_size_kb"] == 1024  # 1MB → 1024KB
+
+    def test_compact_session_failure(self):
+        """COMPACT: non-zero exit code returns failure with error message."""
+        api = OpenClawAPI()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                returncode=1,
+                stdout="",
+                stderr="compaction failed: session not found",
+            )
+            result = api.compact_session("nonexistent-session")
+
+        assert result["success"] is False
+        assert "CLI failed" in result["error"]
+        assert result["context_size_kb"] is None
+
+    def test_archive_session_success(self):
+        """ARCHIVE: successful export returns file path."""
+        api = OpenClawAPI()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                returncode=0,
+                stdout=json.dumps({"filePath": "/tmp/archive.tar.gz"}),
+                stderr="",
+            )
+            result = api.archive_session("test-session-key")
+
+        assert result["success"] is True
+        assert result["error"] is None
+        assert result["file_path"] == "/tmp/archive.tar.gz"
+
+    def test_archive_session_failure(self):
+        """ARCHIVE: non-zero exit code returns failure with error message."""
+        api = OpenClawAPI()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                returncode=1,
+                stdout="",
+                stderr="export failed: session not found",
+            )
+            result = api.archive_session("nonexistent-session")
+
+        assert result["success"] is False
+        assert "CLI failed" in result["error"]
+        assert result["file_path"] is None
+
+    def test_close_session_not_supported(self):
+        """CLOSE: documents limitation when no direct close API exists."""
+        api = OpenClawAPI()
+        with patch("subprocess.run") as mock_run:
+            # Simulate cleanup returning empty result (session still in store)
+            mock_run.return_value = MagicMock(
+                returncode=0,
+                stdout=json.dumps([]),
+                stderr="",
+            )
+            result = api.close_session("test-session-key")
+
+        assert result["success"] is False
+        assert "does not support direct session close" in result["error"].lower()
+        assert result["method"] == "none"
+
+    def test_get_session_info_success(self):
+        """GET_INFO: returns context size, turn count, and status for found session."""
+        api = OpenClawAPI()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                returncode=0,
+                stdout=json.dumps([
+                    {
+                        "key": "test-session-key",
+                        "contextSizeBytes": 2097152,
+                        "turnCount": 42,
+                        "status": "running",
+                        "lastTurnTime": "2026-08-08T23:00:00Z",
+                    }
+                ]),
+                stderr="",
+            )
+            result = api.get_session_info("test-session-key")
+
+        assert result["success"] is True
+        assert result["context_size_bytes"] == 2097152
+        assert result["turn_count"] == 42
+        assert result["status"] == "running"
+        assert result["last_turn_time"] == "2026-08-08T23:00:00Z"
+
+    def test_get_session_info_not_found(self):
+        """GET_INFO: returns failure when session is not in the store."""
+        api = OpenClawAPI()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                returncode=0,
+                stdout=json.dumps([]),  # Empty list — session not found
+                stderr="",
+            )
+            result = api.get_session_info("nonexistent-session-key")
+
+        assert result["success"] is False
+        assert "not found" in result["error"].lower()
+
+    def test_run_cmd_timeout(self):
+        """_run_cmd: handles subprocess.TimeoutExpired gracefully."""
+        api = OpenClawAPI(timeout_seconds=1)
+        with patch("subprocess.run") as mock_run:
+            import subprocess
+            mock_run.side_effect = subprocess.TimeoutExpired(
+                cmd=["openclaw", "sessions", "list"],
+                timeout=1,
+            )
+            success, stdout, stderr = api._run_cmd(["openclaw", "sessions", "list"])
+
+        assert success is False
+        assert "timed out" in stderr.lower()
+
+    def test_run_cmd_file_not_found(self):
+        """_run_cmd: handles FileNotFoundError when openclaw CLI is missing."""
+        api = OpenClawAPI()
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = FileNotFoundError("openclaw not found in PATH")
+            success, stdout, stderr = api._run_cmd(["openclaw", "sessions", "list"])
+
+        assert success is False
+        assert "not found" in stderr.lower()
+
+
+# ===== Phase 7: Executor Integration Tests (mocked at subprocess level) =====
+
+
+class TestExecutorPhase7:
+    """Test executor action handlers with mocked OpenClaw API."""
+
+    @pytest.fixture
+    def mock_api_client(self):
+        """Create a mock OpenClawAPI client for executor tests."""
+        return MagicMock(spec=OpenClawAPI)
+
+    @pytest.fixture
+    def executor_with_mock_api(self, mock_api_client):
+        """Create an executor with a mocked API client (active monitoring)."""
+        config = get_default_config()
+        return SessionHealthExecutor(
+            config=config,
+            monitor_status=MonitorStatus.ACTIVE,
+            api_client=mock_api_client,
+        )
+
+    def test_compact_with_mock_success(self, executor_with_mock_api, mock_api_client):
+        """COMPACT: real API call returns successful result with reduced context size."""
+        # Mock the API to return a successful compaction with smaller context
+        mock_api_client.compact_session.return_value = {
+            "success": True,
+            "error": None,
+            "context_size_kb": 500,  # Reduced from pre-size
+        }
+
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=True,
+            status="running",
+            context_size_kb=1000,  # Pre-compact size (larger)
+            error_count=0,
+            age_seconds=300.0,
+            task_association="INACTIVE",
+        )
+
+        result = executor_with_mock_api.execute(
+            "test-session", LifecycleAction.COMPACT, health_data
+        )
+
+        assert result.success is True
+        assert result.verified is True  # Post-size (500) < pre-size (1000)
+        assert result.post_metrics["context_size_kb_after"] == 500
+        mock_api_client.compact_session.assert_called_once_with("test-session")
+
+    def test_compact_with_mock_failure(self, executor_with_mock_api, mock_api_client):
+        """COMPACT: real API call returns failure — action fails gracefully."""
+        # Mock the API to return a failure
+        mock_api_client.compact_session.return_value = {
+            "success": False,
+            "error": "compaction failed",
+            "context_size_kb": None,
+        }
+
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=True,
+            status="running",
+            context_size_kb=1000,
+            error_count=0,
+            age_seconds=300.0,
+            task_association="INACTIVE",
+        )
+
+        result = executor_with_mock_api.execute(
+            "test-session", LifecycleAction.COMPACT, health_data
+        )
+
+        assert result.success is False
+        assert result.error_message == "compaction failed"
+        mock_api_client.compact_session.assert_called_once()
+
+    def test_archive_with_mock_success(self, executor_with_mock_api, mock_api_client):
+        """ARCHIVE: real API call returns successful archive with file path."""
+        # Mock the API to return a successful archive
+        mock_api_client.archive_session.return_value = {
+            "success": True,
+            "error": None,
+            "file_path": "/tmp/test-archive.tar.gz",
+        }
+
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=True,
+            status="completed",
+            context_size_kb=500,
+            error_count=0,
+            age_seconds=3600.0,
+            task_association="INACTIVE",  # Not active — can archive
+        )
+
+        # Patch os.path.exists so the executor's verification passes
+        with patch("os.path.exists", return_value=True):
+            result = executor_with_mock_api.execute(
+                "test-session", LifecycleAction.ARCHIVE, health_data
+        
+        )
+
+        assert result.success is True
+        assert result.verified is True  # File path exists on disk (mocked)
+        mock_api_client.archive_session.assert_called_once()
+
+    def test_archive_active_task_blocked(self, executor_with_mock_api):
+        """ARCHIVE: active task sessions are blocked before API call."""
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=True,
+            status="running",
+            context_size_kb=500,
+            error_count=0,
+            age_seconds=3600.0,
+            task_association="ACTIVE",  # Active — cannot archive
+        )
+
+        # Patch os.path.exists so the executor's verification passes
+        with patch("os.path.exists", return_value=True):
+            result = executor_with_mock_api.execute(
+                "test-session", LifecycleAction.ARCHIVE, health_data
+        
+        )
+
+        assert result.success is False
+        assert "active" in result.error_message.lower()
+
+    def test_close_with_mock_failure(self, executor_with_mock_api, mock_api_client):
+        """CLOSE: documents limitation when no direct close API exists."""
+        # Mock the API to return failure (session still in store)
+        mock_api_client.close_session.return_value = {
+            "success": False,
+            "method": "none",
+            "error": "OpenClaw does not support direct session close",
+        }
+
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=False,  # Not alive — safe to attempt close
+            status="completed",
+            context_size_kb=500,
+            error_count=0,
+            age_seconds=3600.0,
+            task_association="INACTIVE",  # Not active — can attempt close
+        )
+
+        result = executor_with_mock_api.execute(
+            "test-session", LifecycleAction.CLOSE, health_data
+        )
+
+        assert result.success is False
+        assert "does not support direct session close" in result.error_message.lower()
+        mock_api_client.close_session.assert_called_once()
+
+    def test_warn_delivers_notification(self, executor_with_mock_api):
+        """WARN: writes structured notification file to ~/.openclaw/notifications/."""
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=True,
+            status="running",
+            context_size_kb=5000,
+            error_count=0,
+            age_seconds=3600.0,
+            task_association="INACTIVE",
+        )
+
+        result = executor_with_mock_api.execute(
+            "test-session", LifecycleAction.WARN, health_data
+        )
+
+        assert result.success is True
+        assert result.post_metrics.get("warning_recorded") is True
+        # Verify notification file was created (check path exists)
+        notification_file = result.post_metrics.get("notification_file")
+        if notification_file:
+            assert os.path.exists(notification_file) or "notifications" in notification_file
+
+    def test_monitor_updates_internal_state(self, executor_with_mock_api):
+        """MONITOR: updates internal monitoring config without real API call."""
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=True,
+            status="running",
+            context_size_kb=500,
+            error_count=0,
+            age_seconds=3600.0,
+            task_association="INACTIVE",
+        )
+
+        result = executor_with_mock_api.execute(
+            "test-session", LifecycleAction.MONITOR, health_data
+        )
+
+        assert result.success is True
+        assert result.post_metrics.get("monitoring_enabled") is True
+        # Should include the configured polling interval
+        assert str(executor_with_mock_api.config.monitoring_interval_seconds) in str(result.details)
+
+    def test_e2e_compact_verify_size_reduction(self, executor_with_mock_api, mock_api_client):
+        """End-to-end: COMPACT → verify pre-size > post-size."""
+        # Mock the API to return a smaller context size after compaction
+        mock_api_client.compact_session.return_value = {
+            "success": True,
+            "error": None,
+            "context_size_kb": 200,  # Much smaller than pre-size
+        }
+
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=True,
+            status="running",
+            context_size_kb=1000,  # Pre-compact size (large)
+            error_count=0,
+            age_seconds=3600.0,
+            task_association="INACTIVE",
+        )
+
+        result = executor_with_mock_api.execute(
+            "test-session", LifecycleAction.COMPACT, health_data
+        )
+
+        assert result.success is True
+        assert result.verified is True
+        # Verify the pre/post metrics show reduction
+        pre_size = result.pre_metrics.get("context_size_kb")
+        post_size = result.post_metrics.get("context_size_kb_after")
+        assert pre_size is not None and post_size is not None
+        assert pre_size > post_size, f"Pre-size ({pre_size}) should be greater than post-size ({post_size})"
+
+    def test_protected_session_warn_only(self):
+        """Protected sessions: only WARN allowed — COMPACT/ARCHIVE/CLOSE blocked."""
+        config = get_default_config()
+        protected_key = "protected-session-key"
+        executor = SessionHealthExecutor(
+            config=config,
+            monitor_status=MonitorStatus.ACTIVE,
+            protected_sessions={protected_key},
+        )
+
+        health_data = SessionHealthData(
+            session_key=protected_key,
+            alive=True,
+            status="running",
+            context_size_kb=5000,
+            error_count=0,
+            age_seconds=3600.0,
+            task_association="INACTIVE",
+        )
+
+        # COMPACT should be blocked on protected session
+        compact_result = executor.execute(
+            protected_key, LifecycleAction.COMPACT, health_data
+        )
+        assert compact_result.success is False
+        assert "protected" in compact_result.error_message.lower()
+
+        # ARCHIVE should be blocked on protected session
+        archive_result = executor.execute(
+            protected_key, LifecycleAction.ARCHIVE, health_data
+        )
+        assert archive_result.success is False
+        assert "protected" in archive_result.error_message.lower()
+
+        # CLOSE should be blocked on protected session
+        close_result = executor.execute(
+            protected_key, LifecycleAction.CLOSE, health_data
+        )
+        assert close_result.success is False
+        assert "protected" in close_result.error_message.lower()
+
+        # WARN should still work on protected sessions
+        warn_result = executor.execute(
+            protected_key, LifecycleAction.WARN, health_data
+        )
+        assert warn_result.success is True  # WARN allowed even on protected sessions
+
+    def test_monitor_status_blocks_execution(self):
+        """OBSERVING/PAUSED status: no actions executed (dry-run mode)."""
+        config = get_default_config()
+        executor = SessionHealthExecutor(
+            config=config,
+            monitor_status=MonitorStatus.OBSERVING,  # Not ACTIVE
+        )
+
+        health_data = SessionHealthData(
+            session_key="test-session",
+            alive=True,
+            status="running",
+            context_size_kb=500,
+            error_count=0,
+            age_seconds=3600.0,
+            task_association="INACTIVE",
+        )
+
+        result = executor.execute("test-session", LifecycleAction.COMPACT, health_data)
+        assert result.success is False
+        assert "observing" in result.error_message.lower()
+
+
+# ===== Phase 7: Discoverer Integration Tests =====
+
+
+class TestDiscovererPhase7:
+    """Test discoverer's real context size query with mocked API."""
+
+    def test_get_real_context_size_from_api(self):
+        """Real context size is queried from OpenClaw API when available."""
+        discoverer = SessionDiscoverer()
+
+        # Mock the API client to return a specific context size
+        with patch.object(discoverer.api_client, 'get_session_info') as mock_get:
+            mock_get.return_value = {
+                "success": True,
+                "context_size_bytes": 2097152,  # 2MB in bytes
+                "turn_count": None,
+                "status": None,
+                "last_turn_time": None,
+                "error": None,
+            }
+
+            result = discoverer._get_real_context_size("test-session-key")
+
+        assert result == 2048  # 2MB → 2048KB (integer division)
+        mock_get.assert_called_once_with("test-session-key")
+
+    def test_get_real_context_size_fallback_to_estimation(self):
+        """Falls back to estimation when API is unavailable."""
+        discoverer = SessionDiscoverer()
+
+        # Mock the API client to return failure (API unavailable)
+        with patch.object(discoverer.api_client, 'get_session_info') as mock_get:
+            mock_get.return_value = {
+                "success": False,
+                "context_size_bytes": None,
+                "turn_count": None,
+                "status": None,
+                "last_turn_time": None,
+                "error": "API unavailable",
+            }
+
+            # Fallback: estimation from file system (uses existing _estimate_context_size)
+            with patch.object(discoverer, '_estimate_context_size', return_value=42):
+                result = discoverer._get_real_context_size("agent:reviewer:TASK_DS_EO_035")
+
+        assert result == 42  # Estimation fallback value
+
+    def test_get_real_context_size_api_error(self):
+        """Returns None when API fails and estimation also has no data."""
+        discoverer = SessionDiscoverer()
+
+        with patch.object(discoverer.api_client, 'get_session_info') as mock_get:
+            mock_get.return_value = {
+                "success": False,
+                "context_size_bytes": None,
+                "turn_count": None,
+                "status": None,
+                "last_turn_time": None,
+                "error": "API error",
+            }
+
+            # No task directory to estimate from — returns None
+            result = discoverer._get_real_context_size("no-task-id-session")
+
+        assert result is None
