@@ -179,8 +179,21 @@ ds-eo-openclaw/
 │   │   └── default.yaml          # G0-G4 gate machine definition
 │   └── __init__.py              # Package initialization
 │
-├── ds_eo_openclaw/              # Python package (v0.3 — Automatic Mode)
+├── ds_eo_openclaw/              # Python package modules
     ├── __init__.py              # Package initialization
+    ├── intake/                  # Task Intake Manager (v0.5)
+    │   ├── __init__.py          # Public API exports (TaskIntakeManager, create_task_intake)
+    │   └── task_intake.py       # PM-driven task intake with dedup, workspace creation, CTO handoff prep
+    ├── session_health/          # Session Health monitoring (v0.6)
+    │   ├── __init__.py          # Public API exports
+    │   ├── enums.py             # SessionHealthState, LifecycleAction, MonitorStatus
+    │   ├── config.py            # YAML-based configuration with conservative defaults
+    │   ├── discoverer.py        # Session discovery extending LivenessChecker
+    │   ├── classifier.py        # Deterministic multi-signal → single classification
+    │   ├── policy.py            # Health→action policy map with 3 safety layers
+    │   ├── executor.py          # Action execution with verify-then-persist pattern
+    │   ├── monitor.py           # Scheduling loop: discover→classify→policy→execute→audit
+    │   └── audit.py             # Persistent per-cycle audit trail
     └── workflow/
         ├── __init__.py
         ├── state_engine.py      # 11-state state machine with auto-advance
@@ -201,7 +214,7 @@ ds-eo-openclaw/
 | CTO / Architect | 🏗️ | Architecture, planning, final approval authority | `ollama/qwen3.6:35b` |
 | Code Implementer | 💻 | Execute approved plans, produce working code | `ollama/ornith:35b` |
 | Senior Code Reviewer | 🔍 | Independent verification and quality assessment | `ollama/laguna-xs-2.1:q4_K_M` |
-| Project Manager | 📋 | Process oversight — task lifecycle, status tracking, release management | `ollama/qwen3.6:35b` |
+| Project Manager | 📋 | Process oversight — task lifecycle, status tracking, release management | `ollama/gpt-oss:20b` |
 
 ## Development Workflow
 
@@ -243,7 +256,7 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
 - **v0.1** (completed): Extract, package, and install DS-EO OpenClaw Edition
 - **v0.2** (completed): Protocol & governance consistency migration
 - **v0.3** (completed): Automatic Mode — full workflow engine, audit trail, mode selector, failure handling, and slash command skill
-- **v0.4** (in-progress): Dispatcher/Workflow Engine layer
+- **v0.4** (completed): Dispatcher/Workflow Engine layer
   - `dispatcher/registry.py` — Agent registry loader with SHA256 integrity checksums
   - `dispatcher/engine.py` — G0-G4 gate machine state machine (data-driven from YAML)
   - `dispatcher/state_manager.py` — Persistent per-task state with atomic writes + audit logs
@@ -254,10 +267,30 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
   - PM tool policy updated: exec + write + sessions_list + memory access
   - CTO tool policy updated: sessions_spawn + sessions_send for delegation
   - All internal routing lives in dispatcher, not gateway config (design constraint met)
+- **v0.5** (completed): Task Intake Manager Layer
+  - `ds_eo_openclaw/intake/` — PM-driven task intake with dedup, workspace creation, and CTO handoff preparation
+  - `tests/test_task_intake.py` — 17 tests covering all spec acceptance criteria
+- **v0.6** (completed): Session Health and Lifecycle Management Layer
+  - `ds_eo_openclaw/session_health/` — Session discovery, classification, policy, and lifecycle management
+    - `enums.py` — SessionHealthState (11 states), LifecycleAction (11 actions), MonitorStatus (3 statuses)
+    - `config.py` — YAML-based configuration with conservative defaults
+    - `discoverer.py` — Session discovery extending LivenessChecker (8 health indicators)
+    - `classifier.py` — Deterministic multi-signal → single classification
+    - `policy.py` — Health→action policy map with 3 safety layers
+    - `executor.py` — Action execution with verify-then-persist pattern
+    - `monitor.py` — Scheduling loop: discover→classify→policy→execute→audit pipeline
+    - `audit.py` — Persistent per-cycle audit trail
+  - Configurable thresholds, OBSERVING mode by default
+  - Total tests across all modules: 315 (0 failures)
+- **v0.7** (in-progress): Runtime Investigation and Upstream Bug Reports
+  - TASK_20260808_032: Token accounting and run abort state sync bug analysis
+  - TASK_20260808_033: Cross-role compaction timeout root cause investigation
+  - TASK_DS_EO_031: Upstream bug report for `resolveSessionModelRef` precedence fix
 - **v1.0** (planned): Platform abstraction layer for multi-platform editions
 - **Future**: Additional platform editions (Claude, Codex, Gemini)
 
-## License
+
+# License
 
 MIT
 
