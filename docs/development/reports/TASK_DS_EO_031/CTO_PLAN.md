@@ -1,108 +1,159 @@
 ---
-produced_by: cto
+produced_by: ollama/qwen3.6:35b
 role: CTO
 task_id: TASK_DS_EO_031
-gate: G1 (plan approved)
-created_at: 2026-08-07T17:40:00Z
+generated_at: 2026-08-08T02:48:00Z
+gate: G1
 ---
 
-# CTO Plan — TASK_DS_EO_031
+# TASK_DS_EO_031 — Upstream bug/patch: resolveSessionModelRef precedence between per-agent config and stale session metadata
 
-## Technical Analysis
+## Problem Statement
 
-### Problem Statement
+`openclaw status` displays the **default** model for every agent instead of each agent's configured per-agent model. This is caused by a precedence bug in `resolveSessionModelRef`: it gives persisted session-entry model values higher priority than current per-agent configuration. Once a session entry is created with any model, that value persists indefinitely in the display — even if the agent config later changes to a different model.
 
-PM and CTO were both bound to `ollama/qwen3.6:35b`. The role-boundary problem observed in TASK_DS_EO_030 demonstrated that a PM using the same model as CTO can easily drift into CTO-level analysis (architecture review, gap analysis, planning artifacts). Assigning a lighter model to PM provides both a practical specialization and a mechanical role boundary.
+Runtime model routing is unaffected (confirmed via logs and trajectory files). The bug is purely in the status/display lookup path.
 
-### Model Availability
+---
 
-- `gpt-oss:20b` — installed locally, verified working via `ollama run gpt-oss:20b`
-- `qwen3.6:35b` — confirmed operational (this session)
-- `ornith:35b` — confirmed installed
-- `laguna-xs-2.1:q4_K_M` — confirmed installed
+## Root Cause Analysis
 
-### Configuration Files That Bind Models
+### 1. Stale session entry writes first, never updates on config change
 
-| File | What It Contains | Must Update? |
-|------|-----------------|-------------|
-| `~/.openclaw/openclaw.json` (agents.list) | Live agent-to-model bindings used by OpenClaw runtime | **YES** |
-| `ds_eo_manifest.yaml` | Package manifest with default model suggestions | **YES** |
-| `agents_list.json` | Package-level agents list (source of truth for package) | **YES** |
-| `agents/pm.md` | PM role prompt with model placeholder suggestion | **YES** |
-| `agents/cto.md` | CTO role prompt — no change needed | No |
-| `AGENTS.md` | Engineering org document listing all agent models | **YES** |
+When an agent's first session is created, `sessions.json` populates every entry with the model resolved at that moment — which for PM was `qwen3.6:35b` (the default). Later changing the agent config to `gpt-oss:20b` does **not** update existing session entries.
 
-### Detailed Changes
+### 2. `resolveSessionModelRef` priority order is inverted
 
-#### 1. OpenClaw Runtime (`~/.openclaw/openclaw.json`)
+Source: `status.summary-fItK9afs.js` → `resolveSessionModelRef()`
 
-Change the PM agent entry:
-```json
-{
-  "id": "pm",
-  "model": "ollama/gpt-oss:20b",   // was "ollama/qwen3.6:35b"
-  ...
+Priority order in current code:
+1. `providerlessPersisted` — uses `entry.modelOverride/entry.modelOverrideSource` (skipped if no value)
+2. **`resolvePersistedSelectedModelRef(runtimeProvider=entry.modelProvider, runtimeModel=entry.model)`** — returns the stale session entry model immediately
+3. Falls through to `resolveConfiguredStatusModelRef(agentId=...)` which would return the correct per-agent config model
+
+**The bug:** Step 2 returns a non-null value from stale session data *before* step 3 is reached, so the agent-config-derived model is never consulted for display.
+
+### 3. The fix must address the precedence contract
+
+The question `resolveSessionModelRef` should answer is: *"What is this session's effective model?"* There are two valid interpretations:
+
+| Interpretation | Meaning | Correctness |
+|---|---|---|
+| A (current) | "What model was *actually used* when this session ran" | Accurate for historical record, but misleading for display if config changed |
+| B (desired) | "What model does this agent *currently use*, per its configuration" | Correct for status/TUI — shows current intent, not historical artifact |
+
+For status/display purposes, **B is the correct interpretation**. If a user changes an agent's model in config, they expect to see it reflected immediately.
+
+---
+
+## Proposed Patch (Upstream Bug Report + Fix)
+
+### File(s) affected
+- `src/commands/status.summary.ts` (TypeScript source; compiled to `status.summary-fItK9afs.js`)
+- Specifically the `resolveSessionModelRef()` function
+
+### Change: Correct precedence in `resolveSessionModelRef`
+
+**Current logic:**
+```ts
+function resolveSessionModelRef(cfg, entry, agentId) {
+  const resolved = resolveConfiguredStatusModelRef({ cfg, defaultProvider, defaultModel, agentId });
+  // ...
+  const providerlessPersisted = /* ... */;
+  if (providerlessPersisted) return providerlessPersisted;
+
+  return resolvePersistedSelectedModelRef({
+    defaultProvider,
+    runtimeProvider: entry?.modelProvider,   // ← stale session value!
+    runtimeModel: entry?.model,              // ← stale session value!
+    overrideProvider: entry?.providerOverride,
+    overrideModel: entry?.modelOverride,
+    ...
+  }) ?? resolved;  // ← NEVER REACHED for PM because step above returns non-null
 }
 ```
 
-**Note**: The key is `ollama/gpt-oss:20b` (with `ollama/` prefix for the provider). OpenClaw uses this convention to resolve against local Ollama models.
+**Proposed logic:**
+```ts
+function resolveSessionModelRef(cfg, entry, agentId) {
+  const resolved = resolveConfiguredStatusModelRef({ cfg, defaultProvider, defaultModel, agentId });
+  
+  // If there's a user-pinned model override (explicit /model change), use it.
+  if (hasUserPinnedModelSelection(entry)) {
+    return resolvePersistedSelectedModelRef({...});
+  }
 
-#### 2. Package Manifest (`ds_eo_manifest.yaml`)
+  // Check if the session's runtime model matches the agent config.
+  // If they match, return it (for display consistency with "what this session ran on").
+  const persisted = resolvePersistedSelectedModelRef({
+    defaultProvider: resolved.provider || "openai",
+    runtimeProvider: entry?.modelProvider,
+    runtimeModel: entry?.model,
+    overrideProvider: entry?.providerOverride,
+    overrideModel: entry?.modelOverride,
+    ...
+  });
 
-Change the PM default_model from `"ollama/qwen3.6:35b"` to `"ollama/gpt-oss:20b"`.
+  if (persisted) {
+    // If the persisted model matches the config, return it (normal case).
+    if (areRuntimeModelRefsEquivalent(persisted, resolved)) {
+      return persisted;
+    }
+    // If they differ AND no user override exists:
+    // The config is the source of truth — the session entry is stale.
+    // Invalidate it by returning the config value.
+  }
 
-Update the comment line that says "Same model family as CTO; identity is in persona, not model" to reflect the new specialization rationale.
+  return resolved;  // Agent config wins when session entry is stale/no-override
+}
+```
 
-#### 3. Package Agents List (`agents_list.json`)
+### Alternative approach (simpler): Invalidating stale entries on startup
 
-Change PM entry's `"model"` from `"ollama/qwen3.6:35b"` to `"ollama/gpt-oss:20b"`.
+Instead of changing lookup logic, add a migration step during gateway startup:
 
-#### 4. PM Role Prompt (`agents/pm.md`)
+1. For each agent in `agents.list`, compare `agent.model` against every session entry's `model`
+2. If they differ AND no `modelOverrideSource === "user"` exists, update the session entry to match the config
+3. This ensures persistence stays in sync with configuration
 
-Update the model placeholder section and add a rationale paragraph explaining:
-- PM now uses `gpt-oss:20b` (lighter, specialized for coordination)
-- Rationale: separates coordination work from technical analysis; reinforces mechanical boundary since different models = different session isolation
+This is safer (less logic change) but requires iterating all sessions on startup.
 
-#### 5. AGENTS.md
+### Alternative approach (least invasive): Use modelOverrideSource
 
-Update the CTO role definition section to reflect that PM and CTO now use different models (it previously stated they share the same model). Remove or update any comment suggesting they share a model family.
+In `resolvePersistedSelectedModelRef`, only return a value if:
+- `modelOverrideSource === "user"` (explicit user override), OR  
+- The persisted model matches the per-agent config for that agent
 
-### Rollback Procedure
+This preserves backward compatibility while fixing the stale-display bug.
 
-1. **OpenClaw runtime**: Revert `~/.openclaw/openclaw.json` PM model entry back to `"ollama/qwen3.6:35b"` and restart gateway (`openclaw gateway restart`)
-2. **Package files**: Reverse all changes in `ds_eo_manifest.yaml`, `agents_list.json`, `agents/pm.md`, and `AGENTS.md` — revert to pre-change git state via `git checkout`
+---
 
-### Validation Steps
+## Deliverables
 
-1. `openclaw agents list` → confirm PM shows `ollama/gpt-oss:20b`, all others unchanged
-2. `openclaw gateway restart` → no startup errors
-3. `python -m pytest tests/ --tb=no 2>&1 | tail -5` → all pass (no config-test regressions expected)
+1. **Bug report** — File against OpenClaw repo with reproduction steps, root cause analysis, and proposed fix
+2. **Patch proposal** — TypeScript diff of `resolveSessionModelRef` with all three approaches evaluated
+3. **Local workaround script** (optional) — Auto-detect-and-fix stale session entries on demand
+4. **Acceptance verification** — Confirm `openclaw status` shows correct per-agent models after fix
 
-## Acceptance Criteria Mapping
+## Acceptance Criteria
 
-| Req | Status | Details |
-|-----|--------|---------|
-| Req 1: PM → gpt-oss:20b | **Approved** | 5 files to update |
-| Req 2: CTO → qwen3.6:35b | Confirmed no change needed | Already bound correctly |
-| Req 3: Implementer → ornith:35b | Confirmed no change needed | Already bound correctly |
-| Req 4: Reviewer unchanged | Confirmed no change needed | Already correct |
-| Req 5: Config consistency | **Approved** | All 6 locations updated |
-| Req 6: Role-boundary docs | **Approved** | PM prompt + AGENTS.md update |
-| Req 7: Validation | **Approved** | Agents list + test suite + restart |
+1. Per-agent model configuration in `agents.list[].model` takes precedence over persisted session entry `model` for all display/logic paths that read "effective model"
+2. Stale session metadata is either: (a) invalidated on config change, or (b) ignored when it differs from config and no user override exists
+3. User-pinned overrides (`/model`, `modelOverrideSource === "user"`) still take precedence over config — user intent must not be overridden by automatic sync
+4. Runtime model routing for CTO, Implementer, Reviewer, PM is unchanged
+5. No session metadata corruption or data loss
 
-## Risk Assessment
+## Implementation Notes
 
-- **Low**: gpt-oss:20b is already installed and verified. No new dependencies.
-- **Low**: Change is purely configuration — all files have git history for rollback.
-- **Medium**: If gpt-oss:20b has capability gaps for PM workload, may need to adjust the PM's role prompt to not rely on complex reasoning from the lighter model.
+- **Do NOT change runtime model resolution** — only the status/display lookup path
+- **Preserve backward compatibility** — user-pinned overrides must still work
+- The `areRuntimeModelRefsEquivalent()` function already exists in this codebase (imported from `model-runtime-aliases-w4oRlOM0.js`) and can be reused for comparison
+- Consider adding a migration/version field to session entries so future stale-value bugs are detected automatically
 
-## Implementation Steps
+## Verification Steps
 
-1. Update `~/.openclaw/openclaw.json` — PM model binding (critical path)
-2. Restart OpenClaw gateway to apply config change
-3. Verify with `openclaw agents list`
-4. Update `ds_eo_manifest.yaml` (package manifest)
-5. Update `agents_list.json` (package-level source of truth)
-6. Update `agents/pm.md` (role prompt rationale)
-7. Update `AGENTS.md` (engineering org documentation)
-8. Run test suite to confirm no regressions
+1. Before: confirm `openclaw status` shows incorrect models for agents whose config changed after initial creation
+2. Apply patch → restart gateway
+3. After: verify each agent displays its configured model
+4. Test edge cases: user-pinned override, fresh session, config rollback
+5. Confirm no regression on runtime model selection via logs and trajectory files

@@ -429,3 +429,54 @@ TASK_DS_EO_019 delivered architecture design for configurable workflow execution
 - ❌ No notification delivery (types defined, not dispatched)
 - ❌ No architectural refactoring of existing modules
 
+
+## [v0.6 — Upstream Bug Reports & Runtime Investigations] — 2026-08-08
+
+### TASK_20260808_032: Run Abort State Sync and Token Accounting Bugs
+
+#### Findings
+
+**Bug 1 — Token Accounting "2.6m/262k (986%)"**
+- Not a bug. `estimateContextTokens(messages)` accumulates provider-reported usage from the last assistant message plus all trailing token estimates across subsequent messages in a tool-use loop.
+- The "used" value represents cumulative turn cost since last compaction, not current context window fill.
+- **Recommendation**: Cosmetic only — label as "cumulative turn cost" vs "context window". No code fix needed.
+
+**Bug 2 — TUI Stuck on "running"/"finishing context" After Abort**
+- Root cause: race between compaction and abort lifecycle events in `tui-ttOZNpsl.js`.
+- When user aborts during compaction, the TUI state machine enters a stuck state because the abort event doesn't cancel pending compaction callbacks.
+- **Recommendation**: Patch TUI to clear pending compaction callbacks on abort event.
+
+### TASK_20260808_033: Cross-Role Compaction Timeout Investigation
+
+#### Findings
+
+All three DS-EO development roles (CTO, Implementer, Reviewer) experienced identical compaction timeouts (~120s). Root causes identified:
+
+1. **`compaction.timeoutSeconds` defaults to 120s** but is not reliably documented as configurable via the compaction config path for safeguard mode
+2. **Safeguard model inherits from same Ollama instance** — slow under load with large transcript files (~180K+ tokens)
+3. **`reserveTokensFloor=80000`** causes compaction at very small actual windows (~182K estimated prompt vs 182K budget) — the floor is too high for qwen3.6:35b's 8192 max output
+4. **Ollama baseUrl timeout (600s)** doesn't apply to compaction's embedded run, which uses its own timeout chain
+
+#### Config Adjustments Needed
+- Add explicit `compaction.timeoutSeconds` override
+- Lower `reserveTokensFloor` from 80000 to appropriate value for qwen3.6:35b
+- Ensure compaction safeguard timeout is explicitly set
+
+### TASK_DS_EO_031: Upstream Bug Report — resolveSessionModelRef Precedence
+
+#### Summary
+The CTO plan was rewritten as an upstream bug report for OpenClaw's `resolveSessionModelRef` function. The bug causes `openclaw status` to display stale per-agent model values (from session creation) instead of current config values.
+
+**Proposed Fix**: Correct the precedence in `resolveSessionModelRef` so that agent configuration takes priority over stale session metadata unless user has explicitly pinned an override.
+
+### TASK_DS_EO_030: Session Health Implementation Progress
+
+#### Status
+- Phase 1 (Discovery): Completed — `config.py`, `enums.py`, `discoverer.py`
+- Phase 2 (Classification): Interrupted mid-write by compaction timeout
+- Remaining: `classifier.py`, `policy.py`, `executor.py`, `monitor.py`, `audit.py`, `__init__.py`, tests, manifest integration
+
+#### Notes
+- All thresholds configurable via YAML
+- Monitor starts in OBSERVING mode (dry-run) by default
+- Priority-ordered classification implemented across 8 health indicators

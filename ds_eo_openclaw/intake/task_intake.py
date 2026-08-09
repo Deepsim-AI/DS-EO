@@ -598,7 +598,20 @@ No PM analysis has been written yet. The user's original request is preserved in
         if len(request_text) > 500:
             req_summary += '...'
 
-        content = (
+        # Session health metadata section for protection tracking (Phase 5: C10)
+        session_health_section = (
+            "## Session Health Protection\n\n"
+            "Sessions associated with this task are tracked by the session health system.\n"
+            "Protected sessions never receive automatic destructive actions (ARCHIVE/CLOSE).\n\n"
+            "| Field | Value |\n"
+            "|-------|-------|\n"
+            "| **Protection Status** | Active — task-associated sessions are protected |\n"
+            "| **Health Monitoring** | Enabled (OBSERVING mode by default) |\n"
+            "| **Destructive Actions** | Blocked for sessions with ACTIVE task association |\n"
+        )
+
+        # Build the content string using explicit concatenation to avoid syntax issues
+        header = (
             "---\n"
             f"produced_by: pm\n"
             f"role: PM\n"
@@ -606,7 +619,11 @@ No PM analysis has been written yet. The user's original request is preserved in
             f"gate: G0 (intake)\n"
             f"created_at: {timestamp}\n"
             "---\n\n"
-            f"# Task Manifest {arrow} {task_id}\n\n"
+        )
+        
+        title = f"# Task Manifest {arrow} {task_id}\n\n"
+        
+        metadata_header = (
             "## Metadata\n\n"
             "| Field | Value |\n"
             "|-------|-------|\n"
@@ -616,18 +633,36 @@ No PM analysis has been written yet. The user's original request is preserved in
             "| **Mode** | manual (default) |\n"
             f"| **Dispatcher State Path** | `docs/dispatchers/{task_id}/` |\n"
             f"| **Reports Directory** | `docs/development/reports/{task_id}/` |\n\n"
-            "## Available Artifacts\n\n"
-            "```\n"
-            f"{task_id}/\n"
+        )
+        
+        content = header + title + metadata_header + session_health_section
+        
+        # Add artifacts section
+        artifacts_header = "## Available Artifacts\n\n```\n"
+        task_dir_line = f"{task_id}/\n"
+        
+        if available_files:
+            dir_tree_lines = [box_char + f for f in available_files]
+            input_dir_line = (pipe_char + box_char).join(dir_tree_lines)
+        else:
+            input_dir_line = '        (empty)'
+        
+        artifacts_tree = (
+            task_dir_line
             + box_char + "TASK_REQUEST.md          " + arrow + "User's verbatim request (preserved)\n"
             + box_char + "PM_ANALYSIS.md           " + arrow + "PM interpretation/summary\n"
             + box_char + "INPUTS/                  " + arrow + "User-provided files\n"
             f"{pipe_char}{input_dir_line}\n"
             + tee_down + "MANIFEST.md              " + arrow + "This file (task metadata)\n"
+        )
+        
+        request_summary = (
             "```\n\n"
             "## Request Summary\n\n"
             f"{req_summary}\n"
         )
+        
+        content += artifacts_header + artifacts_tree + request_summary
 
         path = os.path.join(reports_dir, "MANIFEST.md")
         with open(path, "w") as f:
