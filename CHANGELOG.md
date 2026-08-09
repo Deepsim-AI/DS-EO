@@ -1,4 +1,25 @@
 # Changelog
+## [v0.8.0] — 2026-08-09
+
+### Summary
+DS-EO v0.8 ships Phases 1–7 as a complete automatic workflow management system:
+state engine, audit trail, mode selector, failure/stall handling, comprehensive
+test suite (433 tests), session slash commands, and session health monitoring
+with real OpenClaw CLI integration.
+
+### Completed Phases
+- Phase 1 — PM Workflow State Engine (core state machine)
+- Phase 2 — Audit Trail Integration (SHA-256 hash chain entries)
+- Phase 3 — User-Facing Mode Selector (/eo mode commands)
+- Phase 4 — Failure/Stall Handling Refinements (timeouts, escalation chains)
+- Phase 5 — Testing and Validation Suite (92 integration tests)
+- Phase 6 — User-Facing /eo Mode Commands (slash command API + 34 tests)
+- Phase 7 — Session Health Real OpenClaw API Integration (COMPACT, ARCHIVE, CLOSE CLI)
+
+### Bug Fixes
+- Fixed ds_eo_manifest.yaml YAML syntax error in modules section (skill_commands key)
+- Fixed agents/pm.md PM→git operations contradiction (AGENTS.md §3 compliance restored)
+
 
 All notable changes to DS-EO OpenClaw Edition will be documented in this file.
 

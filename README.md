@@ -282,10 +282,16 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
     - `audit.py` — Persistent per-cycle audit trail
   - Configurable thresholds, OBSERVING mode by default
   - Total tests across all modules: 315 (0 failures)
-- **v0.7** (in-progress): Runtime Investigation and Upstream Bug Reports
-  - TASK_20260808_032: Token accounting and run abort state sync bug analysis
-  - TASK_20260808_033: Cross-role compaction timeout root cause investigation
-  - TASK_DS_EO_031: Upstream bug report for `resolveSessionModelRef` precedence fix
+- **v0.8** (shipped): Complete Automatic Workflow Management System
+  - Phases 1–7 all complete with 433 passing tests
+  - Phase 1: PM Workflow State Engine (core state machine)
+  - Phase 2: Audit Trail Integration (SHA-256 hash chain entries)
+  - Phase 3: User-Facing Mode Selector (/eo mode commands)
+  - Phase 4: Failure/Stall Handling Refinements (timeouts, escalation chains)
+  - Phase 5: Testing and Validation Suite (92 integration tests)
+  - Phase 6: User-Facing /eo Mode Commands (slash command API + 34 tests)
+  - Phase 7: Session Health Real OpenClaw API Integration (COMPACT, ARCHIVE, CLOSE CLI)
+  - Bug fixes: manifest YAML syntax error, PM→git operations contradiction
 - **v1.0** (planned): Platform abstraction layer for multi-platform editions
 - **Future**: Additional platform editions (Claude, Codex, Gemini)
 

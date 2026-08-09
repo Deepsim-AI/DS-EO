@@ -4,7 +4,7 @@
 package:
   name: "ds-eo-openclaw"                    # Package identifier
   title: "DeepSim Engineering Organization — OpenClaw Edition"  # Display name
-  version: "0.3.1"
+  version: "0.8.0"
   description: >
     Extractable engineering organization framework for OpenClaw.
     Provides agent roles, protocols, and workflows to transform
@@ -230,15 +230,14 @@ modules:
       - file: "tests/test_session_health.py"
         purpose: "38 tests covering enums, classifier, policy, config, discoverer, and end-to-end pipeline"
 
-  skill_commands:
-    id: "eo_commands"
+  - id: "eo_commands"
     files:
       - file: "skills/eo/SKILL.md"
         purpose: "Slash command definition with OpenClaw integration frontmatter"
       - file: "skills/eo/commands.py"
         purpose: "Utility wrappers around ModeSelector API (4 functions)"
 
-  total_tests: 315                         # Combined across all workflow test modules
+workflow_count: 315                         # Combined across all workflow test modules
 
 installation:                               # Installation metadata
   steps:
