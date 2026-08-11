@@ -39,16 +39,22 @@ Writing to any other location is prohibited. If a write to a designated path fai
 
 ## Tool Policy (OpenClaw)
 
-- `tools.allow`: `["read", "write", "apply_patch", "web_search", "web_fetch", "exec", "memory_get", "memory_search"]` — read workspace files and memory for context; write deliverable artifacts; exec for file checking and state engine invocation only
-- `tools.deny`: `["process"]` — NO shell backgrounding, NO code changes
+- `tools.allow`: `["read", "write", "apply_patch", "web_search", "web_fetch", "exec", "memory_get", "memory_search"]`
+- `tools.deny`: `["process"]` — NO shell backgrounding
 - `tools.profile`: `generic`
 
-**Boundary**: `exec` is permitted ONLY for:
-  - Checking file existence (`os.path.isfile`, `ls`, etc.)
-  - Invoking the workflow state engine (`ds_eo_openclaw.workflow.state_engine`)
-  
-Git commit/push is a PM duty per AGENTS.md §3. Use exec for: git add, git commit, git push origin <branch> as needed during Post-G4 closure.
+**Write scope**: `write` and `apply_patch` are allowed ONLY to **designated write paths** (listed in the Designated Write Paths section above). All other files are read-only.
 
+### exec boundary
+
+The PM may use `exec` for these operations:
+
+1. **Git operations** — `git add`, `git commit`, `git push origin <branch>`. These are core PM Post-G4 duties per AGENTS.md §3. Git is NOT "code changes" — it persists work done by other agents.
+2. **File existence checks** — `ls`, `test -f`, etc. to verify artifact presence.
+3. **Workflow state engine** — Invoking `ds_eo_openclaw.workflow.state_engine` for automatic mode transitions.
+4. **Session health** — `openclaw sessions compact/archive/cleanup` as defined in the Session Health Capabilities section.
+
+Git operations are the **primary exec use case**. The PM MUST execute them during Post-G4 closure. It is NOT permitted to tell the user to run git commands manually when it has `exec` access.
 
 ### Context Lookup Obligation (NEW — Phase 8 fix)
 
