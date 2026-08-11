@@ -53,7 +53,7 @@ All references to these components are relative to this workspace root (`/home/d
 
 ### Code Implementer 💻
 
-- **Model**: `ollama/ornith:35b`
+- **Model**: `ollama/qwen3.6:27b`
 - **Role**: Execute approved plans with full file system access.
 - **Tool Policy**: Full repository access (`tools.allow`: group:fs, group:runtime, etc.)
 - **Responsibilities**:
@@ -96,6 +96,62 @@ All references to these components are relative to this workspace root (`/home/d
 
 
 ---
+
+
+---
+
+## 3.5 Compaction and Session Recovery (TASK_DS_EO_033)
+
+All agent roles share these compaction-aware responsibilities. Read this section before starting any long-running task.
+
+### Hardware Constraint
+
+This system runs on CPU-only hardware (Tegra, no GPU) with 61GiB RAM. All five agent models total ~87GB VRAM when loaded simultaneously — excess overflows to swap, which kills inference performance and causes compaction timeouts.
+
+**Rule**: Never load more than 3 large models simultaneously. Unload idle models between agent phases.
+
+### Compaction Failure Recovery Procedure
+
+If your session reports `livenessState=blocked`, "Context overflow: prompt too large", or similar compaction failure:
+
+1. **STOP** — do not attempt further tool calls on this session
+2. **Document** what work was completed before the block (write it to the task directory)
+3. **Request user intervention**: ask the user to `/compact` or `/reset` the session
+4. **Check for barrier artifacts**: if `templates/compaction_barrier_*.md` exists, read it to determine where previous work left off
+5. **Before closing**: save all in-progress artifacts to the task directory — never let them exist only in session memory
+
+### Model Pressure Management
+
+| Phase | Required Models | Always Unload |
+|-------|-----------------|---------------|
+| CTO planning only | qwen3.6:35b, nomic-embed-text | gpt-oss:20b, laguna-xs-2.1, ornith:35b |
+| CTO + Implementer | qwen3.6:35b, ornith:35b, nomic-embed-text | gpt-oss:20b, laguna-xs-2.1 |
+| Review phase | laguna-xs-2.1, qwen3.6:35b, nomic-embed-text | ornith:35b, gpt-oss:20b |
+| Idle | nomic-embed-text only | all large models |
+
+**Operational rules**:
+- Unload models before starting long-running tasks (lower initial model pressure)
+- Pull needed model only when dispatching an agent — not ahead of time
+- Unload immediately after agent completes its phase
+- Keep nomic-embed-text loaded at all times (small, used for memory search)
+
+### Post-Abort Cleanup
+
+After any session abort or compaction failure:
+1. Run `openclaw status` to check for orphaned states
+2. If the session is blocked, explicitly request `/compact` or `/reset` from the user
+3. Document the failure in the task's task directory (as a RECOVERY_LOG.md entry)
+
+### Config Defaults (CPU-Optimized)
+
+```
+keepRecentTokens: 120000        # Compact at ~45% of window to keep summary size small
+reserveTokensFloor: 48000       # Effective usable window: ~172K tokens
+compaction.timeoutSeconds: 300  # 5 minutes for summarization under load
+maxConcurrent: 2                # Prevent model contention during compaction
+```
+
+If these values differ from your active config, run `openclaw config get agents.defaults` to verify.
 
 ## 4. Development Workflow
 

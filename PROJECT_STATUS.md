@@ -185,6 +185,24 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 **Safety verification**: Active task protection verified correct; protected session override works; OBSERVING mode blocks all execution by default; COMPACT verify-then-persist pattern present. _COMPACT integration requires real OpenClaw API (post-deployment)._
 
 ### TASK_20260808_034 — Administrative Closure of Tasks 032 & 033 📦 (COMPLETED)
+
+### TASK_DS_EO_033 — Compaction Reliability Hardening (Config + Protocol) 📦 (CLOSED ✅)
+**Date Planned:** 2026-08-10
+**Date Completed:** 2026-08-10
+**Decision:** CLOSED (G4 APPROVED, G5 COMPLETE)
+
+**Summary:** No-code config hardening task. Applied `keepRecentTokens=120000`, `maxConcurrent=2`, `subagents.maxConcurrent=4` to reduce compaction pressure on CPU-only hardware. Added AGENTS.md §3.5 "Compaction and Session Recovery" protocol, COMPACTION_BARRIER.md template, and model pressure management documentation. Effective model RAM pressure reduced from ~87GB to ~23GB.
+
+**Gates:** G1✅ G2✅ G3✅ (waiver) G4✅ APPROVED G5✅ CLOSED
+**PM_CLOSED:** docs/development/reports/TASK_DS_EO_033/PM_CLOSED.md
+**Artifact dir:** docs/development/reports/TASK_DS_EO_033/
+
+### TASK_DS_EO_038 — Phase 8 — Real `spawn_agent()` with OpenClaw CLI Integration 📦 (PLANNED)
+**Date Planned:** 2026-08-09T19:15:00-07:00
+**Decision:** APPROVED (Gate G1) 
+
+**Summary:**
+CTO approved the plan to implement real `spawn_agent()` that creates live OpenClaw agent sessions via the `sessions_spawn` tool, verifies session existence and model correctness, and returns a usable session reference. Implementation pending.
 **Date Completed**: 2026-08-08T23:07:00-07:00  
 **Decision**: APPROVED (Gate G4)  
 

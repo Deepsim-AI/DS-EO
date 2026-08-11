@@ -23,6 +23,21 @@ with real OpenClaw CLI integration.
 
 All notable changes to DS-EO OpenClaw Edition will be documented in this file.
 
+### TASK_DS_EO_033: Compaction Reliability Hardening (Config + Protocol) ✅ CLOSED
+
+#### Summary
+No-code task: config hardening, protocol updates, and agent-side recovery patterns for CPU-only hardware. All work done under G4 approval; PM closure complete.
+
+**Changes applied:**
+- `keepRecentTokens`: 200000 → **120000** (compaction triggers at ~45% of window)
+- `maxConcurrent`: 4 → **2** (prevents model contention during compaction)
+- `subagents.maxConcurrent`: 8 → **4** (reduces total concurrent models)
+- AGENTS.md §3.5: Added "Compaction and Session Recovery" protocol with 5-step recovery procedure, model pressure management matrix, post-abort cleanup
+- `templates/compaction_barrier.md`: New barrier template for pre-phase state capture
+- `docs/development/models_loaded_reference.md`: Model pressure loading matrix with operational rules
+
+**Outcome:** Effective model RAM pressure reduced from ~87GB to ~23GB. Compaction window expanded by ~2x. Agent-side recovery procedure prevents silent session blocking.
+
 ## [0.1.0] — 2026-07-28
 
 
