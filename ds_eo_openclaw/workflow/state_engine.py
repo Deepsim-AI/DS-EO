@@ -29,6 +29,11 @@ from typing import Optional, List
 
 from .audit_log import AuditLog
 
+try:
+    from ..dispatcher.session_dispatch.engine import SessionDispatcher
+except ImportError:
+    SessionDispatcher = None
+
 
 class State(Enum):
     """All workflow states (S0–S14). Includes 11 original + 5 recovery/failure states."""
@@ -416,12 +421,75 @@ class StateEngine:
         return {"decision": "APPROVED"}
 
     def _check_g2_pass(self):
-        """Determine next state based on G2 checklist results."""
+        """Determine next state based on G2 checklist results.
+        
+        When transitioning from WAITING_G2 to REVIEW:
+        1. Verify implementation report exists and passes checks
+        2. Spawn Implementer session as part of the transition (AC-3 wiring)
+        """
         report = self._read_impl_report()
         if self._verify_g2_checklist(report):
-            return State.REVIEW, "G2 checklist passed"
+            result_state = State.REVIEW
+            result_reason = "G2 checklist passed"
+            # AC-3 wiring: spawn Implementer session
+            self._maybe_spawn_implementer()
+            return result_state, result_reason
         else:
             return State.IMPLEMENTATION, "G2 checklist failed — return to Implementer"
+
+    def _maybe_spawn_implementer(self):
+        """Spawn Implementer session as part of G2->REVIEW transition (AC-3 wiring).
+        
+        Called by _check_g2_pass when G2 checklist passes. Uses SessionDispatcher
+        which delegates to SessionSpawnManager (TASK_DS_EO_038 infrastructure).
+        """
+        if SessionDispatcher is None:
+            return  # Dispatcher not available
+        
+        task_id = self.task_id if hasattr(self, 'task_id') else None
+        if not task_id:
+            return  # No task context configured
+        
+        workspace_root = getattr(self, '_workspace_root', 
+                               os.path.dirname(os.path.abspath(__file__)))
+        
+        try:
+            dispatcher = SessionDispatcher(workspace_root=workspace_root)
+            prompt_text = (
+                f"Implementation task {task_id}: G2 checklist passed. "
+                f"Proceed with implementation per CTO plan."
+            )
+            result = dispatcher.spawn_agent(
+                target_agent_id="implementer",
+                prompt_text=prompt_text,
+                task_id=task_id,
+            )
+            
+            # Record spawn in task directory
+            import json
+            spawn_file = os.path.join(self.task_dir, "SPAWN_HISTORY.json")
+            history = []
+            if os.path.exists(spawn_file):
+                try:
+                    with open(spawn_file) as f:
+                        history = json.load(f)
+                except (json.JSONDecodeError, IOError):
+                    history = []
+            
+            history.append({
+                "spawn_time": datetime.now(timezone.utc).isoformat(),
+                "session_key": result.session_key,
+                "agent_id": result.agent_id,
+                "success": result.success,
+                "error": result.error,
+            })
+            with open(spawn_file, "w") as f:
+                json.dump(history, f, indent=2)
+                
+        except Exception as e:
+            # Non-fatal: log but don't block the state transition
+            import sys
+            print(f"[DS-EO] spawn_agent call failed (non-fatal): {e}", file=sys.stderr)
 
     def _check_approval_outcome(self):
         """Determine next state based on CTO approval decision."""
