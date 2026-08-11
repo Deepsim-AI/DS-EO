@@ -1,5 +1,14 @@
 # Changelog
-## [v0.8.0] — 2026-08-09
+## [v0.9.0] — 2026-08-11
+
+### Summary
+Added Phase 8 task completion and updated project status to reflect the new task.
+
+#### Task Additions
+- **TASK_DS_EO_038** – Real `spawn_agent()` with OpenClaw CLI Integration (G4 Approved, Post‑G4 Complete)
+
+### Updated Project Status
+- PROJECT_STATUS.md now includes TASK_DS_EO_038 and updates the last‑updated timestamp.
 
 ### Summary
 DS-EO v0.8 ships Phases 1–7 as a complete automatic workflow management system:
