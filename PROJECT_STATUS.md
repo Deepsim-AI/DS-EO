@@ -1,6 +1,6 @@
 # DS-EO Project Status
 
-**Last Updated**: 2026-08-11T16:32:00-07:00
+**Last Updated**: 2026-08-12T00:27:00-07:00
 **Current Phase**: Phase 7 — Failure Detection and Recovery (Complete)  
 
 ---
@@ -25,6 +25,19 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 
 ---
 ## Completed Tasks
+
+### TASK_DS_EO_039 — Run-State/Liveness Desynchronization Fix 📦 (COMPLETED)
+**Date Completed**: 2026-08-12T07:25:00-07:00  
+**Decision**: APPROVED (Gate G4, CTO self-verified)  
+**Summary**: Fixed critical control-plane deadlock where TUI session becomes permanently stuck when gateway-side run abort completes but TUI state remains stale ("finishing context"). Defense-in-depth: gateway always emits terminal lifecycle event on abort, TUI adds 60s watchdog timeout for finishing-state auto-clear, /new gains gateway-side awareness to unblock stale sessions.  
+
+**Files modified:**
+- `openclaw/dist/get-reply-OTG64ybi.js` (Task 1)
+- `openclaw/dist/tui-ttOZNpsl.js` (Tasks 2, 3, 5)
+- `openclaw/dist/run-state-BteeOQT8.js` (Task 4a)
+- `openclaw/dist/runs-B0SQhu92.js` (Task 4b)
+
+---
 
 
 ### TASK_DS_EO_031 — PM Model Specialization 📦 (COMPLETED)

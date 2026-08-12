@@ -1,4 +1,26 @@
 # Changelog
+## TASK_DS_EO_039: Run-State/Liveness Desynchronization Fix ✅ CLOSED
+
+### Summary
+Fixed critical control-plane deadlock where TUI session becomes permanently unusable when gateway-side run abort completes but TUI-side state remains stale (stuck in "finishing context"). Root cause was a TOCTOU race between gateway abort and TUI lifecycle event processing, combined with an untimed "finishing context" sentinel.
+
+**Changes applied:**
+- **Task 1** — `get-reply-OTG64ybi.js`: Gateway always emits terminal lifecycle event on abort completion (even when no run was found), preventing TUI stuck in "finishing context"
+- **Task 2** — `tui-ttOZNpsl.js`: Added 60s watchdog timer for "finishing context" state that auto-clears to idle with system message if no lifecycle event arrives
+- **Task 3** — `tui-ttOZNpsl.js`: `/new` command now checks gateway-side active run count before blocking; allows new session creation when runtime confirms no active run
+- **Task 4a** — `run-state-BteeOQT8.js`: Track attempted sessions during abort for proper abandoned state cleanup
+- **Task 4b** — `runs-B0SQhu92.js`: Clean abandoned run entries on no-run abort paths to prevent stale state accumulation
+- **Task 5** — `tui-ttOZNpsl.js`: Renamed token display from "context window usage" to "cumulative tokens used" to eliminate overflow confusion
+
+### Files Modified
+- `openclaw/dist/get-reply-OTG64ybi.js` (Task 1)
+- `openclaw/dist/tui-ttOZNpsl.js` (Tasks 2, 3, 5)
+- `openclaw/dist/run-state-BteeOQT8.js` (Task 4a)
+- `openclaw/dist/runs-B0SQhu92.js` (Task 4b)
+
+### Outcome
+Eliminates permanent session deadlocks caused by run-state desynchronization. Defense-in-depth approach: gateway fixes root cause (always emits event), TUI adds timeout as fallback, and `/new` gains gateway-side awareness to unblock stale sessions independently.
+
 ## [v0.9.0] — 2026-08-11
 
 ### Summary
