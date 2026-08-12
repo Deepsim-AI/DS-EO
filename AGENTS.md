@@ -399,3 +399,66 @@ gate: <G1 | G2 | G3 | G4 | G5>
   should be distinct (e.g., Reviewer and CTO), flag the conflation to the user.
 
 ---
+
+## 12. Context Pressure and Source Inspection Protocol (NEW — prevents TASK_DS_EO_039-style failures)
+
+These rules address the failure pattern observed in TASK_DS_EO_039 where Implementer sessions
+repeatedly crashed from context overflow while inspecting large source files. The protocol
+distributes responsibilities across governance, detailed operating procedures, and reporting
+expectations.
+
+**Detailed procedures are at:** `protocols/source_inspection_protocol.md`
+
+### Governance Rules
+
+**R-SI-1: Never read large bundled files wholesale.** Do not load an entire OpenClaw dist bundle
+or build artifact into context. Use grep, symbol search, and targeted line reads (≤30 lines) instead.
+Single files over 50KB should never be read fully.
+
+**R-SI-2: CTO plans MUST include exact file/symbol/line-range guidance.** Every task touching source
+code must specify the file path, function or symbol name, and approximate line number. Plans that
+omit this are defective (G1 rejection). This enables bounded inspection by all downstream agents.
+
+**R-SI-3: Implementer session recovery — stop on compaction failure.** If auto-compaction fails
+(context overflow), write `COMPACTION_FAILURE.md` to the task directory, save all in-progress
+artifacts there, and request a fresh session. Do not retry compaction in the same session.
+
+**R-SI-4: Implementation evidence before reporting.** The Implementer's primary deliverable is
+working code with inline change markers (e.g., `// TASK_DS_EO_XXX Task N:`). A detailed report
+may be produced by CTO or PM from git diff, patches, and completion notes if the Implementer
+session is under context pressure. This does not violate gate requirements — the requirement
+is for documented evidence, not that a specific agent must produce it.
+
+**R-SI-5: Model replacement is not the first response to run errors.** Diagnose root cause in order:
+(1) Context pressure → check token usage via `session_status`, reduce reads;
+(2) Excessive tool loops → >50 calls per turn = break into smaller sessions;
+(3) Compaction failures → start fresh session, don't retry;
+(4) Session lifecycle issues → restart rather than escalate;
+(5) Only then consider model capability limits.
+
+**R-SI-6: Separate implementation from documentation.** These activities compete for the same token
+budget. Use one session for code changes and a fresh session for review/reporting. If a single
+session must do both, produce inline completion evidence and defer detailed documentation.
+
+### CTO Duty: Source-Guidance Requirement
+
+The CTO MUST provide exact file/symbol/line-range guidance in the plan (R-SI-2). During G4
+verification, use grep-guided inspection of change markers rather than wholesale source reading.
+If verification would require >30KB of source reading, ask the Implementer to confirm specific
+points from their earlier work.
+
+### Reporting Expectation
+
+Implementers produce lightweight completion evidence (≤200 lines):
+
+```markdown
+TASK_DS_EO_XXX Implementation Status
+=====================================
+Task 1: [APPLIED | FAILED: <reason>]
+- File: path/to/file.js, line ~N
+- Change: one-line summary
+...
+```
+
+CTO and PM construct full IMPLEMENTATION_REPORT.md from this evidence + git diff + patches.
+This preserves gate integrity while preventing context-pressure failures.
