@@ -33,7 +33,7 @@ roles:                                       # Engineering organization roles
     description: "Execution agent — executes approved plans and produces working code."
     model_placeholder: "<MODEL_IMPLEMENTER>"
     tool_profile: "coding"
-    default_model: "ollama/muse-glimmer:30b"
+    default_model: "ollama/ornith:35b"
 
   - id: "reviewer"
     name: "Senior Code Reviewer"

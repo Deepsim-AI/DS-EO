@@ -38,7 +38,7 @@
             "emoji": "\ud83d\udcbb",
             "name": "Implementer"
         },
-        "model": "ollama/muse-glimmer:30b",
+        "model": "ollama/ornith:35b",
         "workspace": "/home/deepsim/ds_eo_openclaw",
         "tools": {
             "allow": [

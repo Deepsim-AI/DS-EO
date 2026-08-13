@@ -79,6 +79,38 @@ The installer will:
 
 ---
 
+### Changing Agent Models (Post-Install)
+
+The installer sets default model names during initial setup. You can change them at any time by editing `~/.openclaw/openclaw.json` directly. The agent models are defined in the `agents.list[]` array:
+
+**Quick reference — current defaults:**
+
+| Agent | Field in config | Default model |
+|-------|----------------|---------------|
+| CTO / Architect | `"id": "cto"` → `"model"` | `ollama/qwen3.6:35b` |
+| Code Implementer | `"id": "implementer"` → `"model"` | `ollama/ornith:35b` |
+| Senior Code Reviewer | `"id": "reviewer"` → `"model"` | `ollama/laguna-xs-2.1:q4_K_M` |
+| Project Manager | `"id": "pm"` → `"model"` | `ollama/gpt-oss:20b` |
+
+**To change a model:**
+
+```bash
+# 1. Make sure the new model is pulled locally
+ollama pull ollama/your-model-name:tag
+
+# 2. Edit ~/.openclaw/openclaw.json — find the agent id and update its "model" field
+# Example: swap implementer model
+#   "id": "implementer",
+#   ...
+#   "model": "ollama/new-model:tag",   # <-- change here
+
+# 3. Restart OpenClaw gateway for changes to take effect
+openclaw gateway restart
+```
+
+**Tip:** Keep `ds_eo_manifest.yaml` as the canonical reference for what models *should* be used — it documents the intended role-to-model mapping. Compare your `openclaw.json` against the defaults listed there to verify consistency.
+
+
 ### Windows
 
 ```powershell

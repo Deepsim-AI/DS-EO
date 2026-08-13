@@ -4,6 +4,24 @@ This file governs how the engineering organization works within this workspace. 
 
 ---
 
+## Agent Models — Reference & Change Guide
+
+| Agent | ID in `openclaw.json` | Current Model | How to change |
+|-------|----------------------|---------------|---------------|
+| CTO / Architect 🏗️ | `"id": "cto"` | `ollama/qwen3.6:35b` | Edit `agents.list[]` entry for `"id": "cto"`, field `"model"` |
+| Code Implementer 💻 | `"id": "implementer"` | `ollama/ornith:35b` | Edit `agents.list[]` entry for `"id": "implementer"`, field `"model"` |
+| Senior Code Reviewer 🔍 | `"id": "reviewer"` | `ollama/laguna-xs-2.1:q4_K_M` | Edit `agents.list[]` entry for `"id": "reviewer"`, field `"model"` |
+| Project Manager 📋 | `"id": "pm"` | `ollama/gpt-oss:20b` | Edit `agents.list[]` entry for `"id": "pm"`, field `"model"` |
+
+**To change an agent's model:**
+
+1. Pull the target model locally: `ollama pull <model-name>`
+2. Edit `~/.openclaw/openclaw.json` → find the agent by `"id"` → update `"model"` field
+3. Restart gateway: `openclaw gateway restart`
+4. (Optional) Update `ds_eo_manifest.yaml` defaults to reflect your choice
+
+See [README.md → Changing Agent Models](README.md#changing-agent-models-post-install) for the full walkthrough.
+
 ## 1. Two-Layer Model
 
 DS-EO operates on a fundamental separation between two layers:
@@ -53,7 +71,7 @@ All references to these components are relative to this workspace root (`/home/d
 
 ### Code Implementer 💻
 
-- **Model**: `ollama/muse-glimmer:30b`
+- **Model**: `ollama/ornith:35b`
 - **Role**: Execute approved plans with full file system access.
 - **Tool Policy**: Full repository access (`tools.allow`: group:fs, group:runtime, etc.)
 - **Responsibilities**:
