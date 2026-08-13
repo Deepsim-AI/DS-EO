@@ -1,4 +1,4 @@
-name: Release DS-EO
+name: Release DS-EO # v2
 
 # ──────────────────────────────────────────────────────────────────────
 # Trigger: Manual only (GitHub Actions UI or CLI).
