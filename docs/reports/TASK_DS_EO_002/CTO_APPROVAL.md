@@ -17,7 +17,7 @@ I have reviewed both the CTO_IMPLEMENTATION_PLAN.md (approved plan), IMPLEMENTAT
 
 ### Key Findings
 
-1. **All acceptance criteria met**: 9/9 criteria verified. All required files present in `/home/deepsim/ds-eo-openclaw/`.
+1. **All acceptance criteria met**: 9/9 criteria verified. All required files present in `/home/deepsim/ds_eo_openclaw/`.
 2. **Test suite validated**: 53 unit tests + 1 smoke test — all passing across manifest schema, protocol extraction, template completeness, config merge safety, and installation flow.
 3. **No regressions introduced**: All changes are new file additions; no existing DS-AIOS code or configuration was modified.
 4. **Two-layer boundary preserved**: No cross-contamination between engineering organization (DS-EO) and runtime product (DS-AIOS). The package contains zero DS-AIOS-specific dependencies.

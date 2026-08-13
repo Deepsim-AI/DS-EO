@@ -31,7 +31,7 @@ The authoritative source for all engineering organization components is the pack
 | Package manifest | `ds_eo_manifest.yaml` | Single source of truth for package contents |
 | Configuration examples | `config-templates/` | Reference configs for deployment |
 
-All references to these components are relative to this workspace root (`/home/deepsim/ds-eo-openclaw/`). Never reference external locations (e.g., `agent_system/`, `~/.openclaw/`) as source of truth for DS-EO governance.
+All references to these components are relative to this workspace root (`/home/deepsim/ds_eo_openclaw/`). Never reference external locations (e.g., `agent_system/`, `~/.openclaw/`) as source of truth for DS-EO governance.
 
 ---
 
@@ -53,7 +53,7 @@ All references to these components are relative to this workspace root (`/home/d
 
 ### Code Implementer 💻
 
-- **Model**: `ollama/qwen3.6:27b`
+- **Model**: `ollama/muse-glimmer:30b`
 - **Role**: Execute approved plans with full file system access.
 - **Tool Policy**: Full repository access (`tools.allow`: group:fs, group:runtime, etc.)
 - **Responsibilities**:

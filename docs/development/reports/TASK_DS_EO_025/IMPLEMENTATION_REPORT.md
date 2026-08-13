@@ -228,10 +228,10 @@ This task added only user-facing presentation logic. All business logic (audit t
 
 | Artifact | Status | Location |
 |----------|--------|----------|
-| `skills/eo/SKILL.md` | ✅ Complete (~180 lines) | `/home/deepsim/ds-eo-openclaw/skills/eo/` |
-| `skills/eo/commands.py` | ✅ Complete (135 lines, 4 functions) | `/home/deepsim/ds-eo-openclaw/skills/eo/` |
-| `skills/eo/__init__.py` | ✅ Complete (~20 lines) | `/home/deepsim/ds-eo-openclaw/skills/eo/` |
-| `tests/test_eo_commands.py` | ✅ Complete (280 lines, 34 tests) | `/home/deepsim/ds-eo-openclaw/tests/` |
+| `skills/eo/SKILL.md` | ✅ Complete (~180 lines) | `/home/deepsim/ds_eo_openclaw/skills/eo/` |
+| `skills/eo/commands.py` | ✅ Complete (135 lines, 4 functions) | `/home/deepsim/ds_eo_openclaw/skills/eo/` |
+| `skills/eo/__init__.py` | ✅ Complete (~20 lines) | `/home/deepsim/ds_eo_openclaw/skills/eo/` |
+| `tests/test_eo_commands.py` | ✅ Complete (280 lines, 34 tests) | `/home/deepsim/ds_eo_openclaw/tests/` |
 | **Total** | **34 new tests passing, 277 total passing** | — |
 
 ---

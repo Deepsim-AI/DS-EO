@@ -2,7 +2,7 @@
 
 **Task:** Automated Handoff Message Generation  
 **Implementer Agent:** ollama/ornith:35b  
-**Repository:** `/home/deepsim/ds-eo-openclaw`  
+**Repository:** `/home/deepsim/ds_eo_openclaw`  
 **Branch:** `main`  
 
 ---

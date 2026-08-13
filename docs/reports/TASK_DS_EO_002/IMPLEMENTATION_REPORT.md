@@ -6,7 +6,7 @@
 
 ## Summary
 
-Implemented the DS-EO OpenClaw Edition v0.1 package — a self-contained, installable engineering organization framework extracted from the existing DS-AIOS development environment. The package includes portable agent definitions, six engineering protocols, five document templates, installation scripts with backup/rollback support, verification tests, and full documentation. No source code was modified; only new files were created under `/home/deepsim/ds-eo-openclaw/`.
+Implemented the DS-EO OpenClaw Edition v0.1 package — a self-contained, installable engineering organization framework extracted from the existing DS-AIOS development environment. The package includes portable agent definitions, six engineering protocols, five document templates, installation scripts with backup/rollback support, verification tests, and full documentation. No source code was modified; only new files were created under `/home/deepsim/ds_eo_openclaw/`.
 
 ---
 

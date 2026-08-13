@@ -6,7 +6,7 @@ It wires together: Registry → State Manager → Workflow Engine
 and provides a clean task lifecycle API.
 
 Usage from PM:
-    dispatcher = Dispatcher(workspace_root="/home/deepsim/ds-eo-openclaw")
+    dispatcher = Dispatcher(workspace_root="/home/deepsim/ds_eo_openclaw")
     
     # Open a new task
     dispatcher.open_task(task_id, spec_ref, priority, notes)
@@ -615,7 +615,7 @@ if __name__ == "__main__":
     parser.add_argument("--approved", action="store_true", help="Approve (vs. reject)")
     args = parser.parse_args()
 
-    d = Dispatcher(workspace_root="/home/deepsim/ds-eo-openclaw")
+    d = Dispatcher(workspace_root="/home/deepsim/ds_eo_openclaw")
 
     if args.action == "init":
         ok, msg = d.initialize()
@@ -693,7 +693,7 @@ if __name__ == "__main__":
 
         # Create fake CTO_PLAN.md so G1 doesn't complain
         import os.path as osp
-        task_base = osp.join("/home/deepsim/ds-eo-openclaw/docs/dispatchers", test_id)
+        task_base = osp.join("/home/deepsim/ds_eo_openclaw/docs/dispatchers", test_id)
         with open(os.path.join(task_base, "CTO_PLAN.md"), "w") as f:
             f.write("# CTO PLAN\n## Test Plan\n- Criterion 1\n- Criterion 2\n")
 

@@ -493,7 +493,7 @@ This plan is complete and ready for implementation handoff. The following artifa
 
 Acceptance criteria for implementation (to be verified by Development Reviewer):
 
-1. `.git` directory created in `/home/deepsim/ds-eo-openclaw/`
+1. `.git` directory created in `/home/deepsim/ds_eo_openclaw/`
 2. All source files committed as initial baseline
 3. `.gitignore` properly excludes ephemeral/generated/sensitive files
 4. `implementation_protocol.md` added to repo source and PROTO_FILES

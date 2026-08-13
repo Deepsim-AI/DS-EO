@@ -36,7 +36,7 @@ DS-EO is built but its workspace is agent_system/ (the DS-AIOS runtime product).
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| DS-EO package (all artifacts) | `/home/deepsim/ds-eo-openclaw/` | ✅ Complete (42 files, v0.1) |
+| DS-EO package (all artifacts) | `/home/deepsim/ds_eo_openclaw/` | ✅ Complete (42 files, v0.1) |
 | OpenClaw agent configs | `~/.openclaw/openclaw.json` → agents.list[] | ✅ 3 agents configured (cto, implementer, reviewer) |
 | Global protocols | `~/.openclaw/protocols/*.md` (6 files) | ✅ All deployed |
 | Agent prompts (source) | `ds-eo-openclaw/agents/*.md` (3 files) | ✅ In package |
@@ -47,7 +47,7 @@ DS-EO is built but its workspace is agent_system/ (the DS-AIOS runtime product).
 | Gap | Current State | Required State |
 |-----|--------------|----------------|
 | DS-EO workspace AGENTS.md | None exists | Create `ds-eo-openclaw/AGENTS.md` with build-time org definition |
-| Agent workspace dir | All 3 agents → `/home/deepsim/agent_system/` | Agents → `/home/deepsim/ds-eo-openclaw/` |
+| Agent workspace dir | All 3 agents → `/home/deepsim/agent_system/` | Agents → `/home/deepsim/ds_eo_openclaw/` |
 | ds-eo-openclaw/ dev infrastructure | No `docs/development/protocols/`, no template dirs | Create dev directory structure within the repo |
 | Self-hosting validation | N/A | Execute one real task cycle inside ds-eo-openclaw/ |
 
@@ -99,12 +99,12 @@ Unlike `agent_system/AGENTS.md`, this file does NOT contain runtime agent defini
 
 **Modified**: `~/.openclaw/openclaw.json` → agents.list[]
 
-Change all three DS-EO agents' workspace from `/home/deepsim/agent_system/` to `/home/deepsim/ds-eo-openclaw/`:
+Change all three DS-EO agents' workspace from `/home/deepsim/agent_system/` to `/home/deepsim/ds_eo_openclaw/`:
 
 ```json
-{ "id": "cto",        "workspace": "/home/deepsim/ds-eo-openclaw/" }
-{ "id": "implementer", "workspace": "/home/deepsim/ds-eo-openclaw/" }
-{ "id": "reviewer",   "workspace": "/home/deepsim/ds-eo-openclaw/" }
+{ "id": "cto",        "workspace": "/home/deepsim/ds_eo_openclaw/" }
+{ "id": "implementer", "workspace": "/home/deepsim/ds_eo_openclaw/" }
+{ "id": "reviewer",   "workspace": "/home/deepsim/ds_eo_openclaw/" }
 ```
 
 **Safety**: Use backup before change (per delegation_protocol). Update is a simple 3-line JSON edit. No other config sections affected.
@@ -235,9 +235,9 @@ require a formal CTO proposal and user approval.
 
 **After**:
 ```json
-{"id": "cto", "workspace": "/home/deepsim/ds-eo-openclaw/", ...}
-{"id": "implementer", "workspace": "/home/deepsim/ds-eo-openclaw/", ...}
-{"id": "reviewer", "workspace": "/home/deepsim/ds-eo-openclaw/", ...}
+{"id": "cto", "workspace": "/home/deepsim/ds_eo_openclaw/", ...}
+{"id": "implementer", "workspace": "/home/deepsim/ds_eo_openclaw/", ...}
+{"id": "reviewer", "workspace": "/home/deepsim/ds_eo_openclaw/", ...}
 ```
 
 ### Phase C: Create Dev Infrastructure
@@ -276,7 +276,7 @@ This validates:
 | # | Criterion | Verification Method |
 |---|-----------|-------------------|
 | A1 | `ds-eo-openclaw/AGENTS.md` created with build-time org definition, source-of-truth table, and governance rules | File exists, content verified against spec above |
-| A2 | All 3 DS-EO agents' workspace updated to `/home/deepsim/ds-eo-openclaw/` | `openclaw.json` agents.list[] diff check |
+| A2 | All 3 DS-EO agents' workspace updated to `/home/deepsim/ds_eo_openclaw/` | `openclaw.json` agents.list[] diff check |
 | A3 | Agent backup created before config change | Backup file exists at expected location |
 | A4 | `ds-eo-openclaw/docs/development/protocols/` exists with protocol mirrors | File/directory check |
 | A5 | Agent configs still valid JSON after merge | Python json.tool validation |
@@ -307,7 +307,7 @@ The Implementer should execute sub-tasks in order:
 
 ### Sub-task B
 1. **Backup**: `cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak.ds-eo-selfhost`
-2. **Change**: Update workspace field on all 3 DS-EO agents from `/home/deepsim/agent_system/` to `/home/deepsim/ds-eo-openclaw/`
+2. **Change**: Update workspace field on all 3 DS-EO agents from `/home/deepsim/agent_system/` to `/home/deepsim/ds_eo_openclaw/`
 3. **Validate**: `python3 -c "import json; json.load(open('/home/deepsim/.openclaw/openclaw.json'))"` — must not raise
 4. **Preserve**: Confirm gateway, plugins, skills, channels sections unchanged
 

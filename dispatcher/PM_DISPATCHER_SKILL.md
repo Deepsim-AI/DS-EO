@@ -22,7 +22,7 @@ You now have access to:
 ```python
 from dispatcher.dispatch import Dispatcher
 
-d = Dispatcher(workspace_root="/home/deepsim/ds-eo-openclaw")
+d = Dispatcher(workspace_root="/home/deepsim/ds_eo_openclaw")
 ok, msg = d.initialize()
 # ok: True/False — Always check this first
 # msg: "Ready — 4 agents [cto, implementer, reviewer, pm]" or error

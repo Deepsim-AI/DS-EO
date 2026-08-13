@@ -48,7 +48,7 @@ Fix the PM's write-permission bug (which blocks all core deliverables) and add a
 
 ### 2. PM Role Definition (`agents/pm.md`) — Write-Failure Protocol + Updated Tool Policy Docs
 
-**File modified**: `/home/deepsim/ds-eo-openclaw/agents/pm.md`
+**File modified**: `/home/deepsim/ds_eo_openclaw/agents/pm.md`
 
 Changes:
 1. **New "Designated Write Paths" section** — explicitly lists where PM may write (mirrors the requirement that PM can only write to its own deliverable paths, not arbitrary repo locations)

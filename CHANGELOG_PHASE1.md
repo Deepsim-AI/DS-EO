@@ -8,7 +8,7 @@
 ## What Changed
 
 ### Established Canonical Repository
-- `/home/deepsim/ds-eo-openclaw/` declared the long-term home for DS-EO OpenClaw Edition
+- `/home/deepsim/ds_eo_openclaw/` declared the long-term home for DS-EO OpenClaw Edition
 - All task history now lives within the canonical repo under `docs/reports/`
 - The temporary workspace (`/home/deepsim/DS-EO/`) is deprecated
 
@@ -30,7 +30,7 @@
 
 All new DS-EO tasks will use:
 ```
-/home/deepsim/ds-eo-openclaw/docs/reports/TASK_<YYYYMMDD>_<NNN>/
+/home/deepsim/ds_eo_openclaw/docs/reports/TASK_<YYYYMMDD>_<NNN>/
 ```
 as the task artifact directory, following the DS-AIOS pattern adapted for the canonical repository location.
 

@@ -1,115 +1,115 @@
 [
-  {
-    "default": true,
-    "id": "cto",
-    "name": "CTO / Architect",
-    "identity": {
-      "emoji": "\ud83c\udfd7\ufe0f",
-      "name": "CTO"
+    {
+        "default": true,
+        "id": "cto",
+        "name": "CTO / Architect",
+        "identity": {
+            "emoji": "\ud83c\udfd7\ufe0f",
+            "name": "CTO"
+        },
+        "model": "ollama/qwen3.6:35b",
+        "workspace": "/home/deepsim/ds_eo_openclaw",
+        "tools": {
+            "allow": [
+                "group:fs",
+                "web_search",
+                "web_fetch",
+                "sessions_list",
+                "session_status",
+                "memory_search",
+                "memory_get",
+                "exec",
+                "process",
+                "sessions_spawn",
+                "sessions_send"
+            ],
+            "deny": [
+                "write",
+                "edit",
+                "apply_patch"
+            ]
+        }
     },
-    "model": "ollama/qwen3.6:35b",
-    "workspace": "/home/deepsim/ds-eo-openclaw",
-    "tools": {
-      "allow": [
-        "group:fs",
-        "web_search",
-        "web_fetch",
-        "sessions_list",
-        "session_status",
-        "memory_search",
-        "memory_get",
-        "exec",
-        "process",
-        "sessions_spawn",
-        "sessions_send"
-      ],
-      "deny": [
-        "write",
-        "edit",
-        "apply_patch"
-      ]
-    }
-  },
-  {
-    "default": false,
-    "id": "implementer",
-    "name": "Code Implementer",
-    "identity": {
-      "emoji": "\ud83d\udcbb",
-      "name": "Implementer"
+    {
+        "default": false,
+        "id": "implementer",
+        "name": "Code Implementer",
+        "identity": {
+            "emoji": "\ud83d\udcbb",
+            "name": "Implementer"
+        },
+        "model": "ollama/muse-glimmer:30b",
+        "workspace": "/home/deepsim/ds_eo_openclaw",
+        "tools": {
+            "allow": [
+                "group:fs",
+                "group:runtime",
+                "group:web",
+                "group:sessions",
+                "group:memory"
+            ],
+            "profile": "coding"
+        }
     },
-    "model": "ollama/ornith:35b",
-    "workspace": "/home/deepsim/ds-eo-openclaw",
-    "tools": {
-      "allow": [
-        "group:fs",
-        "group:runtime",
-        "group:web",
-        "group:sessions",
-        "group:memory"
-      ],
-      "profile": "coding"
-    }
-  },
-  {
-    "default": false,
-    "id": "reviewer",
-    "name": "Senior Code Reviewer",
-    "identity": {
-      "emoji": "\ud83d\udd0d",
-      "name": "Reviewer"
+    {
+        "default": false,
+        "id": "reviewer",
+        "name": "Senior Code Reviewer",
+        "identity": {
+            "emoji": "\ud83d\udd0d",
+            "name": "Reviewer"
+        },
+        "model": "ollama/laguna-xs-2.1:q4_K_M",
+        "workspace": "/home/deepsim/ds_eo_openclaw",
+        "tools": {
+            "allow": [
+                "group:fs",
+                "web_search",
+                "web_fetch",
+                "exec",
+                "process",
+                "sessions_list",
+                "session_status",
+                "memory_search",
+                "memory_get"
+            ],
+            "deny": [
+                "write",
+                "edit",
+                "apply_patch"
+            ]
+        }
     },
-    "model": "ollama/laguna-xs-2.1:q4_K_M",
-    "workspace": "/home/deepsim/ds-eo-openclaw",
-    "tools": {
-      "allow": [
-        "group:fs",
-        "web_search",
-        "web_fetch",
-        "exec",
-        "process",
-        "sessions_list",
-        "session_status",
-        "memory_search",
-        "memory_get"
-      ],
-      "deny": [
-        "write",
-        "edit",
-        "apply_patch"
-      ]
+    {
+        "default": false,
+        "id": "pm",
+        "name": "Project Manager",
+        "identity": {
+            "emoji": "\ud83d\udccb",
+            "name": "PM"
+        },
+        "model": "ollama/gpt-oss:20b",
+        "workspace": "/home/deepsim/ds_eo_openclaw",
+        "tools": {
+            "allow": [
+                "group:fs",
+                "web_search",
+                "web_fetch",
+                "exec",
+                "write",
+                "sessions_list",
+                "session_status",
+                "memory_search",
+                "memory_get"
+            ],
+            "deny": [
+                "process",
+                "edit",
+                "apply_patch",
+                "browser",
+                "canvas",
+                "nodes"
+            ]
+        }
     }
-  },
-  {
-    "default": false,
-    "id": "pm",
-    "name": "Project Manager",
-    "identity": {
-      "emoji": "\ud83d\udccb",
-      "name": "PM"
-    },
-    "model": "ollama/gpt-oss:20b",
-    "workspace": "/home/deepsim/ds-eo-openclaw",
-    "tools": {
-      "allow": [
-        "group:fs",
-        "web_search",
-        "web_fetch",
-        "exec",
-        "write",
-        "sessions_list",
-        "session_status",
-        "memory_search",
-        "memory_get"
-      ],
-      "deny": [
-        "process",
-        "edit",
-        "apply_patch",
-        "browser",
-        "canvas",
-        "nodes"
-      ]
-    }
-  }
 ]

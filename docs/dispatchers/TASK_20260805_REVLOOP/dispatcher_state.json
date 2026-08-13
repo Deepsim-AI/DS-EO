@@ -9,7 +9,7 @@
       "id": "cto",
       "name": "CTO / Architect",
       "model": "ollama/qwen3.6:35b",
-      "workspace": "/home/deepsim/ds-eo-openclaw",
+      "workspace": "/home/deepsim/ds_eo_openclaw",
       "default": true,
       "tools_allow_count": 11,
       "tools_deny_count": 3
@@ -18,7 +18,7 @@
       "id": "implementer",
       "name": "Code Implementer",
       "model": "ollama/ornith:35b",
-      "workspace": "/home/deepsim/ds-eo-openclaw",
+      "workspace": "/home/deepsim/ds_eo_openclaw",
       "default": false,
       "tools_allow_count": 5,
       "tools_deny_count": 0
@@ -27,7 +27,7 @@
       "id": "reviewer",
       "name": "Senior Code Reviewer",
       "model": "ollama/laguna-xs-2.1:q4_K_M",
-      "workspace": "/home/deepsim/ds-eo-openclaw",
+      "workspace": "/home/deepsim/ds_eo_openclaw",
       "default": false,
       "tools_allow_count": 9,
       "tools_deny_count": 3
@@ -36,7 +36,7 @@
       "id": "pm",
       "name": "Project Manager",
       "model": "ollama/qwen3.6:35b",
-      "workspace": "/home/deepsim/ds-eo-openclaw",
+      "workspace": "/home/deepsim/ds_eo_openclaw",
       "default": false,
       "tools_allow_count": 9,
       "tools_deny_count": 6

@@ -46,9 +46,9 @@ Phase 2 — Self-hosting completed. DS-EO now operates within its own canonical 
 
 | Agent | Before | After |
 |-------|--------|-------|
-| cto | `/home/deepsim/agent_system/` | `/home/deepsim/ds-eo-openclaw/` |
-| implementer | `/home/deepsim/agent_system/` | `/home/deepsim/ds-eo-openclaw/` |
-| reviewer | `/home/deepsim/agent_system/` | `/home/deepsim/ds-eo-openclaw/` |
+| cto | `/home/deepsim/agent_system/` | `/home/deepsim/ds_eo_openclaw/` |
+| implementer | `/home/deepsim/agent_system/` | `/home/deepsim/ds_eo_openclaw/` |
+| reviewer | `/home/deepsim/agent_system/` | `/home/deepsim/ds_eo_openclaw/` |
 
 **Validation**: `python3 -c "import json; json.load(open('/home/deepsim/.openclaw/openclaw.json'))"` — valid JSON ✅
 
@@ -97,7 +97,7 @@ Final CTO approval issued — task complete, validated the entire self-hosting w
 | Validation Check | Result |
 |-----------------|--------|
 | Agents see ds-eo-openclaw/AGENTS.md as workspace context | ✅ Confirmed (workspace changed, agents will load AGENTS.md on next session) |
-| Agent workspace points to canonical repo | ✅ All 3 agents → `/home/deepsim/ds-eo-openclaw/` |
+| Agent workspace points to canonical repo | ✅ All 3 agents → `/home/deepsim/ds_eo_openclaw/` |
 | Protocol mirrors accessible from workspace | ✅ Symlinks verified and resolvable |
 | Task history within canonical repo | ✅ TASK_DS_EO_001 through TASK_DS_EO_003 all in ds-eo-openclaw/docs/development/reports/ |
 | Full task cycle executed within ds-eo-openclaw/ | ✅ CTO plan → Implementer → Reviewer → CTO approval all completed |

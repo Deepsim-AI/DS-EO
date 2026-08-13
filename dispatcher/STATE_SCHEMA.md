@@ -124,7 +124,7 @@ Captures the agent registry at the time a task was created for audit purposes:
     {
       "id": "cto",
       "model": "ollama/qwen3.6:35b",
-      "workspace": "/home/deepsim/ds-eo-openclaw"
+      "workspace": "/home/deepsim/ds_eo_openclaw"
     }
   ]
 }

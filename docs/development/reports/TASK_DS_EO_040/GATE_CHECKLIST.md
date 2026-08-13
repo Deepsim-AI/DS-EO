@@ -35,3 +35,9 @@
 - [x] CTO_PLAN.md exists with full scope, state model, acceptance criteria
 - [x] User has reviewed and approved the plan
 - [x] TASK_ID matches directory name (TASK_DS_EO_040 ✓)
+
+### G2 — Implementation (In Progress)
+- [x] BOUNDARY_ANALYSIS.md exists and maps every N1 requirement (AC-1 ✅)
+- [ ] reconciler.py implemented
+- [ ] Tests T1-T5 written and passing
+- [ ] Upstream patch proposals documented

@@ -47,7 +47,7 @@ See `scripts/baseline_audit.sh` to regenerate the full hash inventory at any tim
 
 ```bash
 # Run audit from repository root
-cd /home/deepsim/ds-eo-openclaw
+cd /home/deepsim/ds_eo_openclaw
 ./scripts/baseline_audit.sh
 
 # Review output in logs/ directory

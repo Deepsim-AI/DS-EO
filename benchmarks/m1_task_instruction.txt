@@ -1,0 +1,49 @@
+--- IMPLEMENTATION TASK FOR BENCHMARK (M1: qwen3.6:27b) ---
+
+You are implementing AC-1 from TASK_DS_EO_040 CTO_PLAN.md. 
+
+## Task Scope
+
+Produce 4 deliverables in /home/deepsim/ds_eo_openclaw/docs/development/reports/TASK_DS_EO_040/:
+
+### Deliverable 1: BOUNDARY_ANALYSIS.md
+Map every N1 requirement (N1-1 through N1-7) from the CTO_PLAN.md to one of:
+- **DS-EO-only** — can be fixed within DS-EO using available APIs (no OpenClaw core changes)
+- **Upstream-needed** — requires OpenClaw core changes; you MUST provide exact file path, function/symbol name, and approximate line number for the required change
+- **Hybrid** — partial DS-EO work exists but depends on an upstream patch
+
+To determine this accurately, read the OpenClaw source code:
+1. Start with the run engine module to understand available API for querying run state
+2. Check the TUI/control plane code for /abort and /new command handlers  
+3. Identify what's exposed via existing APIs (sessions_list, session_status, exec, etc.)
+
+### Deliverable 2: reconciler.py stubs
+Create /home/deepsim/ds_eo_openclaw/ds_eo_openclaw/run_reliability/reconciler.py with these functions:
+- `check_run_state() -> dict` — returns {engine_state: str, control_plane_state: str, is_synced: bool}
+- `reconcile_states(state_map: dict) -> list[str]` — returns list of recovery actions needed
+- `classify_error(raw_message: str, state_context: dict) -> str` — maps raw errors to structured codes
+- `detect_orphaned_runs() -> dict` — returns {orphan_count: int, orphans: list[dict]}
+
+Each function gets correct signatures, type hints, docstrings, and placeholder return values with TODO markers. Return values should be structurally valid (matching the documented return types) but with explicit unimplemented stubs.
+
+### Deliverable 3: test_reconciler.py
+Create /home/deepsim/ds_eo_openclaw/ds_eo_openclaw/run_reliability/tests/test_reconciler.py with:
+- T1-T5 unit tests from CTO_PLAN.md section 7 (orphan detection, state sync, clean state, error classification, abort recovery)
+- All tests must use mocking for any OpenClaw runtime dependencies
+- Tests should be runnable standalone via `python -m pytest`
+
+### Deliverable 4: WORK_COMPLETED.md
+Describe what was produced, what passes/fails in tests, and what remains. Note any upstream changes identified in BOUNDARY_ANALYSIS.md that will block later implementation.
+
+## Constraints
+- DO NOT modify any files outside TASK_DS_EO_040/ or ds_eo_openclaw/run_reliability/
+- Follow the file/symbol guidance in CTO_PLAN.md section 9 exactly
+- All new Python must be syntactically valid — run python -c "import ast; ast.parse(open('file.py').read())" to verify before claiming correctness
+- The reconciler module must be importable: `from ds_eo_openclaw.run_reliability.reconciler import check_run_state, reconcile_states, classify_error, detect_orphaned_runs`
+
+## Completion Signal
+When all 4 deliverables are produced and verified, write a completion summary to /home/deepsim/ds_eo_openclaw/benchmarks/results_M1.txt with:
+- tools_used_count: <number>
+- tools_failed_count: <number>  
+- artifacts_produced: list of file paths
+- test_results: pass/fail for each T1-T5

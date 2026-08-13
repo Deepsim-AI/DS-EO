@@ -164,7 +164,7 @@ If COMPLETE: final deliverable(s) = <file paths>
 
 ## Section 2: Handoff Message Generation Script
 
-Create `/home/deepsim/ds-eo-openclaw/scripts/generate_handoff_message.sh` that reads task artifacts and outputs the formatted message for each handoff type.
+Create `/home/deepsim/ds_eo_openclaw/scripts/generate_handoff_message.sh` that reads task artifacts and outputs the formatted message for each handoff type.
 
 **Usage**:
 ```bash

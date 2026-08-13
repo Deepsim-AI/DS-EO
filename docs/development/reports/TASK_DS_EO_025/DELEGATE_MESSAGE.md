@@ -66,7 +66,7 @@ def format_status() -> str
 
 ## Implementation Instructions
 
-1. Create directory `skills/eo/` under workspace root (`/home/deepsim/ds-eo-openclaw/skills/eo/`)
+1. Create directory `skills/eo/` under workspace root (`/home/deepsim/ds_eo_openclaw/skills/eo/`)
 2. Write SKILL.md following AgentSkills spec format
 3. Write commands.py with the four functions described above
 4. Write tests in `tests/test_eo_commands.py`

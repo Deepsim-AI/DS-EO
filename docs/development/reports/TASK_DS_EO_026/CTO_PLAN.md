@@ -29,7 +29,7 @@ This defect was discovered during TASK_DAL_002 (Content Inventory + Information 
 
 ### 2.2 The Defect: spawn_agent() Returns Mock Success
 
-File: `/home/deepsim/ds-eo-openclaw/dispatcher/session_dispatch/engine.py`
+File: `/home/deepsim/ds_eo_openclaw/dispatcher/session_dispatch/engine.py`
 
 The critical path is in `SessionDispatcher.spawn_via_sessions_spawn_tool()`:
 ```python

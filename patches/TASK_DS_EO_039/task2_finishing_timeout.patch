@@ -1,0 +1,52 @@
+--- /home/deepsim/ds_eo_openclaw/patches/TASK_DS_EO_039/tui-ttOZNpsl.js.bak_20260811	2026-08-11 18:48:49.821048097 -0700
++++ /home/deepsim/.nvm/versions/node/v24.18.0/lib/node_modules/openclaw/dist/tui-ttOZNpsl.js	2026-08-11 18:54:24.720459785 -0700
+@@ -2844,6 +2844,7 @@
+ 	const completedRuns = /* @__PURE__ */ new Map();
+ 	const postFinalizingRuns = /* @__PURE__ */ new Map();
+ 	let streamAssembler = new TuiStreamAssembler();
++	let staleFinishingTimer = null;
+ 	let lastSessionKey = state.currentSessionKey;
+ 	let pendingHistoryRefresh = false;
+ 	let reconnectPendingRunId = null;
+@@ -3452,17 +3453,32 @@
+ 				if (!canUpdateActivityStatus) return;
+ 				clearStreamingWatchdog();
+ 				setActivityStatus("finishing context");
++				// TASK_DS_EO_039 Task 2: guard against stale "finishing context" if lifecycle event never arrives
++				clearTimeout(staleFinishingTimer);
++				staleFinishingTimer = setTimeout(() => {
++					if (state.activityStatus === "finishing context" && !state.activeChatRunId && sessionRuns.size === 0) {
++						setActivityStatus("idle");
++						chatLog.addSystem("[TASK_DS_EO_039] Stale finishing state cleared after timeout. The agent may have crashed — try /new to start fresh.");
++						tui.requestRender(true);
++					}
++				}, 60000);
+ 			}
+ 			let forceRender = false;
+ 			if (phase === "end") {
+ 				postFinalizingRuns.delete(evt.runId);
+ 				if (!canUpdateActivityStatus) return;
++				// TASK_DS_EO_039 Task 2: cancel stale finishing timer — lifecycle completed normally
++				clearTimeout(staleFinishingTimer);
++				staleFinishingTimer = null;
+ 				setActivityStatus("idle");
+ 				forceRender = true;
+ 			}
+ 			if (phase === "error") {
+ 				postFinalizingRuns.delete(evt.runId);
+ 				if (!canUpdateActivityStatus) return;
++				// TASK_DS_EO_039 Task 2: cancel stale finishing timer — lifecycle completed with error
++				clearTimeout(staleFinishingTimer);
++				staleFinishingTimer = null;
+ 				if (typeof evt.data?.endedAt === "number" && (isActiveRun || isPendingRun)) {
+ 					const errorMessage = typeof evt.data?.error === "string" ? evt.data.error : typeof evt.data?.errorMessage === "string" ? evt.data.errorMessage : "unknown";
+ 					scheduleTerminalLifecycleError(evt.runId, errorMessage);
+@@ -3501,6 +3517,8 @@
+ 		deferredHistoryRunEvents.clear();
+ 		clearStreamingWatchdog();
+ 		clearPendingTerminalLifecycleErrors();
++		// TASK_DS_EO_039 Task 2: cancel stale finishing timer on dispose
++		clearTimeout(staleFinishingTimer);
+ 	};
+ 	const consumeCompletedRunForPendingSend = (runId) => {
+ 		if (!completedRuns.has(runId)) return false;

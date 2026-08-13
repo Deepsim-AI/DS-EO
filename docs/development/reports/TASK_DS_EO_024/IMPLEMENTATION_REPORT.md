@@ -221,12 +221,12 @@ Phase 5 is pure testing — zero production code modifications required. All tes
 
 | Artifact | Status | Location |
 |----------|--------|----------|
-| `test_manual_mode_regression.py` | ✅ Complete (285 lines, ~25 tests) | `/home/deepsim/ds-eo-openclaw/tests/` |
-| `test_auto_mode_transitions.py` | ✅ Complete (224 lines, ~20 tests) | `/home/deepsim/ds-eo-openclaw/tests/` |
-| `test_mode_switching.py` | ✅ Complete (188 lines, ~24+ tests) | `/home/deepsim/ds-eo-openclaw/tests/` |
-| `test_edge_cases.py` | ✅ Complete (196 lines, ~14 tests) | `/home/deepsim/ds-eo-openclaw/tests/` |
-| `test_audit_integration.py` | ✅ Complete (228 lines, ~7 tests) | `/home/deepsim/ds-eo-openclaw/tests/` |
-| `test_platform_portability.py` | ✅ Complete (260 lines, ~10+ tests) | `/home/deepsim/ds-eo-openclaw/tests/` |
+| `test_manual_mode_regression.py` | ✅ Complete (285 lines, ~25 tests) | `/home/deepsim/ds_eo_openclaw/tests/` |
+| `test_auto_mode_transitions.py` | ✅ Complete (224 lines, ~20 tests) | `/home/deepsim/ds_eo_openclaw/tests/` |
+| `test_mode_switching.py` | ✅ Complete (188 lines, ~24+ tests) | `/home/deepsim/ds_eo_openclaw/tests/` |
+| `test_edge_cases.py` | ✅ Complete (196 lines, ~14 tests) | `/home/deepsim/ds_eo_openclaw/tests/` |
+| `test_audit_integration.py` | ✅ Complete (228 lines, ~7 tests) | `/home/deepsim/ds_eo_openclaw/tests/` |
+| `test_platform_portability.py` | ✅ Complete (260 lines, ~10+ tests) | `/home/deepsim/ds_eo_openclaw/tests/` |
 | **Total** | **92 tests passing in 0.37s** | — |
 
 ---

@@ -7,7 +7,7 @@
 **Priority**: P1  
 
 ## Plan Reference
-- CTO_PLAN.md: `/home/deepsim/ds-eo-openclaw/docs/development/reports/TASK_DS_EO_027/CTO_PLAN.md`
+- CTO_PLAN.md: `/home/deepsim/ds_eo_openclaw/docs/development/reports/TASK_DS_EO_027/CTO_PLAN.md`
 
 ## Assignment
 

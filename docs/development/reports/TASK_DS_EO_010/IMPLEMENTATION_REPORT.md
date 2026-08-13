@@ -2,7 +2,7 @@
 
 **Task:** Git Initialization and Baseline Establishment  
 **Implementer Agent:** ollama/ornith:35b  
-**Repository:** `/home/deepsim/ds-eo-openclaw`  
+**Repository:** `/home/deepsim/ds_eo_openclaw`  
 **Branch:** `main`  
 
 ---

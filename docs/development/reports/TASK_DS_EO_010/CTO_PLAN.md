@@ -13,7 +13,7 @@
 
 ## Objective
 
-Initialize version control on `/home/deepsim/ds-eo-openclaw/` and establish a reliable baseline that all future implementation/deploy work can be verified against. This task implements the 8 requirements defined in the approved GIT_INIT_PLAN.md (TASK_DS_EO_009).
+Initialize version control on `/home/deepsim/ds_eo_openclaw/` and establish a reliable baseline that all future implementation/deploy work can be verified against. This task implements the 8 requirements defined in the approved GIT_INIT_PLAN.md (TASK_DS_EO_009).
 
 **Important**: The Implementer's prior conflation of this task with TASK_DS_EO_001/002 (migration) is rejected. This task has **nothing to do with migration**. It is purely git initialization and repository integrity.
 
@@ -23,7 +23,7 @@ Initialize version control on `/home/deepsim/ds-eo-openclaw/` and establish a re
 
 ### Item 1: Write Comprehensive .gitignore
 
-Create `/home/deepsim/ds-eo-openclaw/.gitignore` replacing the current 7-line version. The file must contain:
+Create `/home/deepsim/ds_eo_openclaw/.gitignore` replacing the current 7-line version. The file must contain:
 
 ```gitignore
 # ─── Python artifacts ──────────────────────────────────────
@@ -65,7 +65,7 @@ Verify: all protocol, template, script, docs/reports/*, agent prompt files are N
 
 ### Item 2: Initialize Git and Create Baseline Commit
 
-Run `git init` in `/home/deepsim/ds-eo-openclaw/`. Then add ALL source files (not .gitignore-excluded) and commit with this message:
+Run `git init` in `/home/deepsim/ds_eo_openclaw/`. Then add ALL source files (not .gitignore-excluded) and commit with this message:
 
 ```
 TASK_DS_EO_010: Initialize version control and establish v0.2-baseline
@@ -110,7 +110,7 @@ Verify: `git tag -l` shows `v0.2-baseline`. `git tag -n v0.2-baseline` shows the
 
 ### Item 4: Create Baseline Audit Document
 
-Create `/home/deepsim/ds-eo-openclaw/docs/development/reports/TASK_DS_EO_010/BASLNE_AUDIT.md` (note: this is the audit report, not to be confused with GIT_INIT_PLAN.md):
+Create `/home/deepsim/ds_eo_openclaw/docs/development/reports/TASK_DS_EO_010/BASLNE_AUDIT.md` (note: this is the audit report, not to be confused with GIT_INIT_PLAN.md):
 
 ```markdown
 # Baseline Audit — TASK_DS_EO_010
@@ -144,9 +144,9 @@ Create `/home/deepsim/ds-eo-openclaw/docs/development/reports/TASK_DS_EO_010/BAS
 
 ### Item 5: Add implementation_protocol.md to Repo Source and Deploy Pipeline
 
-1. Copy `~/.openclaw/protocols/implementation_protocol.md` content to `/home/deepsim/ds-eo-openclaw/protocols/implementation_protocol.md` (or create it if the source file is missing — verify first).
+1. Copy `~/.openclaw/protocols/implementation_protocol.md` content to `/home/deepsim/ds_eo_openclaw/protocols/implementation_protocol.md` (or create it if the source file is missing — verify first).
 2. Verify its contents match what TASK_DS_EO_006's IMPLEMENTATION_REPORT described (RULE I-1, I-2, I-3 present).
-3. Update `/home/deepsim/ds-eo-openclaw/scripts/deploy_protocols.sh` PROTO_FILES array to include `implementation_protocol.md`:
+3. Update `/home/deepsim/ds_eo_openclaw/scripts/deploy_protocols.sh` PROTO_FILES array to include `implementation_protocol.md`:
 
 ```bash
 PROTO_FILES=(
@@ -160,7 +160,7 @@ PROTO_FILES=(
 )
 ```
 
-4. Remove the orphaned copy: delete `/home/deepsim/ds-eo-openclaw/protocols/implementation_protocol.md` — it should only exist in the repo source, not as an untracked file in ~/.openclaw/.
+4. Remove the orphaned copy: delete `/home/deepsim/ds_eo_openclaw/protocols/implementation_protocol.md` — it should only exist in the repo source, not as an untracked file in ~/.openclaw/.
 
 **Wait correction**: Step 5b should ADD to repo (copy FROM ~/.openclaw/ TO ds-eo-openclaw/protocols/), then step 5d removes from ~/.openclaw/protocols/, NOT from repo. Fix: remove `/home/deepsim/.openclaw/protocols/implementation_protocol.md` only if it differs from the deployed copy, or keep it in sync after deployment.
 
@@ -168,7 +168,7 @@ PROTO_FILES=(
 
 ### Item 6: Update deploy_protocols.sh with Pre-Flight Integrity Check
 
-Add to `/home/deepsim/ds-eo-openclaw/scripts/deploy_protocols.sh` before the deployment loop in **both** rollback and deploy modes:
+Add to `/home/deepsim/ds_eo_openclaw/scripts/deploy_protocols.sh` before the deployment loop in **both** rollback and deploy modes:
 
 ```bash
 # ─── Pre-flight Integrity Check (new — TASK_DS_EO_010) ──
@@ -239,7 +239,7 @@ Or alternatively, use a different tag name like `v0.3-git-initialized` if the us
 
 | # | Criterion | Weight |
 |---|-----------|--------|
-| A1 | `.git/` directory exists in `/home/deepsim/ds-eo-openclaw/` | 5% |
+| A1 | `.git/` directory exists in `/home/deepsim/ds_eo_openclaw/` | 5% |
 | A2 | Initial baseline commit exists with known-issues annotation message | 10% |
 | A3 | `v0.2-baseline` tag points to the correct commit | 5% |
 | A4 | `.gitignore` excludes all listed ephemeral patterns, includes no source files | 10% |

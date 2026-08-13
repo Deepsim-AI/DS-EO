@@ -118,7 +118,7 @@ The document consistency sweep has **critical omissions** that prevent approval.
 
 ```bash
 # Verify GATE_AUTHORITY_MATRIX is in manifest protocols
-grep "gate_authority\|GATE_AUTHORITY" /home/deepsim/ds-eo-openclaw/ds_eo_manifest.yaml
+grep "gate_authority\|GATE_AUTHORITY" /home/deepsim/ds_eo_openclaw/ds_eo_manifest.yaml
 
 # Count protocols (should be 8)
 grep -c 'id:.*protocol' /home/deesim/ds-eo-openclaw/ds_eo_manifest.yaml | grep -v "review_protocol" | wc -l
