@@ -1,0 +1,241 @@
+name: Release DS-EO
+
+# ──────────────────────────────────────────────────────────────────────
+# Trigger: Manual only (GitHub Actions UI or CLI).
+# No automatic triggers on push/PR — releases are always deliberate.
+# ──────────────────────────────────────────────────────────────────────
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "Semver bump type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write   # needed for creating tags and GitHub Releases
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ──────────── checkout ────────────
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # needed for git log range queries
+          ref: main
+
+      # ──────────── verify we're on main ────────────
+      - name: Verify branch is main
+        run: |
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          if [ "$CURRENT_BRANCH" != "main" ]; then
+            echo "::error::Release workflow must run on 'main' branch, not '$CURRENT_BRANCH'."
+            exit 1
+          fi
+          echo "Branch verified: main ✓"
+
+      # ──────────── read version from manifest ────────────
+      - name: Read current version from manifest
+        id: read_version
+        run: |
+          CURRENT_VERSION=$(python3 -c 'import yaml; data=yaml.safe_load(open("ds_eo_manifest.yaml")); print(data["package"]["version"])')
+          PREV_MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+          PREV_MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
+          PREV_PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
+          case "${{ inputs.release_type }}" in
+            major) NEW_MAJOR=$((PREV_MAJOR + 1)); NEW_MINOR=0; NEW_PATCH=0 ;;
+            minor) NEW_MINOR=$((PREV_MINOR + 1)); NEW_PATCH=0 ;;
+            patch) NEW_PATCH=$((PREV_PATCH + 1)) ;;
+          esac
+          NEW_VERSION="${NEW_MAJOR}.${NEW_MINOR}.${NEW_PATCH}"
+          TAG_NAME="v${NEW_VERSION}"
+          echo "current_manifest=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "prev_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_type=${{ inputs.release_type }}" >> "$GITHUB_OUTPUT"
+
+      # ──────────── report before bump ────────────
+      - name: Report version info (pre-bump)
+        run: |
+          echo "=============================================="
+          echo "  DS-EO Release Automation"
+          echo "=============================================="
+          echo "  Previous version (manifest): ${{ steps.read_version.outputs.prev_version }}"
+          echo "  New version:                  ${{ steps.read_version.outputs.new_version }}"
+          echo "  Semver type:                  ${{ steps.read_version.outputs.release_type }}"
+          echo "  Git tag to create:            ${{ steps.read_version.outputs.tag_name }}"
+          echo "=============================================="
+
+      # ──────────── duplicate-prevention check ────────────
+      - name: Check for existing tag (remote)
+        id: dup_check_remote
+        run: |
+          if git ls-remote --tags origin 2>/dev/null | grep -q "refs/tags/${{ steps.read_version.outputs.tag_name }}"; then
+            echo "DUPLICATE_REMOTE=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "DUPLICATE_REMOTE=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for existing tag (local)
+        id: dup_check_local
+        run: |
+          if git rev-parse "${{ steps.read_version.outputs.tag_name }}" >/dev/null 2>&1; then
+            echo "DUPLICATE_LOCAL=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "DUPLICATE_LOCAL=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fail on duplicate tag
+        if: steps.dup_check_remote.outputs.DUPLICATE_REMOTE == 'true' || steps.dup_check_local.outputs.DUPLICATE_LOCAL == 'true'
+        run: |
+          TAG="${{ steps.read_version.outputs.tag_name }}"
+          echo "::error::Tag $TAG already exists. Duplicate release detected. Aborting to prevent duplicate release."
+          exit 1
+
+      # ──────────── version bump (BEFORE tests) ────────────
+      - name: Bump version in manifest and Python package
+        run: |
+          NEW="${{ steps.read_version.outputs.new_version }}"
+          PREV="${{ steps.read_version.outputs.prev_version }}"
+
+          # Write a temp script to avoid YAML parser issues with embedded Python
+          TMPFILE=$(mktemp /tmp/bump_ver.XXXXX.py)
+          cat > "$TMPFILE" << 'PYEOF'
+import yaml, sys
+new_ver = sys.argv[1]
+with open("ds_eo_manifest.yaml") as f:
+    data = yaml.safe_load(f)
+data["package"]["version"] = new_ver
+with open("ds_eo_manifest.yaml", "w") as f:
+    yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+print(f"Updated ds_eo_manifest.yaml version to {new_ver}")
+PYEOF
+          python3 "$TMPFILE" "$NEW"
+          rm -f "$TMPFILE"
+
+          # Sync __init__.py version using sed (stable pattern)
+          sed -i "s/__version__ = .*/__version__ = \"$NEW\"/" ds_eo_openclaw/__init__.py
+          echo "Version synced in ds_eo_openclaw/__init__.py"
+
+      # ──────────── install deps ────────────
+      - name: Install test dependencies
+        run: pip install pytest pyyaml
+
+      # ──────────── verify tests PASS before publishing ────────────
+      - name: Run full test suite
+        id: tests
+        run: |
+          set +e
+          TEST_OUTPUT=$(python3 -m pytest --tb=short -q 2>&1)
+          TEST_RC=$?
+          echo "$TEST_OUTPUT"
+          if [ $TEST_RC -eq 0 ]; then
+            echo "RESULT=pass" >> "$GITHUB_OUTPUT"
+            echo "All tests passed."
+          else
+            echo "RESULT=fail" >> "$GITHUB_OUTPUT"
+            echo "::error::Tests failed. ABORTING release. No push, tag, or GitHub Release will be created."
+          fi
+
+      - name: Fail on test failure
+        if: steps.tests.outputs.RESULT == 'fail'
+        run: exit 1
+
+      # ──────────── generate release notes ────────────
+      - name: Generate release notes
+        id: notes
+        run: |
+          TAG="${{ steps.read_version.outputs.tag_name }}"
+          PREV_VER="${{ steps.read_version.outputs.prev_version }}"
+          # Use last annotated tag as the actual commit range; fall back to recent 50 commits
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log --oneline "${LAST_TAG}"..HEAD)
+            echo "Using tag range: ${LAST_TAG}..HEAD"
+          else
+            COMMITS=$(git log --oneline -50)
+            echo "No annotated tag found; using recent 50 commits"
+          fi
+          {
+            echo "# Release Notes — ${TAG}"
+            echo ""
+            echo "**Release type:** ${{ steps.read_version.outputs.release_type }}"
+            echo "**Previous version:** $PREV_VER"
+            echo "**New version:** ${TAG#v}"
+            echo "**Released by:** DS-EO automated release workflow"
+            echo ""
+            echo "## Changes"
+            echo ""
+            echo "$COMMITS"
+            echo ""
+            echo "---"
+            echo ""
+            echo "## Changelog Entries (most recent)"
+            echo ""
+            grep -E "^## \[v[0-9]|^## TASK_DS_EO_" CHANGELOG.md 2>/dev/null | head -20 || true
+          } > RELEASE_NOTES_GENERATED.md
+          echo "Release notes written to RELEASE_NOTES_GENERATED.md"
+
+      # ──────────── commit + push version bump ────────────
+      - name: Commit version bump
+        id: git_commit
+        run: |
+          git config user.name  "DS-EO Release Bot"
+          git config user.email "release@deepsim.ai"
+          git add ds_eo_manifest.yaml ds_eo_openclaw/__init__.py RELEASE_NOTES_GENERATED.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit — version may already be at target."
+            echo "STATUS=no-op" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: bump version ${{ steps.read_version.outputs.prev_version }} to ${{ steps.read_version.outputs.new_version }}"
+            git push origin main
+            echo "Version bump committed and pushed to main."
+            echo "STATUS=pushed" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ──────────── create tag (only after successful push) ────────────
+      - name: Create Git tag
+        if: steps.git_commit.outputs.STATUS != 'no-op'
+        run: |
+          TAG="${{ steps.read_version.outputs.tag_name }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+          echo "Tag $TAG created and pushed."
+
+      # ──────────── create GitHub Release (only after successful tag) ────────────
+      - name: Create GitHub Release
+        if: steps.git_commit.outputs.STATUS != 'no-op'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.read_version.outputs.tag_name }}
+          name: "Release ${{ steps.read_version.outputs.tag_name }}"
+          body_path: RELEASE_NOTES_GENERATED.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ──────────── final report ────────────
+      - name: Release summary
+        if: always()
+        run: |
+          echo "=============================================="
+          echo "  DS-EO Release Complete"
+          echo "=============================================="
+          echo "  Previous version: ${{ steps.read_version.outputs.prev_version }}"
+          echo "  New version:      ${{ steps.read_version.outputs.new_version }}"
+          echo "  Semver type:      ${{ steps.read_version.outputs.release_type }}"
+          echo "  Test result:      ${{ steps.tests.outputs.RESULT || 'skipped' }}"
+          echo "  Tag created:      ${{ steps.read_version.outputs.tag_name }}"
+          echo "  Release URL:      https://github.com/Deepsim-AI/DS-EO/releases/tag/${{ steps.read_version.outputs.tag_name }}"
+          echo "=============================================="

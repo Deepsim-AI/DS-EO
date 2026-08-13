@@ -315,6 +315,7 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
   - Configurable thresholds, OBSERVING mode by default
   - Total tests across all modules: 315 (0 failures)
 - **v0.8** (shipped): Complete Automatic Workflow Management System
+- **TASK_DS_EO_040** (2026-08-13): Run-State Reconciliation Layer — orphaned run detection, structured error classification, and agent-executable recovery protocols in `ds_eo_openclaw.run_reliability`
   - Phases 1–7 all complete with 433 passing tests
   - Phase 1: PM Workflow State Engine (core state machine)
   - Phase 2: Audit Trail Integration (SHA-256 hash chain entries)
