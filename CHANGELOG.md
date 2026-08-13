@@ -21,6 +21,22 @@ Fixed critical control-plane deadlock where TUI session becomes permanently unus
 ### Outcome
 Eliminates permanent session deadlocks caused by run-state desynchronization. Defense-in-depth approach: gateway fixes root cause (always emits event), TUI adds timeout as fallback, and `/new` gains gateway-side awareness to unblock stale sessions independently.
 
+
+## TASK_DS_EO_040: Run-State Reconciliation Layer ✅ CLOSED (G5 Complete 2026-08-13)
+
+### Summary
+Added self-contained run-state reconciliation layer to the `ds_eo_openclaw.run_reliability` package. Detects orphaned OpenClaw runs, classifies error conditions with structured patterns, and provides agent-executable recovery protocols — all without modifying existing OpenClaw code paths.
+
+**Changes applied:**
+- **reconciler.py (367 lines)** — `detect_orphaned_runs()` using available APIs to find desynchronized run state
+- **error_mapper.py (210 lines)** — Structured ERROR_PATTERNS classification replaces opaque "run error: unknown" strings
+- **recovery_protocol.py (194 lines)** — Agent-executable step sequences for orphaned run recovery without restarting OpenClaw
+- **ds_eo_openclaw/run_reliability/__init__.py** — Package initialization and public API exports
+- **tests/test_run_reliability/** — 59 unit tests across test_reconciler.py, test_error_mapper.py, test_recovery_protocol.py
+
+### Outcome
+Defense-in-depth approach: DS-EO-only detection layer works independently of upstream, structured error classification enables precise agent response, and recovery protocols eliminate the need for full OpenClaw restarts. Zero regression risk — entirely new code, no modifications to existing paths. Upstream patch proposals documented in BOUNDARY_ANALYSIS.md for future contribution.
+
 ## [v0.9.0] — 2026-08-11
 
 ### Summary

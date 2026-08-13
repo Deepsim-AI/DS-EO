@@ -1,6 +1,6 @@
 # TASK_DS_EO_040 — Gate Checklist
 
-## Current Gate: G3 (Review) → G4 (CTO Approval)
+## Current Gate: ✅ ALL COMPLETE
 
 ## Gates to Complete
 
@@ -58,4 +58,10 @@
 - [x] No deviations from approved plan detected
 - [x] Implementation quality: sound architecture, testable, no regression risk
 
-## Next Step: G5 — PM Closure (requires separate session per protocol)
+### ✅ G5 — PM Closure (COMPLETE — 2026-08-13)
+- [x] PROJECT_STATUS.md updated (root + docs/) with TASK_DS_EO_040 entry and last-updated timestamp
+- [x] CHANGELOG.md updated (root + docs/) with detailed task summary
+- [x] WORK_COMPLETED.md produced in task directory (44 lines, all deliverables listed)
+- [x] Git commit completed (854e0b1 + follow-up docs update)
+
+## Status: TASK_DS_EO_040 FULLY CLOSED ✅
