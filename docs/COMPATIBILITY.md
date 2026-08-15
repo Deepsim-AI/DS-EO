@@ -18,7 +18,7 @@ DS-EO is platform-agnostic at the protocol level. The only model-specific aspect
 | Role | Model | Provider | Status |
 |------|-------|----------|--------|
 | CTO | `ollama/qwen3.6:35b` | Ollama | ✓ Tested |
-| Implementer | `ollama/ornith:35b` | Ollama | ✓ Tested |
+| Implementer | `ollama/qwen3.8:27b` | Ollama | ✓ Tested |
 | Reviewer | `ollama/laguna-xs-2.1:q4_K_M` | Ollama | ✓ Tested |
 
 ### Recommended Alternatives

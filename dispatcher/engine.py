@@ -11,6 +11,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
 
+# TASK_DS_EO_043 Phase A: Execution strategy (lazy loaded)
+import threading
+
 
 # Try PyYAML; if unavailable, fall back to basic YAML parser for our subset
 try:
@@ -73,7 +76,7 @@ class WorkflowEngine:
     Does NOT modify gateway config — that's the dispatcher layer's job.
     """
 
-    def __init__(self, workflow_path: str = None):
+    def __init__(self, workflow_path: str = None, workspace_root: str = None):
         """
         Initialize the workflow engine.
 
@@ -95,6 +98,7 @@ class WorkflowEngine:
         self.prompt_templates: dict = {}  # name -> template string
         self.tool_policies: dict = {}
         self._loaded: bool = False
+        self.workspace_root = workspace_root or os.path.join(os.path.dirname(__file__), "..")
 
         # Supervisor overlay state (TASK_DS_EO_027)
         self._supervisor_overlay: Optional[str] = None  # Global overlay state
@@ -262,6 +266,21 @@ class WorkflowEngine:
                 error="Workflow not loaded. Call load_workflow() first.",
             )
 
+
+        # ===== TASK_DS_EO_043 Phase A: Execution Strategy Hooks =====
+        # These run synchronously during execute_transition (which is a sync method).
+        # Strategy hooks are non-fatal — failures log but do not block transitions.
+        _exec_strategy_name = None
+        try:
+            from dispatcher.execution_strategy import ExecutionStrategyManager
+            ws = self.workspace_root or os.path.join(os.path.dirname(__file__), "..")
+            strategy_mgr = ExecutionStrategyManager(workspace_root=ws)
+            # Sync read of current strategy (no async ops needed for selection)
+            _exec_strategy_name = strategy_mgr.selector.current_strategy_name
+        except Exception as _es_err:
+            logger.warning(f"Execution strategy hook unavailable (non-fatal): {_es_err}")
+            _exec_strategy_name = "unknown"
+        # ===== END TASK_DS_EO_043 Hooks =====
         # Step 1: Validate transition
         allowed, validation_msgs = self.can_transition(from_phase, transition_name)
         if not allowed:

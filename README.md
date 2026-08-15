@@ -88,7 +88,7 @@ The installer sets default model names during initial setup. You can change them
 | Agent | Field in config | Default model |
 |-------|----------------|---------------|
 | CTO / Architect | `"id": "cto"` → `"model"` | `ollama/qwen3.6:35b` |
-| Code Implementer | `"id": "implementer"` → `"model"` | `ollama/ornith:35b` |
+| Code Implementer | `"id": "implementer"` → `"model"` | `ollama/qwen3.8:27b` |
 | Senior Code Reviewer | `"id": "reviewer"` → `"model"` | `ollama/laguna-xs-2.1:q4_K_M` |
 | Project Manager | `"id": "pm"` → `"model"` | `ollama/gpt-oss:20b` |
 
@@ -244,7 +244,7 @@ ds-eo-openclaw/
 | Role | Emoji | Description | Default Model |
 |------|-------|-------------|---------------|
 | CTO / Architect | 🏗️ | Architecture, planning, final approval authority | `ollama/qwen3.6:35b` |
-| Code Implementer | 💻 | Execute approved plans, produce working code | `ollama/ornith:35b` |
+| Code Implementer | 💻 | Execute approved plans, produce working code | `ollama/qwen3.8:27b` |
 | Senior Code Reviewer | 🔍 | Independent verification and quality assessment | `ollama/laguna-xs-2.1:q4_K_M` |
 | Project Manager | 📋 | Process oversight — task lifecycle, status tracking, release management | `ollama/gpt-oss:20b` |
 

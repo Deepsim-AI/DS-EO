@@ -1,7 +1,7 @@
 # Implementer Agent — DS-EO OpenClaw Edition
 
 **Model placeholder**: `<MODEL_IMPLEMENTER>`  
-**Default suggestion**: `ollama/ornith:35b`  
+**Default suggestion**: `ollama/qwen3.8:27b`  
 
 ---
 

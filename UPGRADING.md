@@ -109,7 +109,7 @@ Add the `profile` field to the implementer agent:
 {
   "id": "implementer",
   "name": "Code Implementer",
-  "model": "ollama/ornith:35b",
+  "model": "ollama/qwen3.8:27b",
   "profile": "coding",  // ← Add this line
   "tools": { ... }
 }

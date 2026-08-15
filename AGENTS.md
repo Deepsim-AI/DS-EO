@@ -9,7 +9,7 @@ This file governs how the engineering organization works within this workspace. 
 | Agent | ID in `openclaw.json` | Current Model | How to change |
 |-------|----------------------|---------------|---------------|
 | CTO / Architect 🏗️ | `"id": "cto"` | `ollama/qwen3.6:35b` | Edit `agents.list[]` entry for `"id": "cto"`, field `"model"` |
-| Code Implementer 💻 | `"id": "implementer"` | `ollama/ornith:35b` | Edit `agents.list[]` entry for `"id": "implementer"`, field `"model"` |
+| Code Implementer 💻 | `"id": "implementer"` | `ollama/qwen3.8:27b` | Edit `agents.list[]` entry for `"id": "implementer"`, field `"model"` |
 | Senior Code Reviewer 🔍 | `"id": "reviewer"` | `ollama/laguna-xs-2.1:q4_K_M` | Edit `agents.list[]` entry for `"id": "reviewer"`, field `"model"` |
 | Project Manager 📋 | `"id": "pm"` | `ollama/gpt-oss:20b` | Edit `agents.list[]` entry for `"id": "pm"`, field `"model"` |
 
@@ -71,7 +71,7 @@ All references to these components are relative to this workspace root (`/home/d
 
 ### Code Implementer 💻
 
-- **Model**: `ollama/ornith:35b`
+- **Model**: `ollama/qwen3.8:27b`
 - **Role**: Execute approved plans with full file system access.
 - **Tool Policy**: Full repository access (`tools.allow`: group:fs, group:runtime, etc.)
 - **Responsibilities**:
@@ -142,9 +142,9 @@ If your session reports `livenessState=blocked`, "Context overflow: prompt too l
 
 | Phase | Required Models | Always Unload |
 |-------|-----------------|---------------|
-| CTO planning only | qwen3.6:35b, nomic-embed-text | gpt-oss:20b, laguna-xs-2.1, ornith:35b |
-| CTO + Implementer | qwen3.6:35b, ornith:35b, nomic-embed-text | gpt-oss:20b, laguna-xs-2.1 |
-| Review phase | laguna-xs-2.1, qwen3.6:35b, nomic-embed-text | ornith:35b, gpt-oss:20b |
+| CTO planning only | qwen3.6:35b, nomic-embed-text | gpt-oss:20b, laguna-xs-2.1, qwen3.8:27b |
+| CTO + Implementer | qwen3.6:35b, qwen3.8:27b, nomic-embed-text | gpt-oss:20b, laguna-xs-2.1 |
+| Review phase | laguna-xs-2.1, qwen3.6:35b, nomic-embed-text | qwen3.8:27b, gpt-oss:20b |
 | Idle | nomic-embed-text only | all large models |
 
 **Operational rules**:

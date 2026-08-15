@@ -116,7 +116,7 @@ version: "1.0"
 
 agents:
   cto:       { model: ollama/qwen3.6:35b,   role: architect }
-  implementer: { model: ollama/ornith:35b,  role: coder }
+  implementer: { model: ollama/qwen3.8:27b,  role: coder }
   reviewer:    { model: ollama/laguna-xs-2.1:q4_K_M, role: auditor }
   pm:          { model: ollama/qwen3.6:35b,  role: coordinator }
 

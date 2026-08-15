@@ -1,0 +1,77 @@
+# DS-EO Project Catalog
+# Global registry of all projects managed by DS-EO.
+# Each project declares its workspace, task ID prefix, agent identity naming, and artifact paths.
+
+projects:
+  # ── Framework itself ──
+  - name: "ds-eo-framework"
+    id: "framework"
+    workspace: "/home/deepsim/ds_eo_openclaw"
+    git_repo: "git@github.com:Deepsim-AI/DS-EO.git"
+    task_prefix: "DS_EO"
+    agent_id_prefix: ""
+    artifact_paths:
+      reports: "docs/development/reports"
+      dispatchers: "docs/dispatchers"
+    default_agents:
+      - id: "cto"
+        model: "ollama/qwen3.6:35b"
+        workspace: "/home/deepsim/ds_eo_openclaw"
+      - id: "implementer"
+        model: "ollama/ornith:35b"
+        workspace: "/home/deepsim/ds_eo_openclaw"
+      - id: "reviewer"
+        model: "ollama/laguna-xs-2.1:q4_K_M"
+        workspace: "/home/deepsim/ds_eo_openclaw"
+      - id: "pm"
+        model: "ollama/gpt-oss:20b"
+        workspace: "/home/deepsim/ds_eo_openclaw"
+
+  # ── Deepsim AI Lab Website ──
+  - name: "deepsim-ai-lab"
+    id: "dal"
+    workspace: "/home/deepsim/deepsim-ai-lab"
+    git_repo: ""
+    task_prefix: "DAL"
+    agent_id_prefix: "-dal"
+    artifact_paths:
+      reports: "docs/development/reports"
+      dispatchers: "docs/dispatchers"
+    default_agents:
+      - id: "cto-dal"
+        model: "ollama/qwen3.6:35b"
+        workspace: "/home/deepsim/deepsim-ai-lab"
+      - id: "implementer-dal"
+        model: "ollama/ornith:35b"
+        workspace: "/home/deepsim/deepsim-ai-lab"
+      - id: "reviewer-dal"
+        model: "ollama/laguna-xs-2.1:q4_K_M"
+        workspace: "/home/deepsim/deepsim-ai-lab"
+      - id: "pm-dal"
+        model: "ollama/gpt-oss:20b"
+        workspace: "/home/deepsim/deepsim-ai-lab"
+
+  # ── Placeholder for future projects ──
+  # Uncomment and customize when adding a new project:
+  # - name: "webshop-backend"
+  #   id: "ws"
+  #   workspace: "/home/deepsim/webshop"
+  #   git_repo: ""
+  #   task_prefix: "WS"
+  #   agent_id_prefix: "-ws"
+  #   artifact_paths:
+  #     reports: "docs/development/reports"
+  #     dispatchers: "docs/dispatchers"
+  #   default_agents:
+  #     - id: "cto-ws"
+  #       model: "ollama/qwen3.6:35b"
+  #       workspace: "/home/deepsim/webshop"
+  #     - id: "implementer-ws"
+  #       model: "ollama/ornith:35b"
+  #       workspace: "/home/deepsim/webshop"
+  #     - id: "reviewer-ws"
+  #       model: "ollama/laguna-xs-2.1:q4_K_M"
+  #       workspace: "/home/deepsim/webshop"
+  #     - id: "pm-ws"
+  #       model: "ollama/gpt-oss:20b"
+  #       workspace: "/home/deepsim/webshop"

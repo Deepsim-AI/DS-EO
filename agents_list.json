@@ -38,7 +38,7 @@
             "emoji": "\ud83d\udcbb",
             "name": "Implementer"
         },
-        "model": "ollama/ornith:35b",
+        "model": "ollama/qwen3.8:27b",
         "workspace": "/home/deepsim/ds_eo_openclaw",
         "tools": {
             "allow": [
@@ -90,6 +90,119 @@
         },
         "model": "ollama/gpt-oss:20b",
         "workspace": "/home/deepsim/ds_eo_openclaw",
+        "tools": {
+            "allow": [
+                "group:fs",
+                "web_search",
+                "web_fetch",
+                "exec",
+                "write",
+                "sessions_list",
+                "session_status",
+                "memory_search",
+                "memory_get"
+            ],
+            "deny": [
+                "process",
+                "edit",
+                "apply_patch",
+                "browser",
+                "canvas",
+                "nodes"
+            ]
+        }
+    },
+    {
+        "default": false,
+        "id": "cto-dal",
+        "name": "CTO / Architect (DAL)",
+        "identity": {
+            "emoji": "\ud83c\udfd7\ufe0f",
+            "name": "CTO"
+        },
+        "model": "ollama/qwen3.6:35b",
+        "workspace": "/home/deepsim/deepsim-ai-lab",
+        "tools": {
+            "allow": [
+                "group:fs",
+                "web_search",
+                "web_fetch",
+                "sessions_list",
+                "session_status",
+                "memory_search",
+                "memory_get",
+                "exec",
+                "process",
+                "sessions_spawn",
+                "sessions_send"
+            ],
+            "deny": [
+                "write",
+                "edit",
+                "apply_patch"
+            ]
+        }
+    },
+    {
+        "default": false,
+        "id": "implementer-dal",
+        "name": "Code Implementer (DAL)",
+        "identity": {
+            "emoji": "\ud83d\udcbb",
+            "name": "Implementer"
+        },
+        "model": "ollama/qwen3.8:27b",
+        "workspace": "/home/deepsim/deepsim-ai-lab",
+        "tools": {
+            "allow": [
+                "group:fs",
+                "group:runtime",
+                "group:web",
+                "group:sessions",
+                "group:memory"
+            ],
+            "deny": []
+        }
+    },
+    {
+        "default": false,
+        "id": "reviewer-dal",
+        "name": "Senior Code Reviewer (DAL)",
+        "identity": {
+            "emoji": "\ud83d\udd0d",
+            "name": "Reviewer"
+        },
+        "model": "ollama/laguna-xs-2.1:q4_K_M",
+        "workspace": "/home/deepsim/deepsim-ai-lab",
+        "tools": {
+            "allow": [
+                "group:fs",
+                "web_search",
+                "web_fetch",
+                "exec",
+                "process",
+                "sessions_list",
+                "session_status",
+                "memory_search",
+                "memory_get"
+            ],
+            "deny": [
+                "write",
+                "edit",
+                "apply_patch"
+            ]
+        }
+    },
+    {
+        "default": false,
+        "id": "pm-dal",
+        "name": "Project Manager (DAL)",
+        "identity": {
+            "emoji": "\ud83d\udccb",
+            "name": "PM"
+        },
+        "model": "ollama/gpt-oss:20b",
+        "workspace": "/home/deepsim/deepsim-ai-lab",
         "tools": {
             "allow": [
                 "group:fs",

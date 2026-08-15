@@ -77,7 +77,7 @@ bash scripts/generate_openclaw_config.sh --generate
 
 # It will prompt you for:
 │   CTO model name [ollama/qwen3.6:35b]: _your_input_or_enter_for_default_
-│   Implementer model name [ollama/ornith:35b]: _your_input_or_enter_for_default_
+│   Implementer model name [ollama/qwen3.8:27b]: _your_input_or_enter_for_default_
 │   Reviewer model name [ollama/laguna-xs-2.1:q4_K_M]: _your_input_or_enter_for_default_
 │   Workspace path [/home/deepsim/agent_system]: _your_project_path_
 # Output: agents_list.json (valid JSON array of 3 agent config objects)

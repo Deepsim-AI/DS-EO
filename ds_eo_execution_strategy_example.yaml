@@ -1,0 +1,31 @@
+# Execution Strategy Configuration — DS-EO v0.9+
+# 
+# Add this section to your DS-EO configuration.
+# This is the Phase A config schema for TASK_DS_EO_043.
+
+execution:
+  strategy: auto                    # concurrent | sequential | shared_model | auto
+  auto_assessment:
+    enabled: true                  # Run CapabilityAssessor at startup
+    fallback_on_failure: sequential  # What to fall back to if assessment fails
+  
+  memory_safety:
+    min_free_ram_gb: 8             # Minimum free RAM (GB) before refusing new model load
+    unloading_aggressive: false     # Whether to aggressively unload models in concurrent mode
+    
+  selector:
+    override_path: null              # Override persistence path (null = auto-detect)
+    persist_overrides: true          # Save manual overrides to disk
+  
+  logging:
+    level: INFO                     # DEBUG, INFO, WARNING, ERROR
+    log_dir: docs/development/reports/TASK_DS_EO_043_MODEL_LIFECYCLE_MANAGER/
+    auto_selection_log: AUTO_SELECTION_LOG.md
+    override_log: OVERRIDE_LOG.md
+
+# Notes:
+# - "auto" strategy runs CapabilityAssessor at startup and picks the best fit
+# - Manual overrides can be set via `ExecutionStrategySelector.set_manual_override()`
+# - Overrides persist in STRATEGY_OVERRIDE.json in the task directory
+# - On this Tegra host (61GB RAM, unified memory), auto selects: sequential
+#   because 4 agent models totaling ~77GB exceed available memory

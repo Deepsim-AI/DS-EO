@@ -48,7 +48,7 @@ All internal routing is data-driven from YAML. No workflow logic in gateway conf
 
 #### Code Implementer 💻
 
-- **Model**: Configurable (default: `ollama/ornith:35b`)
+- **Model**: Configurable (default: `ollama/qwen3.8:27b`)
 - **Role**: Execute approved plans with full file system access
 - **Tool Policy**: Full repository access (`tools.allow`: group:fs, group:runtime, etc.)
 - **Key Constraint**: Follow the CTO's plan exactly — no independent architectural decisions
@@ -163,7 +163,7 @@ The package uses placeholders that the installer replaces:
 | Placeholder | Default Value | Description |
 |-------------|--------------|-------------|
 | `<MODEL_CTO>` | `ollama/qwen3.6:35b` | CTO model |
-| `<MODEL_IMPLEMENTER>` | `ollama/ornith:35b` | Implementer model |
+| `<MODEL_IMPLEMENTER>` | `ollama/qwen3.8:27b` | Implementer model |
 | `<MODEL_REVIEWER>` | `ollama/laguna-xs-2.1:q4_K_M` | Reviewer model |
 | `<WORKSPACE_PATH>` | User-specified | Project workspace path |
 

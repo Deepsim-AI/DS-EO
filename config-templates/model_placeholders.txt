@@ -5,7 +5,7 @@
 | Placeholder | Default Value | Description | Where It Appears |
 |-------------|--------------|-------------|-----------------|
 | `<MODEL_CTO>` | `ollama/qwen3.6:35b` | CTO model name | agents/cto.md, config templates, manifest |
-| `<MODEL_IMPLEMENTER>` | `ollama/ornith:35b` | Implementer model name | agents/implementer.md, config templates, manifest |
+| `<MODEL_IMPLEMENTER>` | `ollama/qwen3.8:27b` | Implementer model name | agents/implementer.md, config templates, manifest |
 | `<MODEL_REVIEWER>` | `ollama/laguna-xs-2.1:q4_K_M` | Reviewer model name | agents/reviewer.md, config templates, manifest |
 | `<WORKSPACE_PATH>` | User-specified (e.g., `/home/deepsim/agent_system`) | Project workspace path | Config templates only — never in prompts or protocols |
 
@@ -19,7 +19,7 @@ Model values follow the OpenClaw provider/model pattern:
 
 Examples:
 - `ollama/qwen3.6:35b`
-- `ollama/ornith:35b`
+- `ollama/qwen3.8:27b`
 - `ollama/laguna-xs-2.1:q4_K_M`
 
 ## How Placeholders Are Replaced

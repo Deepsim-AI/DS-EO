@@ -16,7 +16,7 @@ agents:
 
       '
   implementer:
-    model: ollama/ornith:35b
+    model: ollama/qwen3.8:27b
     role: coder
     label: Code Implementer
     emoji: "\U0001F4BB"

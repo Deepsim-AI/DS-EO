@@ -37,6 +37,13 @@ Added self-contained run-state reconciliation layer to the `ds_eo_openclaw.run_r
 ### Outcome
 Defense-in-depth approach: DS-EO-only detection layer works independently of upstream, structured error classification enables precise agent response, and recovery protocols eliminate the need for full OpenClaw restarts. Zero regression risk — entirely new code, no modifications to existing paths. Upstream patch proposals documented in BOUNDARY_ANALYSIS.md for future contribution.
 
+## [v0.9.1] — 2026-08-14
+
+### Phase 1 — Execution Strategy Manager
+* Added execution_strategy package with six modules: `__init__`, `constants`, `strategy_base`, `concurrent_strategy`, `capability_assessor`, and `selector`.
+* Implemented engine hooks for `prepare_phase` and `release_phase` to integrate execution strategy management into the dispatcher lifecycle.
+* Enabled auto‑selection of execution strategy with persistent override support, improving user control and reliability.
+
 ## [v0.9.0] — 2026-08-11
 
 ### Summary
