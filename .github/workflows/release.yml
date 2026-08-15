@@ -51,6 +51,10 @@ jobs:
           PREV_MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
           PREV_MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
           PREV_PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
+          # Initialize all three to prev values; case will only update the bump target
+          NEW_MAJOR=$PREV_MAJOR
+          NEW_MINOR=$PREV_MINOR
+          NEW_PATCH=$PREV_PATCH
           case "${{ inputs.release_type }}" in
             major) NEW_MAJOR=$((PREV_MAJOR + 1)); NEW_MINOR=0; NEW_PATCH=0 ;;
             minor) NEW_MINOR=$((PREV_MINOR + 1)); NEW_PATCH=0 ;;
