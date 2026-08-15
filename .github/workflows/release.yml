@@ -4,7 +4,7 @@ name: Release DS-EO # v2
 # Trigger: Manual only (GitHub Actions UI or CLI).
 # No automatic triggers on push/PR — releases are always deliberate.
 # ──────────────────────────────────────────────────────────────────────
-'on':
+"on":
   workflow_dispatch:
     inputs:
       release_type:
