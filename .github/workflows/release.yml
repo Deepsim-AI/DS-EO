@@ -108,20 +108,9 @@ jobs:
           NEW="${{ steps.read_version.outputs.new_version }}"
           PREV="${{ steps.read_version.outputs.prev_version }}"
 
-          # Write a temp script to avoid YAML parser issues with embedded Python
-          TMPFILE=$(mktemp /tmp/bump_ver.XXXXX.py)
-          cat > "$TMPFILE" << 'PYEOF'
-          import yaml, sys
-          new_ver = sys.argv[1]
-          with open("ds_eo_manifest.yaml") as f:
-          data = yaml.safe_load(f)
-          data["package"]["version"] = new_ver
-          with open("ds_eo_manifest.yaml", "w") as f:
-          yaml.dump(data, f, default_flow_style=False, sort_keys=False)
-          print(f"Updated ds_eo_manifest.yaml version to {new_ver}")
-          PYEOF
-          python3 "$TMPFILE" "$NEW"
-          rm -f "$TMPFILE"
+          # Write Python bump script via base64 to avoid YAML/heredoc indentation conflicts
+          echo "aW1wb3J0IHlhbWwsIHN5cwpuZXdfdmVyID0gc3lzLmFyZ3ZbMV0Kd2l0aCBvcGVuKCdkc19lb19tYW5pZmVzdC55YW1sJykgYXMgZjoKICAgIGRhdGEgPSB5YW1sLnNhZmVfbG9hZChmKQpkYXRhWydwYWNrYWdlJ11bJ3ZlcnNpb24nXSA9IG5ld192ZXIKd2l0aCBvcGVuKCdkc19lb19tYW5pZmVzdC55YW1sJywgJ3cnKSBhcyBmOgogICAgeWFtbC5kdW1wKGRhdGEsIGYsIGRlZmF1bHRfZmxvd19zdHlsZT1GYWxzZSwgc29ydF9rZXlzPUZhbHNlKQpwcmludChmJ1VwZGF0ZWQgZHNfZW9fbWFuaWZlc3QueWFtbCB2ZXJzaW9uIHRvIHtuZXdfdmVyfScpCg==" | base64 -d > /tmp/bump_ver.py
+          python3 /tmp/bump_ver.py "$NEW"
 
           # Sync __init__.py version using sed (stable pattern)
           sed -i "s/__version__ = .*/__version__ = \"$NEW\"/" ds_eo_openclaw/__init__.py
