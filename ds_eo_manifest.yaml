@@ -1,7 +1,7 @@
 package:
   name: ds-eo-openclaw
   title: "DeepSim Engineering Organization \u2014 OpenClaw Edition"
-  version: 0.9.0
+  version: 0.9.1
   description: 'Extractable engineering organization framework for OpenClaw. Provides
     agent roles, protocols, and workflows to transform AI agent platforms into disciplined
     software engineering teams.
