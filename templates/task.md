@@ -21,6 +21,8 @@ Every task gets exactly this structure under `docs/development/reports/`:
 
 ```
 TASK_<YYYYMMDD>_<NNN>/
+├── TASK_REQUEST.md          # Intake artifact — verbatim user request (G0 owner produces)
+├── LOCK.md                  # Session lock — prevents contention (current phase owner)
 ├── CTO_PLAN.md              # Architecture analysis + task plan (CTO produces)
 ├── IMPLEMENTATION_REPORT.md  # Changes, tests, decisions (Implementer produces)
 ├── REVIEW_REPORT.md          # Findings and recommendation (Reviewer → CTO copies)

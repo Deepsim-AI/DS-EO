@@ -1,6 +1,6 @@
 # DS-EO Delegation Protocol (Global Standard)
 
-**Version**: 1.0  
+**Version**: 1.1  
 **Status**: Active  
 **Scope**: All OpenClaw workspaces using DS-EO  
 
@@ -12,35 +12,75 @@ Defines the standard process for creating and assigning implementation tasks in 
 
 ---
 
-## Delegation Flow
+## Delegation Flow — V1.1 Revised
 
 ```
-PM detects need for new task → PM requests CTO to create → CTO creates TASK directory + assigns ID → CTO writes CTO_PLAN.md → User approves (G1) → CTO delegates to Implementer
+User request arrives → G0 owner (PM or CTO, determined by path) → G0 intake (create folder + TASK_REQUEST.md) → CTO planning (CTO_PLAN.md) → User approves (G1) → Implementation → Review → Approval → Post-G4 closure
 ```
 
-### Step 1: Task Creation and Initiation
+### Step 1: Task Creation and G0 Intake
 
-**CTO Role — Sole Authority for Task Creation**: The CTO is the sole authority for creating task directories and assigning IDs:
-- Creates `docs/development/reports/TASK_<YYYYMMDD>_<NNN>/` directory
-- Assigns ID following naming convention in `communication_protocol.md`
-- **Writes CTO_PLAN.md directly** — this is a technical document containing architectural analysis, problem statement, acceptance criteria, risks, constraints, and implementation instructions. No other agent may produce CTO_PLAN.md.
-- Owns all technical content in `CTO_PLAN.md`.
+**G0 ownership rule**: The agent that receives the initial customer request owns G0 intake. This produces two possible flows:
 
-**PM Role — Task Detection, Requesting, and Orchestration**: The Project Manager initiates task creation by:
-1. Detecting that a new implementation task is needed (based on user requests, backlog review, or ongoing work).
-2. **Requesting** the CTO to create the task: alerting the CTO with requirement reference, priority, and any user-provided context. The PM may *propose* what the task should cover, but must not write the plan itself.
-3. The PM does NOT create directories, assign IDs, or write `CTO_PLAN.md` — those are exclusively CTO responsibilities.
-4. After CTO creates the task and writes the plan, PM triggers the skeleton by sending a `TASK_OPEN` message.
+#### Flow A: User → PM (Secretary/Intake path)
 
-**PM → CTO Handoff**: PM transitions the task to CTO by sending a `TASK_OPEN` message with:
-- Task ID and directory path (assigned by CTO)
-- Reference to the originating spec or requirement
-- Any user-provided context or priority notes
-- Note: "CTO has created the task — please populate CTO_PLAN.md with technical plan"
+When a user requests new work through the PM:
 
-**PM → Reviewer Handoff**: After Gate G4, PM transitions a completed task to the Reviewer for final verification by sending a `TASK_STATUS_UPDATE` message.
+1. **PM creates the task folder:** Creates `docs/development/reports/TASK_<NNN>/` directory (ID assigned by CTO if available, otherwise PM assigns placeholder ID)
+2. **PM writes `TASK_REQUEST.md`:** Captures verbatim user request, any requirements gathered during intake conversation, and priority
+3. **PM notifies the user:** Tells them they may add specifications, documents, examples, datasets, references, or other supporting materials to the task folder
+4. **PM stops at G0:** Outputs `READY_FOR_CTO` handoff message. PM does NOT write `CTO_PLAN.md`, perform architectural analysis, or select implementation approaches.
 
-**PM → Close Handoff**: Post-G4 cleanup. PM archives the task directory, updates project status, and sends `TASK_STALLED` notification.
+#### Flow B: User → CTO directly
+
+When a user requests new work directly with the CTO:
+
+1. **CTO creates the task folder:** Creates `docs/development/reports/TASK_<YYYYMMDD>_<NNN>/` directory and assigns ID
+2. **CTO writes `TASK_REQUEST.md`:** Captures verbatim user request, clarifies requirements with the user if needed
+3. **CTO stops at G0 intake:** After producing `TASK_REQUEST.md`, the CTO independently performs architectural analysis and produces `CTO_PLAN.md` (this is still G1 planning, not a G0 activity)
+
+**In both flows, `TASK_REQUEST.md` exists before any technical planning begins.** The difference is only in *who* creates it.
+
+### Step 2: Technical Planning (G1) — CTO Exclusive
+
+After G0 intake completes (in either flow), the CTO owns all technical planning:
+
+- **CTO Role — Sole Authority for Technical Planning:**
+  - Writes `CTO_PLAN.md` containing architectural analysis, problem statement, acceptance criteria, risks, constraints, and implementation instructions
+  - Owns all technical content in `CTO_PLAN.md`. No other agent may produce this artifact.
+  - Performs independent analysis of the repository — does not rely on or copy PM-authored intake context as authoritative
+
+### Step 3: Delegation to Implementer (Post-G1)
+
+After user approval at Gate G1, the CTO delegates to the Implementer using the `DELEGATE` message format defined in `communication_protocol.md`. The delegation must include:
+- **Task description** — What needs to be done
+- **Spec reference** — Path to the relevant specification
+- **Acceptance criteria** — Testable conditions for completion
+- **Artifacts expected** — Required deliverables (file names and locations)
+- **Constraints** — Boundaries the Implementer must respect
+
+### Step 4: Implementation Contract
+
+The delegation creates an implicit contract. The Implementer must:
+1. Acknowledge receipt of the task assignment.
+2. Confirm understanding of acceptance criteria before starting work.
+3. Work within the stated constraints (no scope expansion without CTO approval).
+4. Report completion via `IMPL_COMPLETE` message with all required fields.
+
+---
+
+## Task Folder Ownership — V1.1 Clarification
+
+**G0 artifacts (folder + TASK_REQUEST.md) are created by whoever receives the request.** This is NOT a CTO-exclusive duty.
+
+| What | Owner | Notes |
+|------|-------|-------|
+| Task folder creation | G0 owner (PM or CTO) | Whichever agent received the initial request |
+| `TASK_REQUEST.md` | G0 owner (PM or CTO) | Intake artifact — records requirements, not plans |
+| TASK ID assignment | G0 owner or CTO | If PM creates folder but doesn't have ID yet, uses placeholder; CTO can retroactively assign |
+| `CTO_PLAN.md` | CTO exclusively | Technical planning — never produced during G0 intake |
+
+**Key boundary rule:** Creating a task folder and writing `TASK_REQUEST.md` is **intake work**, not planning work. It does not involve architectural analysis, design decisions, or component selection. This is fundamentally different from producing `CTO_PLAN.md`.
 
 ---
 
@@ -48,11 +88,11 @@ PM detects need for new task → PM requests CTO to create → CTO creates TASK 
 
 Specs (requirements derived from user input) follow this lifecycle:
 
-1. **Creation**: CTO creates specs during the planning phase, derived from user requirements.
-2. **Tracking**: PM tracks spec status (`active`, `in_progress`, `completed`, `archived`) in `PROJECT_STATUS.md`.
-3. **Reference**: Implementer references specs but never modifies them — all changes go through a new CTO plan.
-4. **Completion**: At G4 approval, the CTO moves the spec to "completed" status; PM records this update in `PROJECT_STATUS.md`.
-5. **Archival**: Specs for closed/completed tasks may be archived per project policy.
+1. **Creation:** CTO creates specs during the planning phase, derived from user requirements.
+2. **Tracking:** PM tracks spec status (`active`, `in_progress`, `completed`, `archived`) in `PROJECT_STATUS.md`.
+3. **Reference:** Implementer references specs but never modifies them — all changes go through a new CTO plan.
+4. **Completion:** At G4 approval, the CTO moves the spec to "completed" status; PM records this update in `PROJECT_STATUS.md`.
+5. **Archival:** Specs for closed/completed tasks may be archived per project policy.
 
 ### Rules
 
@@ -79,35 +119,24 @@ When any agent detects it is about to cross into another role's territory:
 
 | Wrong Action | Owner | Correct Agent |
 |-------------|-------|---------------|
-| PM writes CTO_PLAN.md | ❌ PM | ✅ CTO only |
-| PM creates task directory | ❌ PM | ✅ CTO only |
-| PM assigns TASK ID | ❌ PM | ✅ CTO only |
 | Implementer decides architecture not in plan | ❌ Implementer | ✅ CTO only |
-| Reviewer modifies code | ❌ Reviewer | ✅ N/A (only reports) |
-| Reviewer writes anything except REVIEW_REPORT.md | ❌ Reviewer | ✅ (prohibited) |
+| Reviewer modifies code | ❌ Reviewer | ✅ (prohibited) |
 | CTO does Post-G4 cleanup | ❌ CTO | ✅ PM only |
 | Any agent defers multi-step sequence to next session | ❌ All | ✅ Must complete in same session or document interruption |
 
----
+### Intake Boundary — What "Creating a folder + TASK_REQUEST.md" Is NOT
 
-### Step 2: Task Delegation Message
+The following are **NOT** violations of the intake/planning boundary when done during G0 by PM:
+- Creating `TASK_REQUEST.md` with the user's stated requirements (verbatim or summarized)
+- Organizing the task directory structure
+- Notifying the user about adding supporting materials
+- Stopping at G0 and handing off to CTO
 
-After user approval at Gate G1, the CTO delegates to the Implementer using the `DELEGATE` message format defined in `communication_protocol.md`. The delegation must include:
-
-- **Task description** — What needs to be done
-- **Spec reference** — Path to the relevant specification
-- **Acceptance criteria** — Testable conditions for completion
-- **Artifacts expected** — Required deliverables (file names and locations)
-- **Constraints** — Boundaries the Implementer must respect
-
-### Step 3: Implementation Contract
-
-The delegation creates an implicit contract. The Implementer must:
-
-1. Acknowledge receipt of the task assignment.
-2. Confirm understanding of acceptance criteria before starting work.
-3. Work within the stated constraints (no scope expansion without CTO approval).
-4. Report completion via `IMPL_COMPLETE` message with all required fields.
+The following **ARE** violations during G0 by PM:
+- Analyzing the architecture of how to solve the problem
+- Selecting implementation components or file paths
+- Designing solutions or writing `CTO_PLAN.md`
+- Making technical decisions about scope or approach
 
 ---
 
@@ -152,51 +181,51 @@ The delegation creates an implicit contract. The Implementer must:
 2. The user must approve (Gate G1) before delegation occurs.
 3. Every delegation must reference an existing spec or architecture document.
 4. Acceptance criteria must be testable — vague criteria are grounds for returning to the CTO.
-5. **PM does not write technical content** — it creates task requests and orchestrates process; all technical artifacts (directories, IDs, plans) are exclusively CTO responsibilities.
-6. **No agent may perform another agent's core duties**, regardless of convenience or urgency. Boundary violations are process violations requiring documentation and user notification.
+5. **No agent may perform another agent's core duties**, regardless of convenience or urgency. Boundary violations are process violations requiring documentation and user notification.
+6. **G0 intake is NOT CTO-exclusive.** The task folder + `TASK_REQUEST.md` is produced by whichever agent received the customer request (PM or CTO). Only `CTO_PLAN.md` remains CTO-exclusive.
 
 ---
 
 ## Related Protocols
 
+- `task_intake_protocol.md` — G0 intake, TASK_REQUEST.md format, folder locking (LOCK.md)
 - `communication_protocol.md` — Message format standards
 - `completion_protocol.md` — What Implementer must deliver at completion
 - `handoff_protocol.md` — Phase transition requirements
 
 ---
 
-## Role Boundary Enforcement During Task Intake (NEW §5.0 — TASK_DS_EO_030 fix)
-
-**Problem**: PM agents using `TaskIntakeManager` have been observed performing CTO planning work during task creation — analyzing architecture, designing solutions, selecting components, and writing `CTO_PLAN.md`. This violates the separation of concerns between intake (PM) and planning (CTO).
+## Intake Boundary Enforcement (NEW §5.0)
 
 ### Rule 1: Intake is Administrative Only
 
-The Task Intake Manager creates workspace scaffolding (directories, file structure, verbatim request preservation). It does **not** produce technical plans. Any agent using it must stop at workspace creation and hand off to CTO.
+Whoever handles G0 intake creates workspace scaffolding (directories, file structure, verbatim request preservation). They do **not** produce technical plans. Stop at workspace creation and hand off to CTO for planning.
 
-### Rule 2: PM May Not Write `CTO_PLAN.md` Under Any Circumstances
+### Rule 2: `CTO_PLAN.md` Remains CTO-Exclusive
 
 | Actor | May write `CTO_PLAN.md`? |
 |-------|--------------------------|
 | CTO   | ✅ Yes — exclusively |
-| PM    | ❌ No — even if they understand the architecture |
+| PM    | ❌ No |
 | Implementer | ❌ No |
 | Reviewer | ❌ No |
 | Any other agent | ❌ No |
 
+Creating a task directory and writing `TASK_REQUEST.md` is **not** producing `CTO_PLAN.md`. These are distinct artifacts with different purposes. Confusing them was the root cause of TASK_DS_EO_043's workflow failure.
+
 ### Rule 3: Mechanical Enforcement of Intake Boundaries
 
-When any agent completes task intake via `TaskIntakeManager.create_task_intake()`, they **must** perform a self-audit before producing any further output:
+When any agent completes task intake, they **must** perform a self-audit before producing any further output:
 
 1. List every action taken during this session
-2. For each action, check: "Is this creating/organizing workspace artifacts? If YES → OK. If NO → boundary violation."
-3. If any non-intake actions are found, **halt and document** in `BOUNDARY_VIOLATION.md`
+2. For each action, check: "Is this creating/organizing G0 workspace artifacts? If YES → OK. If NO → boundary violation."
+3. If any non-intake actions are found (architectural analysis, solution design, component selection), **halt and document** in `BOUNDARY_VIOLATION.md`
 4. Output only the standardized READY_FOR_CTO status line
 
 ### Rule 4: Same-Model Role Separation
 
-When PM and CTO use the same model (e.g., `ollama/qwen3.6:35b`), role separation depends **entirely** on prompt boundaries, not model identity. Agents must recognize this risk and be extra vigilant about self-monitoring for role conflation. A self-authored CTO artifact by a PM is an automatic process violation regardless of model identity.
+When PM and CTO use the same model, role separation depends **entirely on prompt boundaries**, not model identity. Agents must recognize this risk and be extra vigilant about self-monitoring for role conflation. A self-authored CTO artifact by a PM is an automatic process violation regardless of model identity.
 
 ### Rule 5: Independent CTO Planning Required
 
 Even when the PM's task workspace contains preliminary analysis or suggested approaches, the CTO **must independently** inspect the repository, perform their own technical analysis, and produce an authoritative `CTO_PLAN.md`. The CTO must not rely on or reference PM-authored planning content as authoritative — only as user-submitted context.
-

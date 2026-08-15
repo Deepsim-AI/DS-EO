@@ -14,34 +14,29 @@ Defines the explicit transition requirements between workflow phases, including 
 
 ## Phase Transitions
 
-### Transition 0: PM → Open TASK (New Task Skeleton Creation)
+### Transition 0: G0 Intake (Task Folder + TASK_REQUEST.md)
 
-**Trigger**: New implementation request identified.
+**Trigger**: User submits a new task request to PM or CTO.
+
+**Model**: Request-path-based ownership — the agent that receives the initial user request owns G0. See `task_intake_protocol.md` for full details.
 
 **Prerequisites**:
-- [ ] Requirement or spec reference identified
+- [ ] User request received (via PM or directly to CTO)
 - [ ] Priority determined by user/PM
 
-**Actions**:
-1. **PM requests CTO to create the task** — PM alerts the CTO with requirement, priority, and context. The CTO creates the directory and assigns the ID (see `delegation_protocol.md` §Step 1).
-2. After CTO creates the task, PM triggers the skeleton by sending a `TASK_OPEN` message.
+**Actions** (see `task_intake_protocol.md` for complete flow):
+1. **G0 owner creates task folder**: `docs/development/reports/TASK_<YYYYMMDD>_<NNN>/`
+2. **G0 owner writes `TASK_REQUEST.md`**: verbatim user request + captured requirements
+3. **G0 owner acquires folder lock**: Write `LOCK.md` with status active
+4. **If through PM**: notify user about adding supporting materials
+5. **Release lock**: Set LOCK.md status to released
+6. **Handoff to CTO** (if PM did intake) or **proceed to G1 planning** (if CTO did intake)
 
-**Handoff Message**: PM sends a `TASK_OPEN` message:
-```json
-{
-  "type": "TASK_OPEN",
-  "taskId": "TASK_<YYYYMMDD>_<NNN>",
-  "specRef": "<path to relevant spec or requirement>",
-  "priority": "P0 | P1 | P2",
-  "notes": "<user-provided context, priority rationale>"
-}
-```
-
-**Receiving Agent Verification** (CTO checks before starting):
-1. Confirm task directory exists at expected path.
-2. Read `CTO_PLAN.md` placeholder — verify it contains section headers for CTO to fill.
-3. Identify the relevant spec or requirement referenced.
-4. Begin architectural planning work.
+**Verification before proceeding past G0**:
+1. Confirm task directory exists
+2. Confirm `TASK_REQUEST.md` exists and contains verbatim user request
+3. Confirm `LOCK.md` exists (active lock by next phase's owner, or released)
+4. No other agent holds an active, non-stale lock on this folder
 
 ---
 
