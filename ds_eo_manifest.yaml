@@ -1,314 +1,291 @@
-# ds_eo_manifest.yaml — DS-EO OpenClaw Edition Package Manifest
-# This is the single source of truth for what DS-EO is and contains.
-
 package:
-  name: "ds-eo-openclaw"                    # Package identifier
-  title: "DeepSim Engineering Organization — OpenClaw Edition"  # Display name
-  version: "0.8.0"
-  description: >
-    Extractable engineering organization framework for OpenClaw.
-    Provides agent roles, protocols, and workflows to transform
-    AI agent platforms into disciplined software engineering teams.
-  license: "MIT"                              # License identifier
-  author: "DeepSim"                           # Package author/maintainer
+  name: ds-eo-openclaw
+  title: "DeepSim Engineering Organization \u2014 OpenClaw Edition"
+  version: 0.9.0
+  description: 'Extractable engineering organization framework for OpenClaw. Provides
+    agent roles, protocols, and workflows to transform AI agent platforms into disciplined
+    software engineering teams.
 
-openclaw:                                    # OpenClaw-specific metadata
-  minimum_version: "2026.7.1"               # Minimum supported OpenClaw version
-  target_config: "~/.openclaw/openclaw.json"  # Config file to merge into
+    '
+  license: MIT
+  author: DeepSim
+openclaw:
+  minimum_version: 2026.7.1
+  target_config: ~/.openclaw/openclaw.json
+roles:
+- id: cto
+  name: CTO / Architect
+  emoji: "\U0001F3D7\uFE0F"
+  prompt_file: agents/cto.md
+  description: Architecture, planning, and final approval authority.
+  model_placeholder: <MODEL_CTO>
+  tool_profile: generic
+  default_model: ollama/qwen3.6:35b
+- id: implementer
+  name: Code Implementer
+  emoji: "\U0001F4BB"
+  prompt_file: agents/implementer.md
+  description: "Execution agent \u2014 executes approved plans and produces working\
+    \ code."
+  model_placeholder: <MODEL_IMPLEMENTER>
+  tool_profile: coding
+  default_model: ollama/qwen3.8:27b
+- id: reviewer
+  name: Senior Code Reviewer
+  emoji: "\U0001F50D"
+  prompt_file: agents/reviewer.md
+  description: "Independent verification agent \u2014 unbiased quality assessment."
+  model_placeholder: <MODEL_REVIEWER>
+  tool_profile: generic
+  default_model: ollama/laguna-xs-2.1:q4_K_M
+- id: pm
+  name: Project Manager
+  emoji: "\U0001F4CB"
+  prompt_file: agents/pm.md
+  description: "Process oversight \u2014 task lifecycle, status tracking, release\
+    \ management."
+  default_model: ollama/gpt-oss:20b
+  model_placeholder: <MODEL_PM>
+  tool_profile: generic
+protocols:
+- id: approval_protocol
+  file: protocols/approval_protocol.md
+  category: governance
+  level: core
+  gates:
+  - G1
+  - G2
+  - G3
+  - G4
+- id: communication_protocol
+  file: protocols/communication_protocol.md
+  category: communication
+  level: core
+- id: completion_protocol
+  file: protocols/completion_protocol.md
+  category: workflow
+  level: core
+  roles:
+  - CTO
+  - Implementer
+  - Reviewer
+- id: delegation_protocol
+  file: protocols/delegation_protocol.md
+  category: workflow
+  level: core
+- id: handoff_protocol
+  file: protocols/handoff_protocol.md
+  category: workflow
+  level: core
+- id: review_protocol
+  file: protocols/review_protocol.md
+  category: governance
+  level: core
+  scoring_dimensions:
+  - name: Specification Compliance
+    weight: 40
+  - name: Code Quality
+    weight: 25
+  - name: Architecture Adherence
+    weight: 25
+  - name: Test Coverage & Regression
+    weight: 10
+- id: gate_authority_matrix
+  file: protocols/GATE_AUTHORITY_MATRIX.md
+  category: governance
+  level: core
+  gates:
+  - G1
+  - G2
+  - G3
+  - G4
+- id: release_management_protocol
+  file: protocols/release_management_protocol.md
+  category: workflow
+  level: core
+  roles:
+  - PM
+templates:
+- id: task
+  file: templates/task.md
+  purpose: Task directory structure and naming convention
+- id: report
+  file: templates/report_template.md
+  purpose: Implementation report format
+- id: review_report
+  file: templates/review_report_template.md
+  purpose: Review report format
+- id: spec
+  file: templates/spec_template.md
+  purpose: Specification document format
+- id: cto_approval
+  file: templates/cto_approval_template.md
+  purpose: CTO final approval memo format
+workflow_package:
+  description: 'Platform-neutral workflow engine, audit logging, mode selector, failure
+    handling, and user-facing slash command skill.
 
-roles:                                       # Engineering organization roles
-  - id: "cto"
-    name: "CTO / Architect"
-    emoji: "🏗️"
-    prompt_file: "agents/cto.md"
-    description: "Architecture, planning, and final approval authority."
-    model_placeholder: "<MODEL_CTO>"         # User fills this in during install
-    tool_profile: "generic"                  # Generic tool access profile
-    default_model: "ollama/qwen3.6:35b"      # Default suggestion; user may override
-
-  - id: "implementer"
-    name: "Code Implementer"
-    emoji: "💻"
-    prompt_file: "agents/implementer.md"
-    description: "Execution agent — executes approved plans and produces working code."
-    model_placeholder: "<MODEL_IMPLEMENTER>"
-    tool_profile: "coding"
-    default_model: "ollama/qwen3.8:27b"
-
-  - id: "reviewer"
-    name: "Senior Code Reviewer"
-    emoji: "🔍"
-    prompt_file: "agents/reviewer.md"
-    description: "Independent verification agent — unbiased quality assessment."
-    model_placeholder: "<MODEL_REVIEWER>"
-    tool_profile: "generic"
-    default_model: "ollama/laguna-xs-2.1:q4_K_M"
-
-  - id: "pm"
-    name: "Project Manager"
-    emoji: "📋"
-    prompt_file: "agents/pm.md"
-    description: "Process oversight — task lifecycle, status tracking, release management."
-    default_model: "ollama/gpt-oss:20b"       # Model specialization: PM uses lighter model for coordination work
-    model_placeholder: "<MODEL_PM>"
-    tool_profile: "generic"                    # Read + write to docs/ and reports/ only — no git operations
-
-protocols:                                   # Engineering protocols included
-  - id: "approval_protocol"
-    file: "protocols/approval_protocol.md"
-    category: "governance"                   # governance | communication | workflow
-    level: "core"                            # core (mandatory) | extension (optional)
-    gates: ["G1", "G2", "G3", "G4"]         # Which gates this protocol defines
-
-  - id: "communication_protocol"
-    file: "protocols/communication_protocol.md"
-    category: "communication"
-    level: "core"
-
-  - id: "completion_protocol"
-    file: "protocols/completion_protocol.md"
-    category: "workflow"
-    level: "core"
-    roles: ["CTO", "Implementer", "Reviewer"]
-
-  - id: "delegation_protocol"
-    file: "protocols/delegation_protocol.md"
-    category: "workflow"
-    level: "core"
-
-  - id: "handoff_protocol"
-    file: "protocols/handoff_protocol.md"
-    category: "workflow"
-    level: "core"
-
-  - id: "review_protocol"
-    file: "protocols/review_protocol.md"
-    category: "governance"
-    level: "core"
-    scoring_dimensions:
-      - name: "Specification Compliance"
-        weight: 40
-      - name: "Code Quality"
-        weight: 25
-      - name: "Architecture Adherence"
-        weight: 25
-      - name: "Test Coverage & Regression"
-        weight: 10
-
-  - id: "gate_authority_matrix"
-    file: "protocols/GATE_AUTHORITY_MATRIX.md"
-    category: "governance"
-    level: "core"
-    gates: ["G1", "G2", "G3", "G4"]
-
-  - id: "release_management_protocol"
-    file: "protocols/release_management_protocol.md"
-    category: "workflow"
-    level: "core"
-    roles: ["PM"]
-
-templates:                                  # Document templates included
-  - id: "task"
-    file: "templates/task.md"
-    purpose: "Task directory structure and naming convention"
-
-  - id: "report"
-    file: "templates/report_template.md"
-    purpose: "Implementation report format"
-
-  - id: "review_report"
-    file: "templates/review_report_template.md"
-    purpose: "Review report format"
-
-  - id: "spec"
-    file: "templates/spec_template.md"
-    purpose: "Specification document format"
-
-  - id: "cto_approval"
-    file: "templates/cto_approval_template.md"
-    purpose: "CTO final approval memo format"
-
-workflow_package:                           # Automatic Mode workflow infrastructure (v0.3)
-  description: >
-    Platform-neutral workflow engine, audit logging, mode selector,
-    failure handling, and user-facing slash command skill.
+    '
   modules:
-    - id: "state_engine"
-      file: "ds_eo_openclaw/workflow/state_engine.py"
-      purpose: "11-state state machine with auto-advance support (S0–S10)"
-
-    - id: "audit_log"
-      file: "ds_eo_openclaw/workflow/audit_log.py"
-      purpose: "Immutable audit entries with SHA-256 integrity hash chain"
-
-    - id: "mode_config"
-      file: "ds_eo_openclaw/workflow/config.py"
-      purpose: "Execution mode config with per-task overrides"
-
-    - id: "mode_selector"
-      file: "ds_eo_openclaw/workflow/selector.py"
-      purpose: "Atomic mode switching with audit trail integration"
-
-    - id: "notifications"
-      file: "ds_eo_openclaw/workflow/notifications.py"
-      purpose: "Auto-mode state notifications and switch messages (7 + 2)"
-
-    - id: "timeout_config"
-      file: "ds_eo_openclaw/workflow/timeout_config.py"
-      purpose: "Per-state timeouts with human-ownership exemptions"
-
-    - id: "stall_detection"
-      file: "ds_eo_openclaw/workflow/stall_detection.py"
-      purpose: "PM monitoring cycle for timestamp-based stall detection"
-
-    - id: "escalation"
-      file: "ds_eo_openclaw/workflow/escalation.py"
-      purpose: "Blocker escalation chain (PM → CTO → User) with rate limiting"
-
-    - id: "failure_detector"
-      file: "ds_eo_openclaw/workflow/failure_detector.py"
-      purpose: "Repeated failure detection with configurable thresholds"
-
+  - id: state_engine
+    file: ds_eo_openclaw/workflow/state_engine.py
+    purpose: "11-state state machine with auto-advance support (S0\u2013S10)"
+  - id: audit_log
+    file: ds_eo_openclaw/workflow/audit_log.py
+    purpose: Immutable audit entries with SHA-256 integrity hash chain
+  - id: mode_config
+    file: ds_eo_openclaw/workflow/config.py
+    purpose: Execution mode config with per-task overrides
+  - id: mode_selector
+    file: ds_eo_openclaw/workflow/selector.py
+    purpose: Atomic mode switching with audit trail integration
+  - id: notifications
+    file: ds_eo_openclaw/workflow/notifications.py
+    purpose: Auto-mode state notifications and switch messages (7 + 2)
+  - id: timeout_config
+    file: ds_eo_openclaw/workflow/timeout_config.py
+    purpose: Per-state timeouts with human-ownership exemptions
+  - id: stall_detection
+    file: ds_eo_openclaw/workflow/stall_detection.py
+    purpose: PM monitoring cycle for timestamp-based stall detection
+  - id: escalation
+    file: ds_eo_openclaw/workflow/escalation.py
+    purpose: "Blocker escalation chain (PM \u2192 CTO \u2192 User) with rate limiting"
+  - id: failure_detector
+    file: ds_eo_openclaw/workflow/failure_detector.py
+    purpose: Repeated failure detection with configurable thresholds
   tests:
-    - file: "tests/test_state_engine.py"
-      purpose: "14 tests for state machine acceptance criteria"
-    - file: "tests/test_audit_log.py"
-      purpose: "20 tests for audit log schema and reconstruction"
-    - file: "tests/test_mode_selector.py"
-      purpose: "31 tests for mode switching scenarios"
-    - file: "tests/test_failure_handling.py"
-      purpose: "33 tests for timeout, stall, escalation edge cases"
-    - file: "tests/test_manual_mode_regression.py"
-      purpose: "~25 tests for manual mode regression coverage"
-    - file: "tests/test_auto_mode_transitions.py"
-      purpose: "~20 tests for auto-mode transitions"
-    - file: "tests/test_mode_switching.py"
-      purpose: "~24 tests for mode switching scenarios"
-    - file: "tests/test_edge_cases.py"
-      purpose: "~14 tests for timeout, stall, escalation edge cases"
-    - file: "tests/test_audit_integration.py"
-      purpose: "~7 tests for cross-task audit reconstruction"
-    - file: "tests/test_platform_portability.py"
-      purpose: "~8 tests for design decision verification"
-
+  - file: tests/test_state_engine.py
+    purpose: 14 tests for state machine acceptance criteria
+  - file: tests/test_audit_log.py
+    purpose: 20 tests for audit log schema and reconstruction
+  - file: tests/test_mode_selector.py
+    purpose: 31 tests for mode switching scenarios
+  - file: tests/test_failure_handling.py
+    purpose: 33 tests for timeout, stall, escalation edge cases
+  - file: tests/test_manual_mode_regression.py
+    purpose: ~25 tests for manual mode regression coverage
+  - file: tests/test_auto_mode_transitions.py
+    purpose: ~20 tests for auto-mode transitions
+  - file: tests/test_mode_switching.py
+    purpose: ~24 tests for mode switching scenarios
+  - file: tests/test_edge_cases.py
+    purpose: ~14 tests for timeout, stall, escalation edge cases
+  - file: tests/test_audit_integration.py
+    purpose: ~7 tests for cross-task audit reconstruction
+  - file: tests/test_platform_portability.py
+    purpose: ~8 tests for design decision verification
 modules:
-  - id: "intake"
-    directory: "ds_eo_openclaw/intake/"
-    files:
-      - file: "ds_eo_openclaw/intake/__init__.py"
-        purpose: "Public API exports (TaskIntakeManager, create_task_intake)"
-      - file: "ds_eo_openclaw/intake/task_intake.py"
-        purpose: "TaskIntakeManager — PM-driven task intake with dedup, workspace creation, and CTO handoff preparation"
-    tests:
-      - file: "tests/test_task_intake.py"
-        purpose: "17 tests covering all spec acceptance criteria for task intake module"
-
-
-  - id: "session_health"
-    directory: "ds_eo_openclaw/session_health/"
-    purpose: "Session health monitoring — discovery, classification, policy, and lifecycle management for OpenClaw agent sessions"
-    files:
-      - file: "ds_eo_openclaw/session_health/__init__.py"
-        purpose: "Public API exports (SessionHealthManager, SessionDiscoverer, HealthClassifier, HealthPolicy)"
-      - file: "ds_eo_openclaw/session_health/enums.py"
-        purpose: "SessionHealthState (11 states), LifecycleAction (11 actions), MonitorStatus (3 statuses), HealthSignal"
-      - file: "ds_eo_openclaw/session_health/config.py"
-        purpose: "YAML-based configuration with conservative defaults: stale_after=1hr, oversized=50MB, max_compaction_retries=2"
-      - file: "ds_eo_openclaw/session_health/discoverer.py"
-        purpose: "Session discovery extending LivenessChecker — collects 8 health indicators per session"
-      - file: "ds_eo_openclaw/session_health/classifier.py"
-        purpose: "Deterministic multi-signal to single classification with explainability and priority-ordered rules"
-      - file: "ds_eo_openclaw/session_health/policy.py"
-        purpose: "Health→action policy map with 3 safety layers (active task protection, protected session override, compaction retry)"
-      - file: "ds_eo_openclaw/session_health/executor.py"
-        purpose: "Lifecycle action execution with verify-then-persist pattern (COMPACT, ARCHIVE, CLOSE, ESCALATE)"
-      - file: "ds_eo_openclaw/session_health/monitor.py"
-        purpose: "Scheduling loop orchestrating discover→classify→policy→execute→audit pipeline"
-      - file: "ds_eo_openclaw/session_health/audit.py"
-        purpose: "Persistent per-cycle audit trail extending existing audit_log.py patterns"
-    tests:
-      - file: "tests/test_session_health.py"
-        purpose: "38 tests covering enums, classifier, policy, config, discoverer, and end-to-end pipeline"
-
-  - id: "eo_commands"
-    files:
-      - file: "skills/eo/SKILL.md"
-        purpose: "Slash command definition with OpenClaw integration frontmatter"
-      - file: "skills/eo/commands.py"
-        purpose: "Utility wrappers around ModeSelector API (4 functions)"
-
-workflow_count: 315                         # Combined across all workflow test modules
-
-installation:                               # Installation metadata
+- id: intake
+  directory: ds_eo_openclaw/intake/
+  files:
+  - file: ds_eo_openclaw/intake/__init__.py
+    purpose: Public API exports (TaskIntakeManager, create_task_intake)
+  - file: ds_eo_openclaw/intake/task_intake.py
+    purpose: "TaskIntakeManager \u2014 PM-driven task intake with dedup, workspace\
+      \ creation, and CTO handoff preparation"
+  tests:
+  - file: tests/test_task_intake.py
+    purpose: 17 tests covering all spec acceptance criteria for task intake module
+- id: session_health
+  directory: ds_eo_openclaw/session_health/
+  purpose: "Session health monitoring \u2014 discovery, classification, policy, and\
+    \ lifecycle management for OpenClaw agent sessions"
+  files:
+  - file: ds_eo_openclaw/session_health/__init__.py
+    purpose: Public API exports (SessionHealthManager, SessionDiscoverer, HealthClassifier,
+      HealthPolicy)
+  - file: ds_eo_openclaw/session_health/enums.py
+    purpose: SessionHealthState (11 states), LifecycleAction (11 actions), MonitorStatus
+      (3 statuses), HealthSignal
+  - file: ds_eo_openclaw/session_health/config.py
+    purpose: 'YAML-based configuration with conservative defaults: stale_after=1hr,
+      oversized=50MB, max_compaction_retries=2'
+  - file: ds_eo_openclaw/session_health/discoverer.py
+    purpose: "Session discovery extending LivenessChecker \u2014 collects 8 health\
+      \ indicators per session"
+  - file: ds_eo_openclaw/session_health/classifier.py
+    purpose: Deterministic multi-signal to single classification with explainability
+      and priority-ordered rules
+  - file: ds_eo_openclaw/session_health/policy.py
+    purpose: "Health\u2192action policy map with 3 safety layers (active task protection,\
+      \ protected session override, compaction retry)"
+  - file: ds_eo_openclaw/session_health/executor.py
+    purpose: Lifecycle action execution with verify-then-persist pattern (COMPACT,
+      ARCHIVE, CLOSE, ESCALATE)
+  - file: ds_eo_openclaw/session_health/monitor.py
+    purpose: "Scheduling loop orchestrating discover\u2192classify\u2192policy\u2192\
+      execute\u2192audit pipeline"
+  - file: ds_eo_openclaw/session_health/audit.py
+    purpose: Persistent per-cycle audit trail extending existing audit_log.py patterns
+  tests:
+  - file: tests/test_session_health.py
+    purpose: 38 tests covering enums, classifier, policy, config, discoverer, and
+      end-to-end pipeline
+- id: eo_commands
+  files:
+  - file: skills/eo/SKILL.md
+    purpose: Slash command definition with OpenClaw integration frontmatter
+  - file: skills/eo/commands.py
+    purpose: Utility wrappers around ModeSelector API (4 functions)
+workflow_count: 315
+installation:
   steps:
-    - step: 1
-      name: "Backup existing config"
-      script: "scripts/backup_openclaw_config.sh"
-      required: true
-
-    - step: 2
-      name: "Generate agent config entries"
-      description: "Creates openclaw.json agents.list[] entries with user-specified models"
-      script: "scripts/generate_openclaw_config.sh"
-      interactive: true                     # Requires user input for model names
-      required: true
-
-    - step: 3
-      name: "Merge agent config into openclaw.json"
-      description: "Safely merges agents.list[] entries, preserving existing entries"
-      script: "scripts/generate_openclaw_config.sh --merge"
-      backup_before_merge: true
-      required: true
-
-    - step: 4
-      name: "Deploy protocols globally"
-      description: "Copies protocol files to ~/.openclaw/protocols/"
-      script: "scripts/deploy_protocols.sh --target ~/.openclaw/protocols/"
-      backup_before_deploy: true
-      required: true
-
-    - step: 5
-      name: "Deploy protocols per-project"
-      description: "Copies protocol files to project workspace"
-      script: "scripts/deploy_protocols.sh --target <PROJECT_PATH>/docs/development/protocols/"
-      backup_before_deploy: true
-      required: false                     # Optional for multi-project setups
-
-    - step: 6
-      name: "Deploy agent prompts per-project"
-      description: "Copies agent prompt files to workspace docs/prompts/"
-      script: "scripts/deploy_agents.sh --target <PROJECT_PATH>/docs/prompts/"
-      required: true
-
-    - step: 7
-      name: "Verify installation"
-      script: "scripts/verify_installation.sh"
-      rollback_on_failure: true
-      required: true
-
-dependencies:                              # External dependencies (none for v0.1)
+  - step: 1
+    name: Backup existing config
+    script: scripts/backup_openclaw_config.sh
+    required: true
+  - step: 2
+    name: Generate agent config entries
+    description: Creates openclaw.json agents.list[] entries with user-specified models
+    script: scripts/generate_openclaw_config.sh
+    interactive: true
+    required: true
+  - step: 3
+    name: Merge agent config into openclaw.json
+    description: Safely merges agents.list[] entries, preserving existing entries
+    script: scripts/generate_openclaw_config.sh --merge
+    backup_before_merge: true
+    required: true
+  - step: 4
+    name: Deploy protocols globally
+    description: Copies protocol files to ~/.openclaw/protocols/
+    script: scripts/deploy_protocols.sh --target ~/.openclaw/protocols/
+    backup_before_deploy: true
+    required: true
+  - step: 5
+    name: Deploy protocols per-project
+    description: Copies protocol files to project workspace
+    script: scripts/deploy_protocols.sh --target <PROJECT_PATH>/docs/development/protocols/
+    backup_before_deploy: true
+    required: false
+  - step: 6
+    name: Deploy agent prompts per-project
+    description: Copies agent prompt files to workspace docs/prompts/
+    script: scripts/deploy_agents.sh --target <PROJECT_PATH>/docs/prompts/
+    required: true
+  - step: 7
+    name: Verify installation
+    script: scripts/verify_installation.sh
+    rollback_on_failure: true
+    required: true
+dependencies:
   openclaw:
-    minimum_version: "2026.7.1"
+    minimum_version: 2026.7.1
     tools_needed:
-      - "group:fs"                          # File system access
-      - "exec"                              # Shell execution (for scripts)
-
-  systems: []                               # No external system dependencies
-
-compliance:                                # Compliance and validation metadata
-  test_suite: "tests/"
+    - group:fs
+    - exec
+  systems: []
+compliance:
+  test_suite: tests/
   verification_checks:
-    - check: "manifest_valid"              # ds_eo_manifest.yaml is valid YAML
-      test: "test_manifest_schema.py"
-
-    - check: "all_agents_present"          # All 4 role files exist and are non-empty
-      test: "test_protocol_extraction.py"
-
-    - check: "all_templates_present"       # All templates have required sections
-      test: "test_template_completeness.py"
-
-    - check: "config_merge_safe"           # Merged config is valid JSON
-      test: "test_config_merge_safety.py"
-
-    - check: "installation_flow"           # End-to-end install works on clean host
-      test: "test_installation_flow.sh"
+  - check: manifest_valid
+    test: test_manifest_schema.py
+  - check: all_agents_present
+    test: test_protocol_extraction.py
+  - check: all_templates_present
+    test: test_template_completeness.py
+  - check: config_merge_safe
+    test: test_config_merge_safety.py
+  - check: installation_flow
+    test: test_installation_flow.sh

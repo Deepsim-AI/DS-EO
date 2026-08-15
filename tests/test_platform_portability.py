@@ -152,11 +152,14 @@ class TestDesignDecisionD6:
         stdlib = {"os", "datetime", "enum", "typing", "json", "uuid", "hashlib",
                   "shutil", "time", "io", "copy", "collections", "abc",
                   "warnings", "unittest", "pathlib", "contextlib", "functools",
-                  "dataclasses", "inspect"}
+                  "dataclasses", "inspect", "sys"}
 
         # Internal relative imports (from our own package)
+        # Top-level imports from our own package (relative imports appear as their module name)
         internal = {"audit_log", "stall_detection", "timeout_config", "escalation",
-                    "failure_detector", "notifications", "config", "selector"}
+                    "failure_detector", "notifications", "config", "selector",
+                    # Dispatcher — added Phase 8 / v0.9.1
+                    "dispatcher.session_dispatch.engine"}
 
         for imp in imports:
             assert imp in stdlib or imp in internal, \
