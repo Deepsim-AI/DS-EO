@@ -26,19 +26,22 @@ The user is on their own chat session (e.g., webchat). They send:
 
 This routes to the **PM agent** via gateway binding.
 
-### PM creates task lifecycle and delegates to CTO
+### G0 Intake (PM or CTO) — whoever receives the request creates the folder
 
-The PM:
-1. Creates a new task skeleton in the project tracker
-2. Sends `TASK_OPEN` message (see `communication_protocol.md`) to CTO
-3. Spawns an isolated CTO session with the task context
-4. **The user waits** — nothing visible happens until the CTO finishes
+If routed through PM:
+1. PM creates task directory: `docs/development/reports/TASK_<NNN>/`
+2. PM writes `TASK_REQUEST.md` with verbatim user request and captured requirements
+3. PM acquires/releases folder lock (`LOCK.md`)
+4. PM sends READY_FOR_CTO handoff message to CTO
 
-### CTO creates task and writes plan
+If routed through CTO directly:
+1. CTO creates task directory and assigns ID
+2. CTO writes `TASK_REQUEST.md` with verbatim user request and confirmed requirements
+3. CTO proceeds to independent architectural analysis (G1 planning)
+
+### G1 Planning (CTO)
 
 The CTO (in its own isolated session):
-1. Receives TASK_OPEN from PM
-2. Creates `docs/development/reports/TASK_20260728_001/` directory
 3. Reads the relevant spec (or derives one from the request)
 4. Analyzes existing code in `config/parse.py`
 5. Writes `CTO_PLAN.md`:
@@ -116,9 +119,11 @@ The user is on their own chat session. They send:
 
 **What happens:**
 - Gateway routes `/eo task` → PM agent (via binding)
-- PM creates the task skeleton: `docs/dispatchers/TASK_20260805_001/`
-- PM writes `dispatcher_state.json` with S0_OPEN state
-- PM spawns an isolated CTO session
+- PM creates the task directory: `docs/development/reports/TASK_20260805_001/`
+- PM writes `TASK_REQUEST.md` with the verbatim user request and captured requirements
+- PM acquires folder lock (`LOCK.md`, status active), then releases it
+- PM creates `dispatcher_state.json` with S0_OPEN state
+- PM sends READY_FOR_CTO handoff and spawns an isolated CTO session
 
 **User sees:** The PM replies in their session: "Task TASK_20260805_001 created. CTO is writing the plan."
 

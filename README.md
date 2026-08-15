@@ -33,7 +33,7 @@ User Request (/eo task → PM)
     ▼
 ┌─────────────────────┐     ┌───────────────────────────┐
 │  Dispatcher Engine   │ ←── │ Gateway Bindings (entry)  │
-│  /eo.task, G0–G4    │     │ /eo.task → PM             │
+│  G0 intake + G1–G4  │     │ /eo.task → PM             │
 │  sessions_spawn()   │     │ /eo.approve → CTO         │
 │  state persistence  │     │ /eo.review → Reviewer     │
 └──────────┬──────────┘     └───────────────────────────┘
@@ -153,6 +153,7 @@ ds-eo-openclaw/
 │   ├── completion_protocol.md   # Per-role completion checklists
 │   ├── delegation_protocol.md   # Task creation and assignment
 │   ├── handoff_protocol.md      # Phase transition requirements
+│   ├── task_intake_protocol.md  # G0 intake model, TASK_REQUEST.md format, LOCK.md folder locking
 │   ├── review_protocol.md       # Review criteria and scoring rubric
 │   └── GATE_AUTHORITY_MATRIX.md # Single source of truth for gate governance
 │
@@ -325,6 +326,8 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
   - Phase 6: User-Facing /eo Mode Commands (slash command API + 34 tests)
   - Phase 7: Session Health Real OpenClaw API Integration (COMPACT, ARCHIVE, CLOSE CLI)
   - Bug fixes: manifest YAML syntax error, PM→git operations contradiction
+- **TASK_DS_EO_043** (2026-08-14): Execution Strategy Manager Phase A — COMPLETED
+- **TASK_DS_EO_044** (planned): Formalize G0 intake protocol rules and create TASK_REQUEST.md + LOCK.md templates for runtime use
 - **v1.0** (planned): Platform abstraction layer for multi-platform editions
 - **Future**: Additional platform editions (Claude, Codex, Gemini)
 

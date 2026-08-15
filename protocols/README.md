@@ -24,6 +24,7 @@ Layer 2: Project Adaptations (optional)
 | Governance | `approval_protocol.md`, `review_protocol.md`, `GATE_AUTHORITY_MATRIX.md` | Gates, scoring, decision authority, gate governance |
 | Communication | `communication_protocol.md` | Message formats and conventions |
 | Workflow | `delegation_protocol.md`, `handoff_protocol.md`, `completion_protocol.md`, `release_management_protocol.md` | Task lifecycle management, post-G4 closure, documentation sync |
+| Intake | `task_intake_protocol.md` |
 | Runtime | `source_inspection_protocol.md` | Context pressure prevention, bounded source inspection, model diagnosis |
 
 ## Installation Deployment
@@ -45,6 +46,7 @@ During DS-EO installation:
 | `handoff_protocol.md` | §11 | Workflow |
 | `completion_protocol.md` | G4→G5 | Workflow |
 | `release_management_protocol.md` | §4 (Post-G4) | Workflow |
+| `task_intake_protocol.md` | §3 (G0) | Intake |
 | `source_inspection_protocol.md` | §12 | Runtime |
 
 ## Rules
