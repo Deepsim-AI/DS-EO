@@ -22,6 +22,12 @@ This file governs how the engineering organization works within this workspace. 
 
 See [README.md → Changing Agent Models](README.md#changing-agent-models-post-install) for the full walkthrough.
 
+**Critical**: When changing models (adding or replacing), you must also add a complete entry to
+`models.providers.ollama.models` in `openclaw.json`. Every agent's model must have:
+`id`, `contextWindow` (must match `ollama show | grep context length`), `maxTokens`, and
+`params.num_ctx`. Missing entries silently break token budgeting — see TROUBLESHOOTING.md →
+"Root cause 5".
+
 ## 1. Two-Layer Model
 
 DS-EO operates on a fundamental separation between two layers:

@@ -247,3 +247,49 @@ A: It's designed for intentional single-model setups. For most multi-agent workf
 ---
 
 *End of Migration Guide — TASK_DS_EO_044 Phase B*
+
+---
+
+## Monitoring & Troubleshooting
+
+### Log Messages to Watch For
+
+All execution strategy operations log at INFO level. In production, grep logs for:
+
+| Pattern | Meaning | Action if Unexpected |
+|---------|---------|---------------------|
+| `"Strategy auto-detected at startup:"` | Initial selection | Verify it picked the right mode for your hardware |
+| `"Manual override set to"` | User mode change | Confirm this was intentional |
+| `"/api/ps verified"` | Model loaded successfully (sequential) | Normal — no action needed |
+| `"Model ... unloaded"` / `"unload delayed"` | Lifecycle completion | "delayed" means model may still be resident; next phase will clean up |
+| `"Failed to unload previous model"` | Unload didn't complete in time | Non-fatal — proceed; cleanup handled on next cycle |
+| `"Execution mode: ... (source: auto)"` | Auto-selected at prepare_phase | Verify strategy is correct for your setup |
+
+### Where Logs Appear
+
+Logs flow through Python's standard `logging` module, level INFO. Check:
+- Gateway logs (if running in webchat/TUI)
+- DS-EO supervisor logs if run as daemon service
+- File output configured via gateway log settings
+
+### Benchmarking Guide
+
+To measure per-mode overhead on your system:
+
+1. **Set a mode override** using `/eo execution strategy <mode>` or `STRATEGY_OVERRIDE.json`
+2. **Run a G1→G2 transition cycle** and note the phase transition time in logs
+3. **Compare across modes** (run each mode at least 3 times, take average)
+
+#### Expected Baselines (CPU-only, ~8GB model):
+
+| Mode | Prepare Time | Release Time | Total Phase Overhead |
+|------|-------------|--------------|---------------------|
+| concurrent | ~0s (no-op) | ~0s (no-op) | ~0s |
+| sequential | 2–5s (load + verify) | 1–3s (unload + verify) | 3–8s per phase |
+| shared_model | 2–5s (first agent only) | ~0s (ref > 0) | ~0s after first |
+
+#### Tools:
+- **Ollama memory:** `curl http://127.0.0.1:11434/api/ps` — shows loaded models and their resident size
+- **System RAM:** `free -h` or `/proc/meminfo` — track free RAM before/after transitions
+- **DS-EO log timestamps:** compare `prepare_phase()` call time vs. completion timestamp
+

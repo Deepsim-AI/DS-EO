@@ -56,6 +56,15 @@ class ExecutionStrategyManager:
 
         self.workspace_root = os.path.abspath(workspace_root)
         self.selector = ExecutionStrategySelector(workspace_root=self.workspace_root)
+        
+        # Phase C: eager auto-detection at startup (not lazy on first task)
+        try:
+            name, impl, report = self.selector.get_or_resolve()
+            logger.info(f"Strategy auto-detected at startup: {name} (source: {report.source})")
+        except Exception as e:
+            # Non-fatal — strategy will be resolved lazily on first use
+            logger.warning(f"Eager strategy detection failed: {e}")
+
         self._initialized = True
 
     async def prepare_phase(self, agent_id: str) -> StrategyResult:

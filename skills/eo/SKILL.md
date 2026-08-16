@@ -84,6 +84,45 @@ Set or remove a per-task execution mode override. Allows fine-grained control wh
 ✅ Removed per-task override for TASK_DS_EO_021. Task now uses global default mode.
 ```
 
+---
+
+## Execution Strategy Commands
+
+These commands manage **model loading behavior** across agent phases — separate from `/eo mode`, which controls workflow gate automation.
+
+### `/eo execution strategy <mode>`
+
+Switch the execution strategy (how LLM models are loaded and released during agent phases).
+
+| Command | Effect |
+|---------|--------|
+| `/eo execution strategy auto` | Clear manual override, re-run capability assessment at next phase |
+| `/eo execution strategy concurrent` | Force all agents to load models simultaneously |
+| `/eo execution strategy sequential` | One model at a time — safer on constrained hardware (~2–5s per phase) |
+| `/eo execution strategy shared_model` | All roles share one model instance (requires same model config for all agents) |
+
+**Response format (switch):**
+```
+✅ Execution strategy changed: concurrent → sequential
+Source: user_override
+Active strategies: 3 available (concurrent, sequential, shared_model)
+Note: Sequential mode adds ~2-5s per phase for model lifecycle management.
+```
+
+### `/eo execution strategy status`
+
+Display current strategy configuration and model state. No side effects — read-only.
+
+**Response format:**
+```
+Active Strategy: concurrent (auto-selected)
+Selection Source: auto
+Capability Confidence: 1.0
+Lifecycle State: {state: ready, current_model: ollama/qwen3.6:35b}
+```
+
+## Implementation Details
+
 ## Implementation Details
 
 ### Architecture Integration
