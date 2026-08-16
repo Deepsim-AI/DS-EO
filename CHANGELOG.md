@@ -37,6 +37,19 @@ Added self-contained run-state reconciliation layer to the `ds_eo_openclaw.run_r
 ### Outcome
 Defense-in-depth approach: DS-EO-only detection layer works independently of upstream, structured error classification enables precise agent response, and recovery protocols eliminate the need for full OpenClaw restarts. Zero regression risk — entirely new code, no modifications to existing paths. Upstream patch proposals documented in BOUNDARY_ANALYSIS.md for future contribution.
 
+## [v0.9.2] — 2026-08-16
+
+### Phase C — Execution Strategy Manager Polish (TASK_DS_EO_045)
+* Added `/eo execution strategy <mode>` skill commands for runtime mode switching (auto, concurrent, sequential, shared_model).
+* Added `status` sub-command to view current strategy and lifecycle state.
+* Startup eager auto-detection: strategy is now resolved at ExecutionStrategyManager init time instead of lazily on first task.
+* Package README (`dispatcher/execution_strategy/README.md`) with architecture diagram, API reference, and quick-start.
+* Monitoring & benchmarking guidance added to Migration Guide (log patterns, expected per-mode latencies).
+
+### Summary
+Execution Strategy Manager is now complete across all three modes: concurrent, sequential, shared_model.
+All users can choose the strategy that fits their hardware profile without any manual code changes.
+
 ## [v0.9.1] — 2026-08-14
 
 ## TASK_DS_EO_044: Execution Strategy Manager — Phase B (Sequential & Shared Model Strategies) ✅ CLOSED (G5 Complete 2026-08-16)
