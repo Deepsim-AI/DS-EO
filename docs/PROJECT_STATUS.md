@@ -1,6 +1,8 @@
 # PROJECT_STATUS.md
 - ✅ All tasks through TASK_DS_EO_040 have been approved and closed (G5 complete).
-- 🚀 Current release version: v0.1.3.
+- ✅ TASK_DS_EO_045 has been approved and closed (G5 complete).
+- 🚀 Current release version: v0.1.3 (v0.1.4 in progress — see CHANGELOG).
+- 📋 2026-08-15: Added `docs/TROUBLESHOOTING.md` (context-window & compaction sizing, broken-session recovery). Config fix applied on this host: `contextWindow` corrected to real model limit (128K), `keepRecentTokens` 120K→50K, `reserveTokensFloor` 48K→24K, `timeoutSeconds` 300→600.
 - 🔗 Release notes:
   * Minor bug fixes for the CLI interface.
   * Performance improvements to the task scheduler.
