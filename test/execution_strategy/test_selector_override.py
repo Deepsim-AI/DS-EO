@@ -59,9 +59,13 @@ class TestSelectorOverridePersistence:
         
         selector.clear_override()
         assert not os.path.exists(override_path)
-        # After clear, it should resolve to auto-detection (which falls back to concurrent since sequential is Phase B)
+        # After clear, it should resolve to auto-detection.
+        # TASK_DS_EO_044 (Phase B) ships sequential + shared_model, so the
+        # Phase A assumption ("sequential unavailable -> concurrent fallback")
+        # no longer holds. Verify auto-resolution lands on a real strategy.
         name, impl, report = selector.get_or_resolve()
-        assert name == "concurrent"  # fallback from auto when sequential unavailable
+        assert name in ["concurrent", "sequential", "shared_model"]
+        assert report.strategy == name
 
     def test_set_manual_override_rejects_invalid(self, selector):
         with pytest.raises(ValueError):
@@ -114,10 +118,12 @@ class TestSelectorSingleton:
 
     def test_strategy_available_classmethod(self):
         concurrent_exists = ExecutionStrategySelector.strategy_available("ConcurrentStrategy")
-        phase_b_doesnt_exist = ExecutionStrategySelector.strategy_available("SequentialStrategy")
+        # TASK_DS_EO_044 (Phase B) shipped sequential + shared_model strategies,
+        # so both must report available now (Phase A test predates that).
+        sequential_exists = ExecutionStrategySelector.strategy_available("SequentialStrategy")
         
         assert concurrent_exists is True
-        assert phase_b_doesnt_exist is False
+        assert sequential_exists is True
 
 
 if __name__ == "__main__":

@@ -6,7 +6,10 @@ validates against protocol requirements.
 """
 
 import json
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
@@ -267,20 +270,57 @@ class WorkflowEngine:
             )
 
 
-        # ===== TASK_DS_EO_043 Phase A: Execution Strategy Hooks =====
-        # These run synchronously during execute_transition (which is a sync method).
-        # Strategy hooks are non-fatal — failures log but do not block transitions.
+        # ===== TASK_DS_EO_044 Phase B: Execution Strategy Lifecycle Hooks =====
+        # execute_transition() is a SYNC method, but the strategy lifecycle API
+        # (prepare_phase/release_phase) is ASYNC. We bridge with a running-loop-aware
+        # helper: if a loop is already running (engine called from an async context)
+        # we schedule-and-pump the coroutine on a worker thread; otherwise we run it
+        # directly. Strategy hooks are non-fatal — failures log but do NOT block
+        # the transition (preserves Phase A non-blocking contract).
         _exec_strategy_name = None
         try:
+            import asyncio
+
             from dispatcher.execution_strategy import ExecutionStrategyManager
             ws = self.workspace_root or os.path.join(os.path.dirname(__file__), "..")
             strategy_mgr = ExecutionStrategyManager(workspace_root=ws)
-            # Sync read of current strategy (no async ops needed for selection)
             _exec_strategy_name = strategy_mgr.selector.current_strategy_name
+
+            def _run_strategy(coro):
+                """Run an async strategy coroutine from this sync context (best-effort)."""
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    # No running loop — safe to run the coroutine directly (CLI case).
+                    return asyncio.run(coro)
+
+                # A loop is running in THIS thread — cannot asyncio.run() here.
+                # Run the coroutine on a worker thread with its own loop.
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _pool:
+                    return _pool.submit(asyncio.run, coro).result(timeout=35)
+
+            # TASK_DS_EO_044: prepare model BEFORE dispatching the target agent.
+            if target_agent:
+                _prep = _run_strategy(strategy_mgr.prepare_phase(target_agent))
+                if _prep is not None and not _prep.success:
+                    logger.warning(
+                        f"Strategy prepare_phase({target_agent}) reported failure "
+                        f"(non-fatal): {_prep.notes}"
+                    )
+
+            # TASK_DS_EO_044: release model AFTER the phase/agent completes.
+            if target_agent:
+                _rel = _run_strategy(strategy_mgr.release_phase(target_agent))
+                if _rel is not None and not _rel.success:
+                    logger.warning(
+                        f"Strategy release_phase({target_agent}) reported failure "
+                        f"(non-fatal): {_rel.notes}"
+                    )
         except Exception as _es_err:
             logger.warning(f"Execution strategy hook unavailable (non-fatal): {_es_err}")
             _exec_strategy_name = "unknown"
-        # ===== END TASK_DS_EO_043 Hooks =====
+        # ===== END TASK_DS_EO_044 Strategy Hooks =====
         # Step 1: Validate transition
         allowed, validation_msgs = self.can_transition(from_phase, transition_name)
         if not allowed:

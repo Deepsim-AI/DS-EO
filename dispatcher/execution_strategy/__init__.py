@@ -1,21 +1,25 @@
 """
 Execution Strategy Manager — Package Entry Point.
 
-Phase A deliverable 7 of TASK_DS_EO_043.
+Phase A deliverable 7 of TASK_DS_EO_043 + Phase B additions (TASK_DS_EO_044).
 
 Exports the public API for the execution strategy subsystem:
 - ExecutionStrategy (ABC base class)
 - StrategyResult, CapabilityReport (data classes)
-- ConcurrentStrategy, CapabilityAssessor, ExecutionStrategySelector
+- ConcurrentStrategy, SequentialStrategy, SharedModelStrategy
+- CapabilityAssessor, ExecutionStrategySelector
 - ExecutionStrategyManager (public facade used by engine.py)
 """
 
 import asyncio
 import logging
+import os
 
 from .constants import Strategy, ModelState, ModelStateError
 from .strategy_base import ExecutionStrategy, StrategyResult, CapabilityReport
 from .concurrent_strategy import ConcurrentStrategy
+from .sequential_strategy import SequentialStrategy
+from .shared_model_strategy import SharedModelStrategy, clear_shared_model_state
 from .capability_assessor import CapabilityAssessor
 from .selector import ExecutionStrategySelector
 
@@ -48,7 +52,6 @@ class ExecutionStrategyManager:
             workspace_root = self._pending_workspace_root
 
         if workspace_root is None:
-            import os
             workspace_root = os.environ.get("DS_EO_WORKSPACE", os.getcwd())
 
         self.workspace_root = os.path.abspath(workspace_root)
@@ -96,6 +99,10 @@ class ExecutionStrategyManager:
         self.selector.set_manual_override(strategy_name)
         logger.info(f"Strategy switched to {strategy_name} by user")
 
+        # Clear any shared model state when switching away.
+        if strategy_name != Strategy.SHARED_MODEL.value:
+            clear_shared_model_state()
+
     def status_report(self) -> dict:
         """
         Return current strategy state for logging/status.
@@ -128,6 +135,9 @@ __all__ = [
     "StrategyResult",
     "CapabilityReport",
     "ConcurrentStrategy",
+    "SequentialStrategy",
+    "SharedModelStrategy",
+    "clear_shared_model_state",
     "CapabilityAssessor",
     "ExecutionStrategySelector",
     "ExecutionStrategyManager",

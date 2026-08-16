@@ -113,7 +113,10 @@ class ExecutionStrategySelector:
             return stub
 
         # Import and instantiate
-        module_name = class_name.lower().replace("strategy", "_strategy") if "Strategy" in class_name else class_name.lower()
+        # Derive module name: "SequentialStrategy" -> "sequential_strategy",
+        # "SharedModelStrategy" -> "shared_model_strategy".
+        base = class_name[:-8] if class_name.endswith("Strategy") else class_name
+        module_name = base.lower() + "_strategy"
         try:
             mod = __import__(f".{module_name}", fromlist=[class_name])
             cls = getattr(mod, class_name)

@@ -39,6 +39,34 @@ Defense-in-depth approach: DS-EO-only detection layer works independently of ups
 
 ## [v0.9.1] — 2026-08-14
 
+## TASK_DS_EO_044: Execution Strategy Manager — Phase B (Sequential & Shared Model Strategies) ✅ CLOSED (G5 Complete 2026-08-16)
+
+### Summary
+Delivers Phase B of the Execution Strategy Manager: two new strategy implementations (`sequential` and `shared_model`) that enable memory-efficient model lifecycle management on constrained hardware. Extends TASK_DS_EO_043 Phase A (which delivered the foundation + concurrent mode).
+
+**Changes applied:**
+
+- **SequentialStrategy** (`dispatcher/execution_strategy/sequential_strategy.py`, ~450 lines) — ModelLifecycleManager with explicit state machine (`idle → loading → ready → executing → unloading → idle`). Loads one model at a time, verifies readiness via `/api/ps` polling (500ms interval, 30s timeout), unloads after each phase. For Jetson/single-GPU systems where concurrent residency causes OOM/swapping.
+
+- **SharedModelStrategy** (`dispatcher/execution_strategy/shared_model_strategy.py`, ~260 lines) — Single model shared across all agents with ref-counting. First agent triggers load; subsequent agents share the same instance. Unloads lazily when all agents release. For users configuring identical models across CTO/Implementer/Reviewer/PM roles.
+
+- **Engine integration hooks** (`dispatcher/engine.py`, ~50 lines changed) — Replaced Phase A stub with real async `prepare_phase`/`release_phase` calls bridged via `_run_strategy()` helper for sync-to-async compatibility in both CLI and threaded contexts. Non-fatal fallback preserved.
+
+- **Package exports updated** (`dispatcher/execution_strategy/__init__.py`) — Both new strategies registered and exported. `__all__` completeness verified.
+
+- **Selector lifecycle awareness** (`dispatcher/execution_strategy/selector.py`, ~5 lines changed) — Lazy-loaded strategy map now properly instantiates Phase B strategies; `strategy_available()` classmethod for Phase A vs B detection.
+
+- **Tests** (23 new tests, 53 total passing):
+  - `test_sequential_lifecycle.py` (14 tests) — full lifecycle, short-circuit resident optimization, unload failure recovery
+  - `test_shared_model_refcount.py` (7 tests) — ref-count increment/decrement, lazy unload, concurrent access safety
+  - `test_engine_strategy_integration.py` (4 tests) — hook ordering, sync-to-async bridge, non-fatal fallback
+
+- **Migration guide** (`MIGRATION_GUIDE.md`, ~250 lines) — Sequential/shared model adoption paths, config override mechanism, runtime switching via `/eo execution strategy`, troubleshooting FAQ.
+
+### Outcome
+Expands execution strategy options from a single (concurrent) mode to three: concurrent, sequential, and shared_model. Users on constrained hardware can now safely use DS-EO without OOM risk. All 53 tests pass with zero Phase A regressions.
+
+
 ### Phase 1 — Execution Strategy Manager
 * Added execution_strategy package with six modules: `__init__`, `constants`, `strategy_base`, `concurrent_strategy`, `capability_assessor`, and `selector`.
 * Implemented engine hooks for `prepare_phase` and `release_phase` to integrate execution strategy management into the dispatcher lifecycle.
@@ -69,6 +97,7 @@ with real OpenClaw CLI integration.
 - Phase 5 — Testing and Validation Suite (92 integration tests)
 - Phase 6 — User-Facing /eo Mode Commands (slash command API + 34 tests)
 - Phase 7 — Session Health Real OpenClaw API Integration (COMPACT, ARCHIVE, CLOSE CLI)
+- Phase B — Execution Strategy Manager: SequentialStrategy + SharedModelStrategy implementations
 
 ### Bug Fixes
 - Fixed ds_eo_manifest.yaml YAML syntax error in modules section (skill_commands key)
