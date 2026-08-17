@@ -118,7 +118,8 @@ class ExecutionStrategySelector:
         base = class_name[:-8] if class_name.endswith("Strategy") else class_name
         module_name = base.lower() + "_strategy"
         try:
-            mod = __import__(f".{module_name}", fromlist=[class_name])
+            import importlib
+            mod = importlib.import_module(f".{module_name}", package="dispatcher.execution_strategy")
             cls = getattr(mod, class_name)
             instance = cls(workspace_root=self.workspace_root) if hasattr(cls, '__init__') and 'workspace_root' in cls.__init__.__code__.co_varnames else cls()
             self._strategy_map[name] = instance
@@ -151,6 +152,7 @@ class ExecutionStrategySelector:
                 if self._selection_source == SELECTION_SOURCE_USER_OVERRIDE
                 else "Auto-selected by capability assessment"
             ),
+            source=self._selection_source or "auto",
         )
 
         return (name, impl, report)
@@ -331,4 +333,5 @@ class _PhaseBStub(ExecutionStrategy):
             confidence=0.0,
             signals={},
             reason=f"{self._strategy_name} not yet implemented (Phase B)",
+            source=self._selection_source or "auto",
         )

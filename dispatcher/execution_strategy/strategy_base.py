@@ -36,6 +36,7 @@ class CapabilityReport:
     confidence: float  # 0.0 - 1.0
     signals: dict  # raw signal values used for decision
     reason: str  # human-readable explanation
+    source: str = "auto"  # 'auto' or 'user_override'
 
 
 # ============================================================================
