@@ -668,3 +668,20 @@ Both investigation tasks closed via G4 approve. No DS-EO code changes were neede
 #### Known Limitations
 
 - COMPACT, ARCHIVE, and CLOSE rely on the OpenClaw CLI being available in the runtime environment. Deployment integration is pending.
+
+## TASK_DS_EO_041: Multi-Project Architecture ✅ G5 Complete (2026-08-17)
+
+### Summary
+Implemented multi-project architecture enabling DS-EO to manage multiple consumer projects from a single framework instance. Adds ProjectCatalog, ProjectResolver module, and per-project manifest system — all additive with zero mutation of framework core modules.
+
+**Changes applied:**
+
+- **Project Catalog** (`~/.openclaw/ds_eo/projects.yaml`) — Global YAML registry of all managed projects (framework + DAL); defines workspace, task prefix, agent identity naming, artifact paths per project
+- **ProjectResolver module** (`resolver.py` ~20KB) — Core resolution engine with 8 public methods: `list_projects()`, `get_project()`, `resolve_by_agent_id()`, `resolve_by_task_id()`, `resolve_role_for_project()`, `generate_agent_id()`, `generate_openclaw_entries()`, `next_task_id()`
+- **TaskIDManager** (`task_id_manager.py`) — Project-scoped sequential task ID generation with independent counters per project (DAL, DS_EO etc.)
+- **ProjectManifestLoader** — Per-project `ds_eo_project.yaml` parser/validator producing agent mapping dataclass
+- **4 DAL agent registrations** in `~/.openclaw/openclaw.json` (cto-dal, implementer-dal, reviewer-dal, pm-dal)
+- **agents_list.json** updated — 8 total entries (4 original + 4 DAL)
+- **Per-project manifest** at `/home/deepsim/deepsim-ai-lab/ds_eo_project.yaml` with full tool policies
+
+**Tests:** 22 functional tests passing (catalog load, project resolve, agent resolution, task routing, OpenClaw config gen, manifest load, workspace lookup, namespace separation)

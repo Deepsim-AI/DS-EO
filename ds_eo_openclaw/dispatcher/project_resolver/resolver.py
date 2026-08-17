@@ -325,6 +325,53 @@ class ProjectResolver:
 
         return f"TASK_{proj.task_prefix.upper()}_{max_nnn + 1:03d}"
 
+    def resolve_by_agent_id(self, agent_id: str) -> Optional[AgentIdentity]:
+        """Look up an agent identity by its full ID (e.g. 'cto-dal').
+
+        Scans all registered projects' agent matrices for a matching ID.
+        
+        Args:
+            agent_id: Full agent ID like "cto", "cto-dal", "implementer-dal"
+            
+        Returns:
+            AgentIdentity if found, None otherwise.
+        """
+        if not self._projects:
+            self.load()
+
+        for pid, proj in self._projects.items():
+            if hasattr(proj, "_agent_matrix"):
+                agent = proj._agent_matrix.resolve_role("")  # scan all agents
+                if agent and agent.id == agent_id:
+                    return agent
+                
+                # Also scan by full ID directly from the project's default_agents
+                for a in proj.agents:
+                    if a.id == agent_id:
+                        return a
+
+        return None
+
+    def list_all_agent_ids(self) -> list[str]:
+        """Return all registered agent IDs across all projects."""
+        if not self._projects:
+            self.load()
+        
+        ids = []
+        for proj in self._projects.values():
+            for a in proj.agents:
+                ids.append(a.id)
+        return sorted(set(ids))  # deduplicate
+
+    def get_project_by_workspace(self, workspace_path: str) -> Optional[ProjectInfo]:
+        """Find which project owns a given workspace path."""
+        if not self._projects:
+            self.load()
+        
+        for pid, proj in self._projects.items():
+            if proj.workspace == workspace_path:
+                return proj
+        return None
 
 # ── Convenience function ──
 
@@ -332,3 +379,153 @@ def resolve_project_for_task(task_id: str, catalog_path: str = None) -> Optional
     """One-shot convenience function."""
     resolver = ProjectResolver(catalog_path=catalog_path)
     return resolver.resolve_by_task_id(task_id)
+
+
+
+# ── Project Manifest Loader ──
+
+class ProjectManifestLoader:
+    """Load and validate a per-project ds_eo_project.yaml manifest.
+    
+    Each consumer project has a <workspace>/ds_eo_project.yaml that declares
+    how DS-EO agents map to OpenClaw identities for that project.
+    """
+    
+    def __init__(self, workspace_root: str):
+        self.workspace_root = workspace_root
+        self.manifest_path = os.path.join(workspace_root, "ds_eo_project.yaml")
+        self.data: dict = {}
+    
+    def load(self) -> tuple[bool, Optional[str]]:
+        """Load and parse the manifest. Returns (success, error_message)."""
+        if not os.path.exists(self.manifest_path):
+            return False, f"Manifest not found at {self.manifest_path}"
+        
+        try:
+            import yaml as _yaml
+            with open(self.manifest_path) as f:
+                self.data = _yaml.safe_load(f)
+        except Exception as e:
+            return False, f"Failed to parse manifest: {e}"
+        
+        if not isinstance(self.data, dict):
+            return False, "Manifest must be a YAML mapping"
+        
+        required = ["project_id", "project_name", "framework_root", "agent_mappings"]
+        for field in required:
+            if field not in self.data:
+                return False, f"Missing required field: {field}"
+        
+        if not isinstance(self.data["agent_mappings"], list):
+            return False, "agent_mappings must be a list"
+        
+        for i, mapping in enumerate(self.data["agent_mappings"]):
+            if not isinstance(mapping, dict):
+                return False, f"agent_mappings[{i}] must be a mapping"
+            required_mapping = ["framework_agent", "project_agent", "model", "workspace"]
+            for field in required_mapping:
+                if field not in mapping:
+                    return False, f"agent_mappings[{i}] missing field: {field}"
+        
+        return True, None
+    
+    @property
+    def project_id(self) -> Optional[str]:
+        return self.data.get("project_id")
+    
+    @property
+    def project_name(self) -> Optional[str]:
+        return self.data.get("project_name")
+    
+    @property
+    def framework_root(self) -> Optional[str]:
+        return self.data.get("framework_root")
+    
+    @property
+    def task_id_prefix(self) -> Optional[str]:
+        return self.data.get("task_id_prefix")
+    
+    @property
+    def agent_mappings(self) -> list[dict]:
+        return self.data.get("agent_mappings", [])
+    
+    def get_framework_agent_by_project_agent(self, project_agent_id: str) -> Optional[str]:
+        """Given a project agent ID (e.g. 'cto-dal'), return the framework agent ID (e.g. 'cto')."""
+        for mapping in self.agent_mappings:
+            if mapping.get("project_agent") == project_agent_id:
+                return mapping.get("framework_agent")
+        return None
+    
+    def get_project_agent_by_framework_agent(self, framework_agent_id: str) -> Optional[str]:
+        """Given a framework agent ID (e.g. 'cto'), return the project agent ID (e.g. 'cto-dal')."""
+        for mapping in self.agent_mappings:
+            if mapping.get("framework_agent") == framework_agent_id:
+                return mapping.get("project_agent")
+        return None
+
+    def generate_agents_project_list_json(self) -> list[dict]:
+        """Generate a project-scoped agents_project_list.json from the manifest.
+        
+        This produces entries ready to be merged into a per-project agent registry.
+        """
+        entries = []
+        for mapping in self.agent_mappings:
+            framework_id = mapping.get("framework_agent", "")
+            name_map = {
+                "cto": "CTO / Architect",
+                "implementer": "Code Implementer",
+                "reviewer": "Senior Code Reviewer",
+                "pm": "Project Manager",
+            }
+            emoji_map = {
+                "cto": "\U0001f3d7\ufe0f",
+                "implementer": "\U0001f4bb",
+                "reviewer": "\U0001f50d",
+                "pm": "\U0001f4cb",
+            }
+            
+            tools_allow = mapping.get("tools_allow") or []
+            tools_deny = mapping.get("tools_deny") or []
+            
+            entry = {
+                "default": False,
+                "id": mapping["project_agent"],
+                "name": f"{name_map.get(framework_id, framework_id)} ({self.project_name})",
+                "identity": {"emoji": emoji_map.get(framework_id, "\U0001f916"), "name": framework_id.title()},
+                "model": mapping["model"],
+                "workspace": mapping["workspace"],
+                "tools": {
+                    "allow": tools_allow,
+                    "deny": tools_deny,
+                },
+            }
+            entries.append(entry)
+        
+        return entries
+
+    def validate_against_catalog(self, resolver: ProjectResolver) -> tuple[bool, list[str]]:
+        """Validate manifest agent_mappings against the project catalog.
+        
+        Returns (valid, warnings).
+        """
+        warnings = []
+        if not self.project_id:
+            return False, ["Manifest missing project_id"]
+        
+        proj = resolver.get_project(self.project_id)
+        if not proj:
+            return False, [f"Project '{self.project_id}' not found in catalog. Add to projects.yaml first."]
+        
+        mapping_agents = {m["project_agent"]: m for m in self.agent_mappings}
+        catalog_agents = {a.id: a for a in proj.agents}
+        
+        for project_agent_id, mapping in mapping_agents.items():
+            if project_agent_id not in catalog_agents:
+                warnings.append(
+                    f"Agent '{project_agent_id}' in manifest not found in catalog for project '{self.project_id}'. "
+                    f"Update projects.yaml default_agents."
+                )
+        
+        return len(warnings) == 0, warnings
+
+

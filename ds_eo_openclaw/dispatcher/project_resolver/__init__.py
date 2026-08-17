@@ -2,6 +2,7 @@
 
 from .resolver import (
     ProjectResolver,
+    ProjectManifestLoader,
     ProjectInfo,
     AgentIdentityMatrix,
     AgentIdentity,
@@ -12,6 +13,7 @@ from .task_id_manager import TaskIDManager, TaskIDInfo, TASK_ID_PATTERN
 
 __all__ = [
     "ProjectResolver",
+    "ProjectManifestLoader",
     "ProjectInfo",
     "AgentIdentityMatrix",
     "AgentIdentity",

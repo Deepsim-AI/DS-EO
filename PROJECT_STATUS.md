@@ -23,6 +23,25 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 ---
 ## Completed Tasks
 
+### TASK_DS_EO_041_MULTI_PROJECT_ARCHITECTURE — Multi-Project Architecture 📦 (G5 Complete 2026-08-17)
+
+**Date Planned:** 2026-08-13
+**Date Closed:** 2026-08-17
+**Decision:** APPROVED (Gate G4, CTO Score 4.5/5; G5 PM Closure)
+
+**Summary:** Multi-project architecture enabling DS-EO to manage multiple consumer projects from a single framework instance. Includes ProjectCatalog (YAML-based), ProjectResolver module (task→project→agent identity resolution), per-project ds_eo_project.yaml manifest system, and DAL agent registrations in openclaw.json. All 22 functional tests passing; framework core untouched.
+
+**Changes:**
+- `~/.openclaw/ds_eo/projects.yaml` [NEW] — Global project catalog (framework + DAL)
+- `ds_eo_openclaw/dispatcher/project_resolver/resolver.py` [NEW] — ProjectResolver (~20KB, 8 classes/methods)
+- `ds_eo_openclaw/dispatcher/project_resolver/task_id_manager.py` [NEW] — Project-scoped task ID generation
+- `~/.openclaw/openclaw.json` [MODIFIED] — Added 4 DAL agent identities
+- `agents_list.json` [MODIFIED] — Appended 4 DAL entries (8 total)
+- `/home/deepsim/deepsim-ai-lab/ds_eo_project.yaml` [NEW] — Per-project identity manifest for DAL
+
+**Tests:** 22/22 functional tests passing; 0 regressions
+
+
 ### TASK_DS_EO_027 — DS-EO Workflow Supervisor / Watchdog 📦 (CLOSED ✅)
 **Date Planned:** 2026-08-05
 **Date Closed:** 2026-08-06
