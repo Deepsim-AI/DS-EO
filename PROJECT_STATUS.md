@@ -3,22 +3,11 @@
 **Current Phase**: **COMPLETE** — Execution Strategy Manager (Phases A, B, C all closed)
 
 ---
-
 ## Active Tasks
-| **TASK_DS_EO_026** | Fix Dispatcher spawn_agent() Real OpenClaw Session Creation | 📦 Closed (Infra Defect Found & Resolved) | CTO+Implementer+Reviewer+PM | 2026-08-05 |
-| **TASK_DS_EO_029** | PM Task Intake Manager — workspace creation & dedup | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
-| **TASK_DS_EO_031** | PM Model Specialization (Model Separation) | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
-| **TASK_20260808_001** | Session Health & Lifecycle Management | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-08 |
-| **TASK_DS_EO_035** | Phase 7 — Session Health Real OpenClaw API Integration | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Reviewer+PM | 2026-08-09 |
 
-| **TASK_DS_EO_038** | Phase 8 — Real `spawn_agent()` with OpenClaw CLI Integration | 📦 Closed (G4 Approved, Post‑G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-11 |
-| **TASK_DS_EO_043_MODEL_LIFECYCLE_MANAGER** | Model Lifecycle Manager – Design and Planning | 📦 Closed (G4 Approved, Post‑G4 Complete) | PM | 2026-08-14 |
+_No active tasks._ All completed or superseded. See [Completed Tasks](#completed-tasks) below.
 
-| **TASK_DS_EO_044** | Model Lifecycle Manager & Strategy Implementations (Phase B) | 📦 Closed (G4 Approved, Post-G4 Complete)
-| **TASK_DS_EO_046** | PM Release Correction — Release management system implemented; G5 Complete 📦 | G5 Complete ✅ | CTO+Implementer+Reviewer+PM | 2026-08-16 |
-### Superseded / Closed Entries
-| **TASK_DAL_002** | ~~Content Inventory + IA~~ | ⛔ Superseded — discovery task led to TASK_DS_EO_026. No artifacts produced; scope deferred.
-| **TASK_DS_EO_030** | ~~Session Health & Lifecycle Management~~ | ⛔ Revoked (boundary violation, replaced by TASK_20260808_001)
+
 
 
 ## Phase A Completion
@@ -34,11 +23,20 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 ---
 ## Completed Tasks
 
-### TASK_DS_EO_039 — Run-State/Liveness Desynchronization Fix 📦 (COMPLETED)
-### TASK_DS_EO_040 — Run-State Reconciliation Layer 📦 (COMPLETED)
-**Date Completed**: 2026-08-13T08:45:00-07:00
+### TASK_DS_EO_027 — DS-EO Workflow Supervisor / Watchdog 📦 (CLOSED ✅)
+**Date Planned:** 2026-08-05
+**Date Closed:** 2026-08-06
+**Decision:** CLOSED (G4 APPROVED, G4 Closure Complete)
 
-**Date Completed**: 2026-08-12T07:25:00-07:00  
+**Summary:** Workflow Supervisor / Watchdog completed with all 29/29 tests passing. Dispatcher state advanced to S5_COMPLETE. Artifacts verified in correct timestamp order.
+
+**Artifacts:** CTO_PLAN.md, DELEGATE_MESSAGE.md, IMPLEMENTATION.md, VERIFICATION.md, IMPLEMENTATION_REPORT.md, REVIEW_REPORT.md, CTO_APPROVED.md, CTO_CLOSED.md
+**Artifact dir:** docs/development/reports/TASK_DS_EO_027/
+
+
+### TASK_DS_EO_039 — Run-State/Liveness Desynchronization Fix 📦 (COMPLETED)
+
+**Date Completed**: 2026-08-13T08:45:00-07:00  
 **Decision**: APPROVED (Gate G4, CTO self-verified)  
 **Summary**: Fixed critical control-plane deadlock where TUI session becomes permanently stuck when gateway-side run abort completes but TUI state remains stale ("finishing context"). Defense-in-depth: gateway always emits terminal lifecycle event on abort, TUI adds 60s watchdog timeout for finishing-state auto-clear, /new gains gateway-side awareness to unblock stale sessions.  
 
