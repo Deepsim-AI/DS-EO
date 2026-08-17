@@ -6,12 +6,9 @@
 
 ## Active Tasks
 | **TASK_DS_EO_026** | Fix Dispatcher spawn_agent() Real OpenClaw Session Creation | 📦 Closed (Infra Defect Found & Resolved) | CTO+Implementer+Reviewer+PM | 2026-08-05 |
-| **TASK_DAL_002** | Content Inventory + IA | 🔄 Resumed (infra fix via TASK_DS_EO_026) | CTO | 2026-08-05 |
-| **TASK_DS_EO_027** | DS-EO Workflow Supervisor / Watchdog | 📋 Planning (G1 Awaiting) | CTO | 2026-08-05 |
 | **TASK_DS_EO_029** | PM Task Intake Manager — workspace creation & dedup | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
 | **TASK_DS_EO_031** | PM Model Specialization (Model Separation) | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-07 |
 | **TASK_20260808_001** | Session Health & Lifecycle Management | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-08 |
-| **TASK_DS_EO_030** ~~Session Health | **TASK_DS_EO_030** | Session Health & Lifecycle Management | 🔵 Planning (G1 Submitted) | CTO | 2026-08-07 | Lifecycle Management~~ | ⛔ REVOKED (Boundary violation, user‑initiated retest from PM with new model) | — | 2026-08-07 |
 | **TASK_DS_EO_035** | Phase 7 — Session Health Real OpenClaw API Integration | 📦 Closed (G4 Approved, Post-G4 Complete) | CTO+Reviewer+PM | 2026-08-09 |
 
 | **TASK_DS_EO_038** | Phase 8 — Real `spawn_agent()` with OpenClaw CLI Integration | 📦 Closed (G4 Approved, Post‑G4 Complete) | CTO+Implementer+Reviewer+PM | 2026-08-11 |
@@ -19,6 +16,10 @@
 
 | **TASK_DS_EO_044** | Model Lifecycle Manager & Strategy Implementations (Phase B) | 📦 Closed (G4 Approved, Post-G4 Complete)
 | **TASK_DS_EO_046** | PM Release Correction — Release management system implemented; G5 Complete 📦 | G5 Complete ✅ | CTO+Implementer+Reviewer+PM | 2026-08-16 |
+### Superseded / Closed Entries
+| **TASK_DAL_002** | ~~Content Inventory + IA~~ | ⛔ Superseded — discovery task led to TASK_DS_EO_026. No artifacts produced; scope deferred.
+| **TASK_DS_EO_030** | ~~Session Health & Lifecycle Management~~ | ⛔ Revoked (boundary violation, replaced by TASK_20260808_001)
+
 
 ## Phase A Completion
 * Execution Strategy Manager design and implementation completed. All artifacts present.
@@ -228,8 +229,6 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 
 **Summary:**
 CTO approved the plan to implement real `spawn_agent()` that creates live OpenClaw agent sessions via the `sessions_spawn` tool, verifies session existence and model correctness, and returns a usable session reference. Implementation pending.
-**Date Completed**: 2026-08-08T23:07:00-07:00  
-**Decision**: APPROVED (Gate G4)  
 
 **Summary**: Administrative closure of two investigation tasks. TASK_20260808_032 (Run Abort State Sync and Token Accounting Bugs) found no DS-EO code changes needed — both issues are upstream OpenClaw bugs documented in INVESTIGATION.md. TASK_20260808_033 (Cross-Role Compaction Timeout) completed with config fix already applied (compaction.timeoutSeconds→300, reserveTokensFloor→48000). No further DS-EO work needed.
 

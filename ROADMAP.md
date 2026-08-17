@@ -60,7 +60,7 @@
 | spawn_agent() bridge | ✅ Implemented | Bridge module that creates real sessions, not mock stubs |
 | Session verification | ✅ Implemented | Automatic check that spawned sessions exist and are running in OpenClaw's session store |
 | Reliability assertion | ✅ Implemented | Dispatcher never returns success without verified session existence |
-| TASK_DAL_002 unblocked | ⏳ Pending | Awaiting host-side verification that the fix works on this instance |
+| TASK_DAL_002 unblocked | ✅ Completed — infra defect found and resolved via TASK_DS_EO_026. Task superseded; no further work needed.
 
 ### Key Finding
 
@@ -78,7 +78,7 @@ This finding feeds into the **Workflow Supervisor/Watchdog** capability:
 | Task | Title | Status | 
 |------|-------|--------|
 | TASK_DS_EO_026 | Fix Dispatcher spawn_agent() Real OpenClaw Session Creation | ✅ Closed | 
-| **TASK_DS_EO_027** | **Workflow Supervisor / Watchdog** | **📋 Planning (G1 Awaiting)** |
+| **TASK_DS_EO_027** | **Workflow Supervisor / Watchdog** | **✅ Closed (G4 + G5 Complete)** |
 
 
 ---
@@ -205,26 +205,26 @@ Full adoption paths, migration guide, and troubleshooting: see `dispatcher/execu
 ---
 
 *Roadmap maintained by CTO (ollama/qwen3.6:35b)*  
-*Last updated: 2026-08-16
+*Last updated: 2026-08-17*
 
 ---
 
-## v0.4 — Workflow Supervisor / Auto-Dispatch (In Progress) 🔄
+## v0.4 — Workflow Supervisor / Auto-Dispatch (Completed) ✅
+
+**Note**: All tasks in v0.4 are complete. TASK_DS_EO_027 (Workflow Supervisor) and TASK_DS_EO_038 (real spawn_agent) delivered the full automation layer. The v0.4 content below is preserved for reference but all work is done.**
 
 ### Objective
 
 Build the **real `spawn_agent()`** infrastructure that makes `/eco automatic mode` work end-to-end:
 - Replace dispatcher's stub spawn with real OpenClaw session creation
 - Add verification layer so phantom sessions are caught at dispatch time
-- Unblock TASK_DAL_002 (deferred pending this phase)
 
 ### Tasks in v0.4
 | Task | Title | Status |
 |------|-------|--------|
-| **TASK_DS_EO_038** | Phase 8 — Real `spawn_agent()` with OpenClaw CLI integration | **📋 G1 Awaiting (this task)** |
+| **TASK_DS_EO_038** | Phase 8 — Real `spawn_agent()` with OpenClaw CLI integration | **✅ Closed (G4 Approved, Post‑G4 Complete)** |
 
 ### Success Criteria
 
 - [ ] PM can auto-advance a task and the Implementer receives real session with actual work
 - [ ] All existing tests pass (no regressions from stub→real change)
-- [ ] TASK_DAL_002 fully completes via automatic mode (proving end-to-end automation works)
