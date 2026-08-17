@@ -27,5 +27,7 @@ execution:
 # - "auto" strategy runs CapabilityAssessor at startup and picks the best fit
 # - Manual overrides can be set via `ExecutionStrategySelector.set_manual_override()`
 # - Overrides persist in STRATEGY_OVERRIDE.json in the task directory
-# - On this Tegra host (61GB RAM, unified memory), auto selects: sequential
-#   because 4 agent models totaling ~77GB exceed available memory
+# - On this Tegra host (61GB RAM, unified memory, CPU-only inference):
+#   • Auto-selects: sequential (safe default for constrained hardware)
+#   • All 5 agent models total ~97GB — concurrent mode will OOM/swap
+#   • Recommend: keep auto + NUM_PARALLEL=2 + KEEP_ALIVE=300 in Ollama service override

@@ -216,8 +216,53 @@ A session is **broken** when `openclaw status` shows its Tokens column > 100% of
 | Agent "stuck" after compaction | `keepRecentTokens` + `reserveTokensFloor` vs real window | Reduce to ≤ 40% / ≤ 18% of window |
 | Multiple agents slow at once | `free -h`, `ollama ps` (resident model count) | Unload idle models; max 3 concurrent |
 | New session also overflows | Bootstrap context size (AGENTS.md + skills + memory) | Trim AGENTS.md; disable unused skills |
+| OOM/swapping during concurrent mode | `/eo execution strategy status`, `ollama ps` | Switch to sequential or shared_model: `/eo execution strategy sequential`
 | Session at 500%+ of window | Already broken; `/reset` required | `/reset` in that chat |
 
 ---
 
-*Last updated: 2026-08-15. Owner: DS-EO engineering org. Related: AGENTS.md §3.5, `protocols/source_inspection_protocol.md`.*
+## Execution Strategy Troubleshooting
+
+### Symptom: OOM / swapping during concurrent mode
+
+**Cause:** Your system doesn't actually support concurrent model residency despite Phase A detection. Common on CPU-only systems with < 96GB RAM.
+
+**Fix:** Switch to sequential mode: `/eo execution strategy sequential`
+
+```bash
+# Verify it's active
+curl http://127.0.0.1:11434/api/ps | python3 -m json.tool
+# Should show only ONE model loaded at a time (sequential)
+```
+
+### Symptom: Sequential mode adds noticeable delay (~5-10s per phase)
+
+**Normal behavior:** Sequential mode loads/unloads one model per phase. On CPU-only hardware, expect 2–5s for load + 1–3s for unload per phase transition.
+
+**If it's slower than expected (> 10s):**
+1. Check model is installed: `ollama list | grep <model-name>`
+2. Verify Ollama service override: check `NUM_PARALLEL` and `KEEP_ALIVE` values
+3. Consider `shared_model` mode if all agents use the same model: `/eo execution strategy shared_model`
+
+### Symptom: Shared mode causes context bleeding between agents
+
+**Cause:** When agents share one model instance, their KV caches can interfere during overlapping phases.
+
+**Fix:** Switch back to sequential or concurrent (if hardware supports it): `/eo execution strategy sequential`
+
+### Symptom: Auto-detection picks the wrong strategy
+
+**Possible causes:**
+1. Ollama running with outdated model list — run `ollama list` and verify models are installed
+2. System memory changed since last detection — restart after changing openclaw.json agent configs
+3. Manual override still active — clear it: `/eo execution strategy auto`
+
+**Manual check:** Run CapabilityAssessor directly:
+```python
+from dispatcher.execution_strategy import CapabilityAssessor
+report = CapabilityAssess().assess()
+print(report)
+# Review signals and confidence score
+```
+
+---*Last updated: 2026-08-15. Owner: DS-EO engineering org. Related: AGENTS.md §3.5, `protocols/source_inspection_protocol.md`.*

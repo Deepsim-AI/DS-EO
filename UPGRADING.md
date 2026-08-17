@@ -231,8 +231,39 @@ The roadmap indicates v1.0 will introduce a **Platform Abstraction Layer** with 
 
 | Version | Date | Changes | Migration Required |
 |---------|------|---------|-------------------|
-| 0.2.0 | 2026-07-28 | Ecosystem planning, profile field added, enhanced safety procedures | `migrate_to_v0.2.sh` (automated) |
-| 0.1.0 | Initial | Self-hosting completion, core agent/protocol framework | N/A (initial install) |
+| **0.9.2** | 2026-08-16 | Phase C: `/eo execution strategy` skill commands, status reporting, eager auto-detection at startup | Skill command available; no config changes needed |
+| **0.9.1** | 2026-08-14 | Phases A+B: Execution Strategy Manager — ConcurrentStrategy (Phase A), SequentialStrategy + SharedModelStrategy (Phase B) | Optional: choose strategy mode for your hardware via `/eo execution strategy <mode>` or `STRATEGY_OVERRIDE.json` |
+| **0.8** | 2026-08-13 | Run-State Reconciliation Layer, Phase 5 Mode Selector, PM workflow state engine | No migration needed — additive change |
+| **0.4** | 2026-07-30 | Dispatcher/Workflow Engine layer, gateway bindings, agent registry with checksums | Follow `scripts/migrate_to_v0.4.sh` if upgrading from v0.3 |
+| **0.2.0** | 2026-07-28 | Ecosystem planning, profile field added, enhanced safety procedures | `migrate_to_v0.2.sh` (automated) |
+| **0.1.0** | Initial | Self-hosting completion, core agent/protocol framework | N/A (initial install) |
+
+## Upgrading to v0.9+ (Execution Strategy Manager)
+
+### What's New
+
+The Execution Strategy Manager gives you control over how LLM models are loaded and released during agent phases:
+
+- **`auto`** — Intelligent detection picks the best mode for your hardware
+- **`concurrent`** — All models loaded simultaneously (fast, needs 96GB+ RAM or discrete GPU)
+- **`sequential`** — One model at a time (~2–5s per phase overhead; ideal for constrained hardware like Jetson/64GB)
+- **`shared_model`** — Single shared model instance across all agents
+
+### Upgrade Steps
+
+No migration script needed. To use the new feature:
+
+1. **Check current strategy:** `/eo execution strategy status`
+2. **Choose your mode:** `/eo execution strategy <mode>` (auto, concurrent, sequential, or shared_model)
+3. The override persists to `STRATEGY_OVERRIDE.json` in your workspace and survives restarts
+
+**For constrained hardware (< 96GB RAM):** We recommend `/eo execution strategy sequential`.
+
+See the [dispatcher/execution_strategy/README.md](dispatcher/execution_strategy/README.md) for full adoption paths, benchmarking guidance, and troubleshooting.
+
+### Hardware Note
+
+On CPU-only systems (Tegra, no GPU) with 5 agent models totaling ~97GB, use **sequential** or **shared_model** mode. Concurrent mode will OOM or trigger swap thrashing on these systems.
 
 ---
 

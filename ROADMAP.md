@@ -169,8 +169,43 @@ ds-eo-core/                    ← Platform-independent roles, protocols, templa
 
 ---
 
+## v0.8+ — Execution Strategy Manager 🧠 (COMPLETED — Phases A, B, C)
+
+### What Was Delivered
+
+| Phase | Task | Description |
+|-------|------|-------------|
+| **Phase A** | TASK_DS_EO_043 | Foundation: ConcurrentStrategy, CapabilityAssessor, selector singleton, engine hooks. Auto-detection based on system hardware profile (RAM, GPU, model sizes). |
+| **Phase B** | TASK_DS_EO_044 | SequentialStrategy: model lifecycle management for constrained hardware (~2-5s phase overhead). SharedModelStrategy: ref-counted single-model sharing across agents. |
+| **Phase C** | TASK_DS_EO_045 | User-facing `/eo execution strategy <mode>` skill commands (auto, concurrent, sequential, shared_model). Status reporting. Startup eager auto-detection. Migration guide + benchmarking guidance. |
+
+### Strategy Modes
+
+| Mode | Best For | Hardware Requirement |
+|------|----------|---------------------|
+| `auto` (default) | Systems that want intelligent defaults | Any — picks based on CapabilityAssessor |
+| `concurrent` | 96GB+ unified memory or discrete GPU | All agent models loaded simultaneously (~0s overhead) |
+| `sequential` | Constrained hardware (< 96GB, CPU-only) | One model at a time (~2-5s per phase) |
+| `shared_model` | Same model across all agents | Single model in RAM (~0s after first agent) |
+
+### How to Use
+
+```bash
+# Check current strategy
+/eo execution strategy status
+
+# Switch mode (persists across restarts)
+/eo execution strategy sequential   # For constrained hardware
+/eo execution strategy shared_model # Single model for all roles
+/eo execution strategy auto         # Back to intelligent defaults
+```
+
+Full adoption paths, migration guide, and troubleshooting: see `dispatcher/execution_strategy/README.md` and the Migration Guide in `TASK_DS_EO_044`.
+
+---
+
 *Roadmap maintained by CTO (ollama/qwen3.6:35b)*  
-*Last updated: 2026-07-28*
+*Last updated: 2026-08-16
 
 ---
 

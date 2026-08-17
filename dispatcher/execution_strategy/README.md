@@ -30,9 +30,9 @@ ExecutionStrategyManager  ← Public facade (singleton)
     │     ├── CapabilityAssessor   ← Hardware detection signals
     │     └── STRATEGY_OVERRIDE.json  ← Persistent user override
     │
-    ├── ConcurrentStrategy         ← Phase A: identity wrap (default)
-    ├── SequentialStrategy         ← Phase B: ModelLifecycleManager
-    └── SharedModelStrategy        ← Phase B: ref-counted sharing
+    ├── ConcurrentStrategy         ← Phase A: foundation + default strategy
+    ├── SequentialStrategy         ← Phase B: model lifecycle manager
+    └── SharedModelStrategy        ← Phase B: ref-counted model sharing
 ```
 
 ## Public API
@@ -68,10 +68,20 @@ Watch these INFO-level log messages:
 - `"Strategy auto-detected at startup:"` — initial selection
 - `"Manual override set to"` — user mode change
 - `"/api/ps verified"` — model lifecycle events (sequential mode)
+## Phase C — Polish (TASK_DS_EO_045, 2026-08-16)
+
+Phase C delivered the user-facing `/eo execution strategy` skill commands:
+- Runtime mode switching without restart (`auto`, `concurrent`, `sequential`, `shared_model`)
+- Status reporting with capability assessment details and lifecycle state
+- Startup eager auto-detection (strategy resolved at ExecutionStrategyManager init time)
+- Migration guide, benchmarking guidance, and monitoring patterns
+
+Phase C is documentation + skill polish — no new strategy implementations.
 
 ## Tests
 
-53 tests total (Phase A + Phase B). All passing.
+53 tests total across Phases A + B. All passing.
+Phase C added skill commands (no new strategy tests needed).
 See `test/execution_strategy/` for the full test suite.
 
 ## Migration

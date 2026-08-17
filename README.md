@@ -327,7 +327,18 @@ Four formal approval gates ensure quality at every phase transition. See [ARCHIT
   - Phase 7: Session Health Real OpenClaw API Integration (COMPACT, ARCHIVE, CLOSE CLI)
   - Bug fixes: manifest YAML syntax error, PM→git operations contradiction
 - **TASK_DS_EO_043** (2026-08-14): Execution Strategy Manager Phase A — COMPLETED
-- **TASK_DS_EO_044** (planned): Formalize G0 intake protocol rules and create TASK_REQUEST.md + LOCK.md templates for runtime use
+  - Foundation: ConcurrentStrategy, CapabilityAssessor, selector singleton, engine hooks
+  - Auto-detection based on system hardware profile
+- **TASK_DS_EO_044** (2026-08-16): Execution Strategy Manager Phase B — COMPLETED
+  - SequentialStrategy: model lifecycle management for constrained hardware
+  - SharedModelStrategy: ref-counted single-model sharing across agents
+- **TASK_DS_EO_045** (2026-08-16): Execution Strategy Manager Phase C — COMPLETED
+  - User-facing `/eo execution strategy <mode>` skill commands (auto, concurrent, sequential, shared_model)
+  - Status reporting, startup eager auto-detection, migration guide
+- **TASK_DS_EO_046** (2026-08-16): PM Release Correction — infrastructure fixes applied; implementation planned
+  - Root cause of release closure failure documented
+  - CPU inference timeout and Ollama service override configuration
+  - CTO role boundary enforcement improvements
 - **v1.0** (planned): Platform abstraction layer for multi-platform editions
 - **Future**: Additional platform editions (Claude, Codex, Gemini)
 
