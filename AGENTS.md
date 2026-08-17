@@ -11,7 +11,7 @@ This file governs how the engineering organization works within this workspace. 
 | CTO / Architect 🏗️ | `"id": "cto"` | `ollama/qwen3.6:35b` | Edit `agents.list[]` entry for `"id": "cto"`, field `"model"` |
 | Code Implementer 💻 | `"id": "implementer"` | `ollama/qwen3.8:27b` | Edit `agents.list[]` entry for `"id": "implementer"`, field `"model"` |
 | Senior Code Reviewer 🔍 | `"id": "reviewer"` | `ollama/laguna-xs-2.1:q4_K_M` | Edit `agents.list[]` entry for `"id": "reviewer"`, field `"model"` |
-| Project Manager 📋 | `"id": "pm"` | `ollama/gpt-oss:20b` | Edit `agents.list[]` entry for `"id": "pm"`, field `"model"` |
+| Project Manager 📋 | `"id": "pm"` | `ollama/ornith:35b` | Edit `agents.list[]` entry for `"id": "pm"`, field `"model"` |
 
 **To change an agent's model:**
 
@@ -106,7 +106,7 @@ All references to these components are relative to this workspace root (`/home/d
 
 ### Project Manager 📋
 
-- **Model**: `ollama/gpt-oss:20b` (changed from qwen3.6:35b for specialization)
+- **Model**: `ollama/ornith:35b` (changed from qwen3.6:35b for specialization)
 - **Role**: Process oversight — task lifecycle coordination, status tracking, release management, Post-G4 completion, and Git persistence of approved work.
 - **Tool Policy**: Read + write for deliverables — `tools.allow`: group:fs, exec (git operations only), write, web_search, web_fetch; `tools.deny`: edit/apply_patch to non-designated paths, no general shell commands outside git
 - **Responsibilities**:
@@ -148,9 +148,9 @@ If your session reports `livenessState=blocked`, "Context overflow: prompt too l
 
 | Phase | Required Models | Always Unload |
 |-------|-----------------|---------------|
-| CTO planning only | qwen3.6:35b, nomic-embed-text | gpt-oss:20b, laguna-xs-2.1, qwen3.8:27b |
-| CTO + Implementer | qwen3.6:35b, qwen3.8:27b, nomic-embed-text | gpt-oss:20b, laguna-xs-2.1 |
-| Review phase | laguna-xs-2.1, qwen3.6:35b, nomic-embed-text | qwen3.8:27b, gpt-oss:20b |
+| CTO planning only | qwen3.6:35b, nomic-embed-text | ornith:35b, laguna-xs-2.1, qwen3.8:27b |
+| CTO + Implementer | qwen3.6:35b, qwen3.8:27b, nomic-embed-text | ornith:35b, laguna-xs-2.1 |
+| Review phase | laguna-xs-2.1, qwen3.6:35b, nomic-embed-text | qwen3.8:27b, ornith:35b |
 | Idle | nomic-embed-text only | all large models |
 
 **Operational rules**:

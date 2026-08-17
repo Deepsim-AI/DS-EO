@@ -44,7 +44,7 @@ roles:
   prompt_file: agents/pm.md
   description: "Process oversight \u2014 task lifecycle, status tracking, release\
     \ management."
-  default_model: ollama/gpt-oss:20b
+  default_model: ollama/ornith:35b
   model_placeholder: <MODEL_PM>
   tool_profile: generic
 protocols:

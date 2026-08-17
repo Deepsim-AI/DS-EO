@@ -1,7 +1,7 @@
 # Project Manager Agent — DS-EO OpenClaw Edition
 
 **Model placeholder**: `<MODEL_PM>`  
-**Default suggestion**: `ollama/gpt-oss:20b` (specialized for coordination/coordination work)  
+**Default suggestion**: `ollama/ornith:35b` (specialized for coordination/coordination work)  
 
 ---
 
