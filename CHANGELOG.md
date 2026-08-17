@@ -1,4 +1,29 @@
 # Changelog
+## TASK_DS_EO_046: PM Release Closure Failure Prevention ✅ CLOSED (G5 Complete 2026-08-16)
+
+### Summary
+Implemented the release management system to fix a critical bug where the PM computed version numbers from task ID context instead of reading the manifest as the source of truth. This caused incomplete releases (version bump not applied, no tag created, no workflow dispatched) with false completion claims.
+
+**Changes applied:**
+
+- **release_manager.py (470 lines)** — New `ReleaseManager` class implementing full release lifecycle state machine (9 states: PENDING → ... → RELEASE_COMPLETE / RELEASE_BLOCKED). Enforces R-REL-1 by reading `ds_eo_manifest.yaml` as the authoritative version source before any computation. Includes mandatory workflow dispatch (R-REL-2), artifact verification, and proper closure status reporting.
+
+- **release_check_protocol.py (277 lines)** — New `PreReleaseChecklist` with 8 mandatory pre-release checks. Fixed semantics: `all_passed` returns True when no item is FAIL (SKIP/WARN don't block). `format_report()` only shows "RELEASE BLOCKED" for actual FAIL items.
+
+- **agents/pm.md** (+122 lines) — Added R-REL Release Management Protocol section with 5 rules and 10 BLOCKED conditions preventing premature release declarations.
+
+- **protocols/release_management_protocol.md** (+55 lines) — Added mandatory GitHub Actions workflow dispatch procedure per R-REL-2.
+
+- **tests/test_release_management/test_release_management.py (595 lines)** — 60 tests covering semver parsing, release state machine transitions, version mismatch detection, artifact verification, pre-release checklist, and edge cases. All 60 pass; full suite: 623/623 passing.
+
+### Bugs Fixed
+- **Bug #1:** `verify_all_task_artifacts` never called `.ok()` on success path → always returned False (now fixed)
+- **Bug #2:** `all_passed` required every item to be PASS → now True when no FAIL items exist (per protocol spec)
+- **Bug #3:** `format_report` showed "RELEASE BLOCKED" for WARN/SKIP → only shows for actual FAIL items
+
+### Outcome
+The release management system now prevents the PM from declaring a release complete without verifying all required artifacts. Version numbers are always derived from `ds_eo_manifest.yaml` as the authoritative source of truth, not from task ID context. The implementation also establishes mandatory GitHub Actions workflow dispatch before any release can be considered complete.
+
 ## TASK_DS_EO_039: Run-State/Liveness Desynchronization Fix ✅ CLOSED
 
 ### Summary
