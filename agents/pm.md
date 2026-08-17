@@ -463,3 +463,125 @@ else:
 
 - **CLOSE**: OpenClaw has no direct session close API. The executor attempts cleanup via `--fix-missing` but returns a documented limitation when the session still exists in the store.
 - **ARCHIVE**: File verification depends on the CLI returning a file path; async exports may not be immediately verifiable.
+
+
+## Release Management — Mandatory Protocol (TASK_DS_EO_046 Fix)
+
+This section is **mandatory** for ANY release-related PM duty. It overrides all prior release behavior.
+Read this before attempting version computation, tag creation, or workflow dispatch.
+
+### Rule R-REL-1: Version Source of Truth — Read Manifest FIRST
+
+**Before computing or using ANY version number, the PM MUST:**
+
+1. **Read `ds_eo_manifest.yaml`** and extract the current version from `package.version`.
+2. **Read `ds_eo_openclaw/__init__.py`** and extract `__version__`.
+3. **Verify they match.** If they don't, STOP and flag a pre-release blocker — do NOT proceed until CTO resolves the discrepancy.
+4. **Use ONLY the manifest version as the authoritative current version.** Never derive a version from task IDs, session numbers, memory context, or any other source.
+
+```python
+# Pseudocode requirement for PM release flow
+from pathlib import Path
+import yaml
+
+manifest_path = workspace_root / "ds_eo_manifest.yaml"
+with open(manifest_path) as f:
+    manifest = yaml.safe_load(f)
+current_version = manifest["package"]["version"]  # THIS is the source of truth
+
+init_py_path = workspace_root / "ds_eo_openclaw/__init__.py"
+with open(init_py_path) as f:
+    content = f.read()
+# Extract __version__ via regex or simple parse
+import re
+match = re.search(r'__version__\s*=\s*"([^"]+)"', content)
+if match:
+    init_version = match.group(1)
+else:
+    init_version = None
+
+assert current_version == init_version, \
+    f"VERSION MISMATCH: manifest={current_version}, __init__.py={init_version} — BLOCKED"
+
+# Now compute next version from verified source
+def parse_semver(v):
+    parts = v.split(".")
+    return (int(parts[0]), int(parts[1]), int(parts[2]))
+
+major, minor, patch = parse_semver(current_version)
+next_versions = {
+    "major": f"{major + 1}.0.0",
+    "minor": f"{major}.{minor + 1}.0",
+    "patch": f"{major}.{minor}.{patch + 1}",
+}
+```
+
+**Prohibited behaviors:**
+- ❌ Deriving version from task number (TASK_DS_EO_045 → never 0.4.5)
+- ❌ Using a previously cached/hallucinated version from memory context
+- ❣️ Assuming "latest" without reading the file
+- ❗ Bumping any component of the semver without explicit bump type
+
+### Rule R-REL-2: Mandatory Release Workflow Dispatch
+
+**After version bump and commit:**
+
+1. **A GitHub Actions workflow dispatch is MANDATORY for creating a Release page entry.**
+   - URL pattern: `https://github.com/<org>/<repo>/actions/workflows/release.yml`
+   - Required parameter: `release_type` (major/minor/patch)
+   - This is NOT optional — without it, no Release page entry is created.
+
+2. **PM cannot dispatch the workflow itself** if it lacks GITHUB_TOKEN or equivalent credentials. In that case:
+   - Document exactly what was dispatched (if anything) in PM_CLOSED.md
+   - Document what STILL needs dispatch with exact URL + parameters
+   - State status as `BLOCKED_ON_RELEASE_DISPATCH` — NOT "closed"
+
+### Rule R-REL-3: No False PM_CLOSED on Incomplete Release
+
+**PM_CLOSED.md may NOT be created if any of these are true:**
+
+| Condition | Status to Report |
+|-----------|-----------------|
+| Version not verified against manifest | `BLOCKED: version_unverified` |
+| Version mismatch between manifest and __init__.py | `BLOCKED: version_mismatch` |
+| Version bump not committed/pushed | `BLOCKED: version_not_applied` |
+| Git tag not created on remote | `BLOCKED: tag_missing` |
+| GitHub Actions workflow not dispatched (or dispatch failed) | `BLOCKED: release_dispatch_failed` |
+| Release page entry does not exist on GitHub | `BLOCKED: release_page_missing` |
+
+**Only when ALL conditions above are false can PM report status as `COMPLETE`.**
+
+### Rule R-REL-4: Release State Machine for PM
+
+The PM manages releases through these states. Transition is gated by verification.
+
+```
+RELEASE_PENDING → VERIFY_VERSIONS → BUMP_VERSION → COMMIT_PUSH → CREATE_TAG → DISPATCH_WORKFLOW → VERIFY_RELEASE → RELEASE_COMPLETE / RELEASE_BLOCKED
+```
+
+| Transition | Trigger | Verification Method |
+|------------|---------|-------------------|
+| PENDING → VERIFY_VERSIONS | Start release | Read ds_eo_manifest.yaml + __init__.py, confirm match |
+| VERIFY_VERSIONS → BUMP_VERSION | Versions match | None needed — proceeding to apply bump |
+| BUMP_VERSION → COMMIT_PUSH | Version updated in both files | git diff confirms changes to both files |
+| COMMIT_PUSH → CREATE_TAG | Push confirmed (git ls-remote shows new tag) | `git ls-remote origin refs/tags/v<version>` |
+| CREATE_TAG → DISPATCH_WORKFLOW | Tag confirmed on remote | Dispatch workflow with release_type parameter |
+| DISPATCH_WORKFLOW → VERIFY_RELEASE | Workflow started | Check workflow run status via GitHub API or web_fetch |
+| VERIFY_RELEASE → COMPLETE / BLOCKED | Verify Release page entry exists | `web_fetch` to GitHub releases URL; check for v<version> entry |
+
+### Rule R-REL-5: Pre-Release Checklist (Run Before ANY Release Action)
+
+```markdown
+## Pre-Release Checklist — <TASK_ID>
+
+- [ ] 1. ds_eo_manifest.yaml read and version extracted: `<current_version>`
+- [ ] 2. ds_eo_openclaw/__init__.py read, version verified matching manifest: YES/NO
+- [ ] 3. No inflight releases on remote (checked via GitHub API)
+- [ ] 4. All task artifacts for this release verified present in TASK directory
+- [ ] 5. Version bump type confirmed by CTO: `<bump_type>`
+- [ ] 6. Changelog entry drafted and reviewed
+```
+
+**If any item is unchecked, the release cannot proceed.** The PM must halt and report which item is blocking.
+
+---

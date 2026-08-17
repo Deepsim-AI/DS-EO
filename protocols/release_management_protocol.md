@@ -136,6 +136,61 @@ PM verifies that documentation is current after implementation. The following mu
 4. If discrepancies found, return to Implementer with specific gaps — do not proceed until resolved
 
 ---
+---
+
+## Release Workflow Dispatch (R-REL-2 Mandate)
+
+**This section implements the mandatory release workflow dispatch requirement from TASK_DS_EO_046.**
+It is a required addition to this protocol and overrides any prior behavior regarding releases.
+
+### When Workflow Dispatch Is Required
+
+A GitHub Actions workflow dispatch **MUST** be executed whenever a release tag (`vX.Y.Z`) is created on the remote repository. This creates the Release page entry on GitHub. Without it, the release exists in Git but has no corresponding GitHub Release page entry.
+
+### Dispatch Procedure
+
+1. **Confirm the tag is on the remote:**
+   ```bash
+   git ls-remote origin refs/tags/v<X.Y.Z>
+   ```
+   If no output, the tag has not been pushed — abort dispatch and report `BLOCKED: tag_missing`.
+
+2. **Determine release type** (from CTO_PLAN.md or version bump artifact):
+   - `major` — breaking changes (X in vX.Y.Z)
+   - `minor` — new features, no breaks (Y in vX.Y.Z)
+   - `patch` — bugfixes only (Z in vX.Y.Z)
+
+3. **Dispatch the workflow:**
+   ```bash
+   gh workflow run release.yml \
+     --ref main \
+     --field release_type='<major|minor|patch>' \
+     --field tag='v<X.Y.Z>' \
+     --field changelog='<summary of changes>'
+   ```
+
+4. **Verify dispatch succeeded:**
+   - Check GitHub Actions run page for the dispatched workflow
+   - Confirm the run started (not queued forever)
+   - If the workflow fails, report `BLOCKED: release_dispatch_failed` and do NOT close the task
+
+5. **If `gh` CLI is unavailable or GITHUB_TOKEN is missing:**
+   - Document the exact dispatch URL: `https://github.com/<org>/<repo>/actions/workflows/release.yml`
+   - Document the required parameters (release_type, tag, changelog)
+   - Flag status as `BLOCKED_ON_RELEASE_DISPATCH` — NOT "closed"
+   - Instruct the user on how to perform the dispatch manually
+
+### Workflow Dispatch Verification Checklist
+
+Before declaring any release-related task complete, verify:
+
+- [ ] Tag exists on remote (`git ls-remote origin refs/tags/v<X.Y.Z>` returns a SHA)
+- [ ] Workflow was dispatched with correct `release_type` parameter
+- [ ] Workflow run started (not stuck in "Queued" state for >5 minutes)
+- [ ] If workflow failed: error captured and reported — task NOT closed
+- [ ] If dispatch not possible: URL + parameters documented, status = `BLOCKED_ON_RELEASE_DISPATCH`
+
+---
 
 ## Milestone Tracking
 
