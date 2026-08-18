@@ -1,4 +1,15 @@
 # Changelog
+## TASK_DAL_002: Content Inventory + Information Architecture ✅ G5 Complete (2026-08-17)
+
+### Summary
+Delivered IA document (176 lines) and content migration matrix (92 lines) for the Deepsim AI Lab website project. All 6 reference sources fetched live from deepsim.ca — taxonomy, platforms, packages, projects, publications, and contact pages classified with KEEP/UPDATE/MERGE/ARCHIVE dispositions. No content invented; all mappings derived from inspection.
+
+**Deliverables:**
+- IA_document.md: 7 top-level navigation sections, 5 research areas, cross-link matrix
+- content_migration_matrix.md: 21 content items across 6 sources mapped to new IA structure
+
+**Gates:** G0✅ G1✅ G2✅ G3✅ G4✅ G5✅ | Review Score: 4.9/5 | CTO Approval: 5.0/5
+
 ## TASK_DS_EO_046: PM Release Closure Failure Prevention ✅ CLOSED (G5 Complete 2026-08-16)
 
 ### Summary

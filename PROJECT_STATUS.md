@@ -23,6 +23,15 @@ The gateway config had invalid bindings (`peer.kind: "command"` is not a valid v
 ---
 ## Completed Tasks
 
+### TASK_DAL_002 — Content Inventory + Information Architecture 📦 (G5 Complete 2026-08-17)
+**Date Planned:** 2026-08-04
+**Date Closed:** 2026-08-17
+**Decision:** APPROVED (Gate G4, CTO Score 5.0/5; G5 PM Closure)
+
+**Summary:** Content inventory and information architecture for deepsim-ai-lab website. All 6 reference sources fetched live from deepsim.ca — taxonomy confirmed (5 research areas), 21 content items classified with dispositions (KEEP/UPDATE/MERGE/ARCHIVE). G2 was previously blocked by DS-EO spawn_agent() mock defect (resolved via TASK_DS_EO_026 + multi-project architecture TASK_DS_EO_041).
+
+**Deliverables:** IA_document.md (176 lines), content_migration_matrix.md (92 lines), IMPLEMENTATION_REPORT.md
+
 ### TASK_DS_EO_041_MULTI_PROJECT_ARCHITECTURE — Multi-Project Architecture 📦 (G5 Complete 2026-08-17)
 
 **Date Planned:** 2026-08-13
