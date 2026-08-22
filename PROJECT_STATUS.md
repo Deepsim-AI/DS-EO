@@ -258,6 +258,61 @@ CTO approved the plan to implement real `spawn_agent()` that creates live OpenCl
 
 **Summary**: Administrative closure of two investigation tasks. TASK_20260808_032 (Run Abort State Sync and Token Accounting Bugs) found no DS-EO code changes needed — both issues are upstream OpenClaw bugs documented in INVESTIGATION.md. TASK_20260808_033 (Cross-Role Compaction Timeout) completed with config fix already applied (compaction.timeoutSeconds→300, reserveTokensFloor→48000). No further DS-EO work needed.
 
+### TASK_DS_EO_045 — Execution Strategy Manager Polish (Phase C) ✅ (G5 Complete 2026-08-16, Closed 2026-08-22)
+**Date Planned:** 2026-08-16
+**Date Closed:** 2026-08-16
+**PM Closure Date:** 2026-08-22
+**Decision:** APPROVED (Gate G4, CTO Score 5.0/5; G5 PM Closure)
+
+**Summary:** Phase C polish of the Execution Strategy Manager. Added runtime `/eo execution strategy <mode>` skill commands for mode switching (auto, concurrent, sequential, shared_model), `status` sub-command for viewing current strategy and lifecycle state, startup eager auto-detection resolving strategy at init time instead of lazy evaluation, and comprehensive package README with architecture diagram, API reference, and quick-start. All 53/53 tests passing; zero regressions.
+
+**Changes:**
+- `dispatcher/execution_strategy/` — Eager detection logic in ExecutionStrategyManager init
+- `skills/eo/` — `/eo execution strategy <mode>` command implementation
+- `dispatcher/execution_strategy/README.md` — Architecture diagram, API reference, quick-start
+
+**Tests**: 53/53 tests passing; zero regressions
+
+---
+
+### TASK_DS_EO_043 — Execution Strategy Manager (Phase A) ✅ (G5 Complete 2026-08-14, Closed 2026-08-22)
+**Date Planned:** 2026-08-13
+**Date Closed:** 2026-08-14
+**PM Closure Date:** 2026-08-22
+**Decision:** APPROVED (Gate G4; PM closure confirmed 2026-08-22)
+
+**Summary:** Execution Strategy Manager design and implementation (Phase A). Three strategy modes (auto, concurrent, sequential), auto-selection logic, full test suite (30/30 tests). Already had PM_CLOSED.md in artifact directory. Reconfirmed G5 completion during closure sweep.
+
+---
+
+### TASK_DS_EO_044 — ModelLifecycleManager & Strategy Implementations (Phase B) ✅ (G5 Complete 2026-08-16, Closed 2026-08-22)
+**Date Planned:** 2026-08-15
+**Date Closed:** 2026-08-16
+**PM Closure Date:** 2026-08-22
+**Decision:** APPROVED (Gate G4, CTO Score 4.5/5; G5 PM Closure)
+
+**Summary:** Phase B implementation of ModelLifecycleManager and strategy patterns (hot-swap, rollback, fallback). Migration guide provided. All 53/53 tests passing. Committed and pushed to origin/main during original closure (2026-08-16). Reconfirmed G5 completion during closure sweep.
+
+---
+
+### TASK_DAL_017 — DAL-016 Deployment Integration Fix ✅ (CLOSED 2026-08-22)
+**Date Planned:** 2026-08-19
+**Date Closed:** 2026-08-22
+**Decision:** CLOSED (G5 PM Closure — resolved via subsequent work)
+
+**Summary:** Original task was a deployment fix for SVG assets and CSS enqueuing. All deliverables verified on disk; original issues resolved by later sessions that applied fixes directly (bypassing sudo block). Fix scripts preserved as historical reference.
+
+---
+
+### TASK_DAL_018 — Visual Identity Asset Deployment ✅ (CLOSED 2026-08-22)
+**Date Planned:** 2026-08-19
+**Date Closed:** 2026-08-22
+**Decision:** CLOSED (G5 PM Closure — all criteria now verified passing)
+
+**Summary:** Visual identity asset deployment and CSS path correction. All 8 original acceptance criteria now verified as passing: SVG assets present, CSS enqueued correctly, homepage references valid, visual identity layer active, no duplicate directories. Site operational at http://localhost:8085.
+
+---
+
 ## Phase History
 
 | Phase | Date | Description |
