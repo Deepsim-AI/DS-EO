@@ -1,17 +1,10 @@
 # ============================================================
-# DS-EO Dispatcher — Gateway Entry Point Bindings
-# 
-# These are ENTRY POINT ONLY bindings for the OpenClaw gateway.
-# They route external requests to the PM agent — no workflow logic.
-# All internal routing (S0→S1→S2→S3→S4→S5) is handled by the
-# dispatcher engine, NOT in these bindings.
-#
-# Location: dispatcher/binding_defs/entry_points.yaml
-# How to apply: Merge into ~/.openclaw/openclaw.json under "bindings" key
+# DS-EO Dispatcher — Gateway Entry Point Bindings (Generic)
+# Runtime-agnostic. Adapt match rules per platform:
+#   OpenClaw: channel="webchat", peer.kind="command"
+#   DSH:      map to DSH hook names/slots
+#   Generic:  agentId + role mapping is portable across platforms
 # ============================================================
-
-name: ds-eo-gateway-entry-points
-version: "1.0"
 description: >
   Minimal gateway bindings for DS-EO entry points only.
   PM receives all inbound requests and dispatches internally via dispatcher engine.
