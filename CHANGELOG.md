@@ -61,13 +61,13 @@ Eliminates permanent session deadlocks caused by run-state desynchronization. De
 ## TASK_DS_EO_040: Run-State Reconciliation Layer ✅ CLOSED (G5 Complete 2026-08-13)
 
 ### Summary
-Added self-contained run-state reconciliation layer to the `ds_eo_openclaw.run_reliability` package. Detects orphaned OpenClaw runs, classifies error conditions with structured patterns, and provides agent-executable recovery protocols — all without modifying existing OpenClaw code paths.
+Added self-contained run-state reconciliation layer to the `ds_eo_dsh.run_reliability` package. Detects orphaned OpenClaw runs, classifies error conditions with structured patterns, and provides agent-executable recovery protocols — all without modifying existing OpenClaw code paths.
 
 **Changes applied:**
 - **reconciler.py (367 lines)** — `detect_orphaned_runs()` using available APIs to find desynchronized run state
 - **error_mapper.py (210 lines)** — Structured ERROR_PATTERNS classification replaces opaque "run error: unknown" strings
 - **recovery_protocol.py (194 lines)** — Agent-executable step sequences for orphaned run recovery without restarting OpenClaw
-- **ds_eo_openclaw/run_reliability/__init__.py** — Package initialization and public API exports
+- **ds_eo_dsh/run_reliability/__init__.py** — Package initialization and public API exports
 - **tests/test_run_reliability/** — 59 unit tests across test_reconciler.py, test_error_mapper.py, test_recovery_protocol.py
 
 ### Outcome
@@ -259,9 +259,9 @@ TASK_DS_EO_019 delivered architecture design for configurable workflow execution
 ### Phase 1: PM Workflow State Engine (TASK_DS_EO_020)
 
 **Added:**
-- `ds_eo_openclaw/workflow/state_engine.py` — State enum (S0–S10), StateEngine class (detect_state, can_transition, auto_advance)
+- `ds_eo_dsh/workflow/state_engine.py` — State enum (S0–S10), StateEngine class (detect_state, can_transition, auto_advance)
 - `tests/test_state_engine.py` — 14 unit tests covering all acceptance criteria
-- Package scaffolding: `__init__.py` files for `ds_eo_openclaw/` and `workflow/`
+- Package scaffolding: `__init__.py` files for `ds_eo_dsh/` and `workflow/`
 - Updated `agents/pm.md` with Workflow State Engine Integration section and tool policy update
 
 **Test Results**: 14/14 tests pass
@@ -270,10 +270,10 @@ TASK_DS_EO_019 delivered architecture design for configurable workflow execution
 ### Phase 2: Audit Trail Integration (TASK_DS_EO_021)
 
 **Added:**
-- `ds_eo_openclaw/workflow/audit_log.py` (298 lines) — AuditEntry class with __slots__, AuditLog manager, ProjectAuditIndex
+- `ds_eo_dsh/workflow/audit_log.py` (298 lines) — AuditEntry class with __slots__, AuditLog manager, ProjectAuditIndex
 - `tests/test_audit_log.py` (448 lines) — 20 tests: schema validation, persistence round-trip, 6 reconstruction scenarios
-- Updated `ds_eo_openclaw/workflow/state_engine.py` (~160 lines added) — integrated audit logging into auto_advance() and manual_transition()
-- Updated `ds_eo_openclaw/workflow/__init__.py` — exported AuditLog from workflow package
+- Updated `ds_eo_dsh/workflow/state_engine.py` (~160 lines added) — integrated audit logging into auto_advance() and manual_transition()
+- Updated `ds_eo_dsh/workflow/__init__.py` — exported AuditLog from workflow package
 - `docs/reports/AUDIT_INDEX.json` — project-level cross-task audit index
 
 **Key capabilities:**
@@ -289,9 +289,9 @@ TASK_DS_EO_019 delivered architecture design for configurable workflow execution
 ### Phase 3: User-Facing Mode Selector (TASK_DS_EO_022)
 
 **Added:**
-- `ds_eo_openclaw/workflow/config.py` (107 lines) — Mode config with validation + per-task override support
-- `ds_eo_openclaw/workflow/selector.py` (167 lines) — Atomic mode switching with audit trail integration
-- `ds_eo_openclaw/workflow/notifications.py` (51 lines) — §6.3 notification maps: 7 auto-mode + 2 switch messages
+- `ds_eo_dsh/workflow/config.py` (107 lines) — Mode config with validation + per-task override support
+- `ds_eo_dsh/workflow/selector.py` (167 lines) — Atomic mode switching with audit trail integration
+- `ds_eo_dsh/workflow/notifications.py` (51 lines) — §6.3 notification maps: 7 auto-mode + 2 switch messages
 
 **Key capabilities:**
 - Default mode is "manual" when config unset or invalid
@@ -306,10 +306,10 @@ TASK_DS_EO_019 delivered architecture design for configurable workflow execution
 ### Phase 4: Failure/Stall Handling Refinements (TASK_DS_EO_023)
 
 **Added:**
-- `ds_eo_openclaw/workflow/timeout_config.py` (50 lines) — Per-state timeouts with human-ownership exemptions
-- `ds_eo_openclaw/workflow/stall_detection.py` (80 lines) — PM monitoring cycle integration
-- `ds_eo_openclaw/workflow/escalation.py` (60 lines) — Blocker escalation chain (PM → CTO → User) with 5-minute rate limiting
-- `ds_eo_openclaw/workflow/failure_detector.py` (50 lines) — Repeated failure detection
+- `ds_eo_dsh/workflow/timeout_config.py` (50 lines) — Per-state timeouts with human-ownership exemptions
+- `ds_eo_dsh/workflow/stall_detection.py` (80 lines) — PM monitoring cycle integration
+- `ds_eo_dsh/workflow/escalation.py` (60 lines) — Blocker escalation chain (PM → CTO → User) with 5-minute rate limiting
+- `ds_eo_dsh/workflow/failure_detector.py` (50 lines) — Repeated failure detection
 
 **Test Results**: 151/151 tests passing (33 new + 118 existing); zero regression; **Reviewer Score**: 5/5
 
@@ -385,7 +385,7 @@ TASK_DS_EO_019 delivered architecture design for configurable workflow execution
 - `protocols/handoff_protocol.md` — Added Transition 0c: PM → CTO handoff spec
 
 **Implementation Enhancement (1 file)**
-- `ds_eo_openclaw/intake/task_intake.py` — Added `IntakeBoundaryError`, `IntakeBoundaryState` classes to mechanically enforce intake boundaries at runtime
+- `ds_eo_dsh/intake/task_intake.py` — Added `IntakeBoundaryError`, `IntakeBoundaryState` classes to mechanically enforce intake boundaries at runtime
 
 #### Rationale
 
@@ -473,7 +473,7 @@ Addresses the role-boundary problem observed in TASK_DS_EO_030 where PM and CTO 
 
 #### Added
 
-**Task Intake Module (`ds_eo_openclaw/intake/`) [NEW]**
+**Task Intake Module (`ds_eo_dsh/intake/`) [NEW]**
 - `__init__.py` — Public API exports (`TaskIntakeManager`, `create_task_intake`)
 - `task_intake.py` (~808 lines) — `TaskIntakeManager` class with:
   - `_next_task_id()` — Sequential task ID per day (TASK_YYYYMMDD_NNN)
@@ -573,7 +573,7 @@ Addresses the role-boundary problem observed in TASK_DS_EO_030 where PM and CTO 
 
 #### Added
 
-**Session Health Module (`ds_eo_openclaw/session_health/`) [NEW]**
+**Session Health Module (`ds_eo_dsh/session_health/`) [NEW]**
 - `__init__.py` — Public API exports
 - `enums.py` (~80 lines) — SessionHealthState (11 states), LifecycleAction (11 actions), MonitorStatus (3 statuses) with computed properties
 - `config.py` (~100 lines) — YAML-based configuration with conservative defaults:
@@ -601,7 +601,7 @@ Addresses the role-boundary problem observed in TASK_DS_EO_030 where PM and CTO 
 - All passing in 0.18s; zero regressions
 
 **Infrastructure Updates:**
-- `ds_eo_openclaw/intake/task_intake.py` — Added session health metadata to MANIFEST.md format
+- `ds_eo_dsh/intake/task_intake.py` — Added session health metadata to MANIFEST.md format
 - `agents/pm.md` — Documented session health capability for PM awareness
 - `ds_eo_manifest.yaml` — Added session_health module entry
 
@@ -672,7 +672,7 @@ Both investigation tasks closed via G4 approve. No DS-EO code changes were neede
 
 #### Added
 
-- **OpenClaw CLI integration** for session‑health lifecycle actions (COMPACT, ARCHIVE, CLOSE). The executor now calls `openclaw` via a thin wrapper in `ds_eo_openclaw/session_health/openclaw_api.py`, replacing earlier stubs.
+- **OpenClaw CLI integration** for session‑health lifecycle actions (COMPACT, ARCHIVE, CLOSE). The executor now calls `openclaw` via a thin wrapper in `ds_eo_dsh/session_health/openclaw_api.py`, replacing earlier stubs.
 - Updated `executor.py` to invoke the real CLI and handle subprocess errors.
 - New tests (`tests/test_session_health_api_integration.py`) mock the subprocess calls and confirm correct command construction; all 8 tests pass.
 

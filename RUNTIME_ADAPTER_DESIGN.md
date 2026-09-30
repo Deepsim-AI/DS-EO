@@ -152,4 +152,4 @@ Run `DS-EO + OpenClaw` vs `DS-EO + DSH` on an identical set of representative ta
 
 This is a design artifact, not product code. No production changes were made.
 
-**No strong recommendation.** Save the doc — say the path and it becomes an on-disk artifact for this phase; if you've completed review we can close it. If a file is wanted, `/home/deepsim/ds_eo_openclaw_test/RUNTIME_ADAPTER_DESIGN.md` is a sensible location.
+**No strong recommendation.** Save the doc — say the path and it becomes an on-disk artifact for this phase; if you've completed review we can close it. If a file is wanted, `/home/deepsim/ds_eo_dsh_test/RUNTIME_ADAPTER_DESIGN.md` is a sensible location.

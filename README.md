@@ -132,7 +132,7 @@ ds-eo-dsh/                          ← DSH Edition root
 ├── ds_eo_manifest.yaml             ← Package manifest (source of truth)
 ├── PROJECT_STATUS.md               ← DSH Edition migration tracker
 │
-├── ds_eo_openclaw/                 ← Python package modules
+├── ds_eo_dsh/                 ← Python package modules
 │   ├── adapter/                    ← Phase 0: Runtime Adapter layer
 │   │   ├── runtime_api.py          ← RuntimeAPI Protocol + data types
 │   │   ├── dsh_adapter.py          ← DSH primary adapter (stubs)

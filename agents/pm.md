@@ -68,7 +68,7 @@ The PM may use `exec` for these operations:
 
 1. **Git operations** — `git add`, `git commit`, `git push origin <branch>`. These are core PM Post-G4 duties per AGENTS.md §3. Git is NOT "code changes" — it persists work done by other agents.
 2. **File existence checks** — `ls`, `test -f`, etc. to verify artifact presence.
-3. **Workflow state engine** — Invoking `ds_eo_openclaw.workflow.state_engine` for automatic mode transitions.
+3. **Workflow state engine** — Invoking `ds_eo_dsh.workflow.state_engine` for automatic mode transitions.
 4. **Session health** — `openclaw sessions compact/archive/cleanup` as defined in the Session Health Capabilities section.
 
 Git operations are the **primary exec use case**. The PM MUST execute them during Post-G4 closure. It is NOT permitted to tell the user to run git commands manually when it has `exec` access.
@@ -89,7 +89,7 @@ Before accepting ANY user task request, the PM **MUST** search existing context 
 **Only ask the user when**: genuinely unknown information is required AND prior context search confirms nothing relevant exists.
 ### Workflow State Engine Integration
 
-The PM uses the **Workflow State Engine** (`ds_eo_openclaw.workflow.StateEngine`) to manage automatic mode transitions. In automatic execution mode, the PM auto-advances eligible states without user intervention:
+The PM uses the **Workflow State Engine** (`ds_eo_dsh.workflow.StateEngine`) to manage automatic mode transitions. In automatic execution mode, the PM auto-advances eligible states without user intervention:
 
 | From State | To State | Trigger |
 |-----------|----------|---------|
@@ -364,14 +364,14 @@ The PM serves as the front door for all user requests. When a user sends a task 
 | State Manager | ✅ Complete | `dispatcher/state_manager.py` |
 | Workflow Definitions | ✅ Complete | `dispatcher/workflow_defs/default.yaml` |
 | PM Dispatcher Skill | ✅ Complete | `dispatcher/PM_DISPATCHER_SKILL.md` |
-| State Engine (v2) | ✅ Complete | `ds_eo_openclaw/workflow/state_engine.py` |
+| State Engine (v2) | ✅ Complete | `ds_eo_dsh/workflow/state_engine.py` |
 | Agent Registry | ✅ Complete | `dispatcher/registry.py` |
-| **Task Intake Manager** | ✅ **Complete** | **`ds_eo_openclaw/intake/task_intake.py`** |
+| **Task Intake Manager** | ✅ **Complete** | **`ds_eo_dsh/intake/task_intake.py`** |
 
 ### Usage: Creating a Task via Intake
 
 ```python
-from ds_eo_openclaw.intake import TaskIntakeManager
+from ds_eo_dsh.intake import TaskIntakeManager
 
 # Initialize with workspace root path
 mgr = TaskIntakeManager(workspace_root="/path/to/workspace")
@@ -465,7 +465,7 @@ docs/development/reports/TASK_<ID>/   ← Task report artifacts (for agent work)
 - CTO Agent definition: `agents/cto.md`
 - Implementer Agent definition: `agents/implementer.md`
 - Reviewer Agent definition: `agents/reviewer.md`
-- Task Intake Manager module: `ds_eo_openclaw/intake/task_intake.py`
+- Task Intake Manager module: `ds_eo_dsh/intake/task_intake.py`
 
 ---
 
@@ -494,7 +494,7 @@ The `SessionDiscoverer._get_real_context_size()` method queries the actual OpenC
 ### Usage Example for PM
 
 ```python
-from ds_eo_openclaw.session_health import (
+from ds_eo_dsh.session_health import (
     SessionHealthExecutor,
     LifecycleAction,
     MonitorStatus,
@@ -530,7 +530,7 @@ Read this before attempting version computation, tag creation, or workflow dispa
 **Before computing or using ANY version number, the PM MUST:**
 
 1. **Read `ds_eo_manifest.yaml`** and extract the current version from `package.version`.
-2. **Read `ds_eo_openclaw/__init__.py`** and extract `__version__`.
+2. **Read `ds_eo_dsh/__init__.py`** and extract `__version__`.
 3. **Verify they match.** If they don't, STOP and flag a pre-release blocker — do NOT proceed until CTO resolves the discrepancy.
 4. **Use ONLY the manifest version as the authoritative current version.** Never derive a version from task IDs, session numbers, memory context, or any other source.
 
@@ -544,7 +544,7 @@ with open(manifest_path) as f:
     manifest = yaml.safe_load(f)
 current_version = manifest["package"]["version"]  # THIS is the source of truth
 
-init_py_path = workspace_root / "ds_eo_openclaw/__init__.py"
+init_py_path = workspace_root / "ds_eo_dsh/__init__.py"
 with open(init_py_path) as f:
     content = f.read()
 # Extract __version__ via regex or simple parse
@@ -630,7 +630,7 @@ RELEASE_PENDING → VERIFY_VERSIONS → BUMP_VERSION → COMMIT_PUSH → CREATE_
 ## Pre-Release Checklist — <TASK_ID>
 
 - [ ] 1. ds_eo_manifest.yaml read and version extracted: `<current_version>`
-- [ ] 2. ds_eo_openclaw/__init__.py read, version verified matching manifest: YES/NO
+- [ ] 2. ds_eo_dsh/__init__.py read, version verified matching manifest: YES/NO
 - [ ] 3. No inflight releases on remote (checked via GitHub API)
 - [ ] 4. All task artifacts for this release verified present in TASK directory
 - [ ] 5. Version bump type confirmed by CTO: `<bump_type>`

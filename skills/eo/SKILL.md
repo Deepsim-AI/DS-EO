@@ -127,7 +127,7 @@ Lifecycle State: {state: ready, current_model: ollama/qwen3.6:35b}
 
 ### Architecture Integration
 
-This skill uses the existing `ModeSelector` API from `ds_eo_openclaw.workflow.selector`:
+This skill uses the existing `ModeSelector` API from `ds_eo_dsh.workflow.selector`:
 
 - **`switch_mode(new_mode)`** → `(old_mode, new_mode, notification_message)` — Core mode switching logic with audit trail and notifications per §6.3
 - **`switch_task_mode(task_id, mode)`** → `(previous_override_or_None, new_mode)` — Per-task override management per §7.4
@@ -137,7 +137,7 @@ This skill uses the existing `ModeSelector` API from `ds_eo_openclaw.workflow.se
 
 This skill adds only user-facing presentation logic. All business logic (audit trail, notifications, gate enforcement) is handled by the existing ModeSelector infrastructure:
 
-- ✅ Zero changes to `ds_eo_openclaw/workflow/` package
+- ✅ Zero changes to `ds_eo_dsh/workflow/` package
 - ✅ Zero changes to gate rules (G1–G4 behavior unchanged)
 - ✅ Zero changes to state machine transitions
 - ✅ Zero changes to escalation or stall detection logic

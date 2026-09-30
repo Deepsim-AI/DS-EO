@@ -29,7 +29,7 @@ This protocol defines how the Dispatcher component communicates with:
 # Returns:
 #   {
 #     "agent_id": "implementer",
-#     "workspace": "/home/deepsim/ds_eo_openclaw",
+#     "workspace": "/home/deepsim/ds_eo_dsh",
 #     "spawn_command": "sessions_spawn(agent='implementer', context='isolated')",
 #     "model": "ollama/qwen3.8:27b",
 #     "tool_policy": {...}

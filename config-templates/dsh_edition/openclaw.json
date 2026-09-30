@@ -1,0 +1,136 @@
+{
+  "$schema": "https://openclaw.ai/schemas/gateway.v1.json",
+  "name": "DS-EO DSH Edition",
+  "version": "1.0.0-dsh",
+
+  // === Agents: DS-EO Engineering Organization =========================
+  "agents": {
+    "list": [
+      {
+        "default": true,
+        "id": "cto",
+        "name": "CTO / Architect 🏗️",
+        "identity": {
+          "emoji": "🏗️",
+          "theme": "Architect and technical authority for DS-EO"
+        },
+        "model": {
+          "provider": "ollama",
+          "name": "qwen3.6:35b"
+        },
+        "workspace": "${WORKSPACE_ROOT}",
+        "prompt": "@agents/cto.md",
+        "tools": {
+          "allow": [
+            "group:fs:read",
+            "web_search",
+            "web_fetch",
+            "sessions_list",
+            "session_status",
+            "memory_search",
+            "memory_get"
+          ],
+          "deny": [
+            "exec",
+            "write",
+            "edit",
+            "apply_patch"
+          ]
+        }
+      },
+      {
+        "id": "implementer",
+        "name": "Code Implementer 💻",
+        "identity": {
+          "emoji": "💻",
+          "theme": "Full-stack code implementer for DS-EO"
+        },
+        "model": {
+          "provider": "ollama",
+          "name": "qwen3.8:27b"
+        },
+        "workspace": "${WORKSPACE_ROOT}",
+        "prompt": "@agents/implementer.md",
+        "tools": {
+          "allow": [
+            "group:fs",
+            "group:runtime",
+            "exec",
+            "process",
+            "web_search",
+            "web_fetch"
+          ],
+          "deny": []
+        }
+      },
+      {
+        "id": "reviewer",
+        "name": "Senior Code Reviewer 🔍",
+        "identity": {
+          "emoji": "🔍",
+          "theme": "Independent code reviewer for DS-EO"
+        },
+        "model": {
+          "provider": "ollama",
+          "name": "laguna-xs-2.1:q4_K_M"
+        },
+        "workspace": "${WORKSPACE_ROOT}",
+        "prompt": "@agents/reviewer.md",
+        "tools": {
+          "allow": [
+            "group:fs:read",
+            "exec",
+            "process",
+            "web_search",
+            "web_fetch"
+          ],
+          "deny": [
+            "edit",
+            "apply_patch"
+          ]
+        }
+      },
+      {
+        "id": "pm",
+        "name": "Project Manager 📋",
+        "identity": {
+          "emoji": "📋",
+          "theme": "Process oversight for DS-EO engineering workflows"
+        },
+        "model": {
+          "provider": "ollama",
+          "name": "ornith-1.5:35b"
+        },
+        "workspace": "${WORKSPACE_ROOT}",
+        "prompt": "@agents/pm.md",
+        "tools": {
+          "allow": [
+            "group:fs:read",
+            "exec:git",
+            "write",
+            "web_search",
+            "web_fetch"
+          ],
+          "deny": [
+            "edit",
+            "apply_patch"
+          ]
+        }
+      }
+    ]
+  },
+
+  // === DSH Runtime Configuration ======================================
+  "runtime": {
+    "adapter": "dsh",
+    "dsh_api_base": "${DSH_API_BASE}",
+    "dsh_api_token": "${DSH_API_TOKEN}"
+  },
+
+  // === Gateway Defaults =================================================
+  "defaults": {
+    "model": {
+      "provider": "ollama"
+    }
+  }
+}

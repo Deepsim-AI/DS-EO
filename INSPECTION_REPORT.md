@@ -1,6 +1,6 @@
 # DS-EO OpenClaw Test — Inspection & Test Report
 
-**Workspace:** `ds_eo_openclaw`
+**Workspace:** `ds_eo_dsh`
 **Date:** 2026-09-27
 **Environment:** Python 3.10.12 · pytest 9.1.1 · PyYAML 6.0.2 · Jetson Orin (read-only `~/.openclaw`)
 **Scope:** Architecture review, full test-suite execution, failure root-cause analysis. **No code was modified** (per instruction).
@@ -9,13 +9,13 @@
 
 ## 1. Repository Architecture
 
-`ds_eo_openclaw` is **DS‑EO (Deepsim Engineering Organization) — OpenClaw Edition**: a portable
+`ds_eo_dsh` is **DS‑EO (Deepsim Engineering Organization) — OpenClaw Edition**: a portable
 "engineering team" framework that wraps an OpenClaw agent host. Three planes:
 
 | Plane | Contents |
 |-------|----------|
 | **Governance (non-code)** | `AGENTS.md` (role rules), `protocols/` (gates, review, handoff), `templates/`, `config-templates/`, `agents/*.md` prompts, `ds_eo_manifest.yaml` (single source of truth) |
-| **Python engine** | Top-level `ds_eo_openclaw/` package: `workflow/` (11-state state machine, audit hash-chain, mode selector, failure/stall/escalation), `session_health/` (discover→classify→policy→execute→audit monitor + Phase-7 OpenClaw API), `run_reliability/` (reconciler, recovery protocol, error mapper), `intake/`, `release_manager/`, plus a parallel `dispatcher/` package (registry w/ SHA256 checksums, YAML-driven G0–G4 gate machine, `state_manager`, `session_dispatch/supervisor`, `execution_strategy/` for hardware-aware model concurrency) |
+| **Python engine** | Top-level `ds_eo_dsh/` package: `workflow/` (11-state state machine, audit hash-chain, mode selector, failure/stall/escalation), `session_health/` (discover→classify→policy→execute→audit monitor + Phase-7 OpenClaw API), `run_reliability/` (reconciler, recovery protocol, error mapper), `intake/`, `release_manager/`, plus a parallel `dispatcher/` package (registry w/ SHA256 checksums, YAML-driven G0–G4 gate machine, `state_manager`, `session_dispatch/supervisor`, `execution_strategy/` for hardware-aware model concurrency) |
 | **Tests** | `tests/` (main pytest suite), `test/execution_strategy/` (self-contained suite), `tests/test_installation_flow.sh` (shell smoke test); CI: `.github/workflows/release.yml` (manual release gate that runs `pytest`) |
 
 ---
@@ -44,7 +44,7 @@ ActionResult(success=False, ..., details='Notification directory could not be wr
 
 ### Root cause — environment + test-hermeticity interaction (not a product logic bug)
 
-1. `SessionHealthExecutor._execute_warn()` (`ds_eo_openclaw/session_health/executor.py:199-246`) writes a JSON
+1. `SessionHealthExecutor._execute_warn()` (`ds_eo_dsh/session_health/executor.py:199-246`) writes a JSON
    notification file to a **hard-coded** absolute path:
    `os.path.expanduser("~") + "/.openclaw/notifications/"`.
    - The constructor (`executor.py:84`) exposes **no** `notification_dir` parameter.
