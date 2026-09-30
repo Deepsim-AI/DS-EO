@@ -15,7 +15,7 @@ from ds_eo_openclaw.dispatcher.session_spawn import (
     SessionSpawnManager, 
     spawn_agent, 
     SpawnOutcome,
-    DEFAULT_MODEL_MAP,
+    _LEGACY_DEFAULT_MODEL_MAP,
 )
 
 

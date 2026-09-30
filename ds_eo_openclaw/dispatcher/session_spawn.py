@@ -20,7 +20,16 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import subprocess
 from typing import Optional
-from ..adapter.model_registry import get_registry, legacy_default_model
+try:
+    from ..adapter.model_registry import get_registry, legacy_default_model
+except ImportError:
+    def get_registry():
+        class _StubRegistry:
+            def default_model_for_role(self, r):
+                return f"ollama/{r}:fallback"
+        return _StubRegistry()
+    def legacy_default_model(role):
+        return f"ollama/{role}:fallback"
 
 
 @dataclass
