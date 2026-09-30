@@ -1,17 +1,11 @@
 package:
-  name: ds-eo-openclaw
-  title: "DeepSim Engineering Organization \u2014 OpenClaw Edition"
-  version: 0.9.2
-  description: 'Extractable engineering organization framework for OpenClaw. Provides
-    agent roles, protocols, and workflows to transform AI agent platforms into disciplined
-    software engineering teams.
-
-    '
+  name: ds-eo-dsh
+  title: "Deepsim Engineering Organization \u2014 DeepSeek Harness Edition"
+  version: 0.1.0-pre
+  description: Standalone Python runtime for the Deepsim Engineering Organization. Implements the RuntimeAPI protocol and
+    connects to any DeepSeek Harness-compatible backend. OpenClaw integration is optional.
   license: MIT
   author: DeepSim
-openclaw:
-  minimum_version: 2026.7.1
-  target_config: ~/.openclaw/openclaw.json
 roles:
 - id: cto
   name: CTO / Architect
@@ -25,12 +19,10 @@ roles:
   name: Code Implementer
   emoji: "\U0001F4BB"
   prompt_file: agents/implementer.md
-  description: "Execution agent \u2014 executes approved plans and produces working\
-    \ code."
+  description: "Execution agent \u2014 executes approved plans and produces working code."
   model_placeholder: <MODEL_IMPLEMENTER>
   default_model: ollama/qwen3.8:27b
   tool_profile: coding
-  default_model: ollama/qwen3.8:27b
 - id: reviewer
   name: Senior Code Reviewer
   emoji: "\U0001F50D"
@@ -43,8 +35,7 @@ roles:
   name: Project Manager
   emoji: "\U0001F4CB"
   prompt_file: agents/pm.md
-  description: "Process oversight \u2014 task lifecycle, status tracking, release\
-    \ management."
+  description: "Process oversight \u2014 task lifecycle, status tracking, release management."
   default_model: ollama/ornith:35b
   model_placeholder: <MODEL_PM>
   tool_profile: generic
@@ -123,8 +114,8 @@ templates:
   file: templates/cto_approval_template.md
   purpose: CTO final approval memo format
 workflow_package:
-  description: 'Platform-neutral workflow engine, audit logging, mode selector, failure
-    handling, and user-facing slash command skill.
+  description: 'Platform-neutral workflow engine, audit logging, mode selector, failure handling, and user-facing slash command
+    skill.
 
     '
   modules:
@@ -183,46 +174,37 @@ modules:
   - file: ds_eo_openclaw/intake/__init__.py
     purpose: Public API exports (TaskIntakeManager, create_task_intake)
   - file: ds_eo_openclaw/intake/task_intake.py
-    purpose: "TaskIntakeManager \u2014 PM-driven task intake with dedup, workspace\
-      \ creation, and CTO handoff preparation"
+    purpose: "TaskIntakeManager \u2014 PM-driven task intake with dedup, workspace creation, and CTO handoff preparation"
   tests:
   - file: tests/test_task_intake.py
     purpose: 17 tests covering all spec acceptance criteria for task intake module
 - id: session_health
   directory: ds_eo_openclaw/session_health/
-  purpose: "Session health monitoring \u2014 discovery, classification, policy, and\
-    \ lifecycle management for OpenClaw agent sessions"
+  purpose: "Session health monitoring \u2014 discovery, classification, policy, and lifecycle management for OpenClaw agent\
+    \ sessions"
   files:
   - file: ds_eo_openclaw/session_health/__init__.py
-    purpose: Public API exports (SessionHealthManager, SessionDiscoverer, HealthClassifier,
-      HealthPolicy)
+    purpose: Public API exports (SessionHealthManager, SessionDiscoverer, HealthClassifier, HealthPolicy)
   - file: ds_eo_openclaw/session_health/enums.py
-    purpose: SessionHealthState (11 states), LifecycleAction (11 actions), MonitorStatus
-      (3 statuses), HealthSignal
+    purpose: SessionHealthState (11 states), LifecycleAction (11 actions), MonitorStatus (3 statuses), HealthSignal
   - file: ds_eo_openclaw/session_health/config.py
-    purpose: 'YAML-based configuration with conservative defaults: stale_after=1hr,
-      oversized=50MB, max_compaction_retries=2'
+    purpose: 'YAML-based configuration with conservative defaults: stale_after=1hr, oversized=50MB, max_compaction_retries=2'
   - file: ds_eo_openclaw/session_health/discoverer.py
-    purpose: "Session discovery extending LivenessChecker \u2014 collects 8 health\
-      \ indicators per session"
+    purpose: "Session discovery extending LivenessChecker \u2014 collects 8 health indicators per session"
   - file: ds_eo_openclaw/session_health/classifier.py
-    purpose: Deterministic multi-signal to single classification with explainability
-      and priority-ordered rules
+    purpose: Deterministic multi-signal to single classification with explainability and priority-ordered rules
   - file: ds_eo_openclaw/session_health/policy.py
-    purpose: "Health\u2192action policy map with 3 safety layers (active task protection,\
-      \ protected session override, compaction retry)"
+    purpose: "Health\u2192action policy map with 3 safety layers (active task protection, protected session override, compaction\
+      \ retry)"
   - file: ds_eo_openclaw/session_health/executor.py
-    purpose: Lifecycle action execution with verify-then-persist pattern (COMPACT,
-      ARCHIVE, CLOSE, ESCALATE)
+    purpose: Lifecycle action execution with verify-then-persist pattern (COMPACT, ARCHIVE, CLOSE, ESCALATE)
   - file: ds_eo_openclaw/session_health/monitor.py
-    purpose: "Scheduling loop orchestrating discover\u2192classify\u2192policy\u2192\
-      execute\u2192audit pipeline"
+    purpose: "Scheduling loop orchestrating discover\u2192classify\u2192policy\u2192execute\u2192audit pipeline"
   - file: ds_eo_openclaw/session_health/audit.py
     purpose: Persistent per-cycle audit trail extending existing audit_log.py patterns
   tests:
   - file: tests/test_session_health.py
-    purpose: 38 tests covering enums, classifier, policy, config, discoverer, and
-      end-to-end pipeline
+    purpose: 38 tests covering enums, classifier, policy, config, discoverer, and end-to-end pipeline
 - id: eo_commands
   files:
   - file: skills/eo/SKILL.md

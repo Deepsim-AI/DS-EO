@@ -11,6 +11,7 @@ Never import concrete implementations (DshRuntimeAdapter, OpenClawRuntimeAdapter
 """
 
 from __future__ import annotations
+import os
 import sys
 from dataclasses import dataclass, field
 from typing import Any, Optional
