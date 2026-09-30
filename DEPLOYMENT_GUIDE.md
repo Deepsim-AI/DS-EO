@@ -1,231 +1,185 @@
 # DS-EO DSH Edition — Deployment Guide
 
 **Package:** `ds_eo_dsh`  
-**Version:** 1.0-pre (post Phase 8A)  
-**Runtime Requirements:** Python 3.10+, Ollama or compatible model server  
+**Version:** 0.1.0-pre  
+**Runtime Requirements:** Python 3.10+, live DeepSeek Harness (DSH) API endpoint  
 
 ---
 
-## 1. Prerequisites
+## Architecture Overview
 
-| Requirement | Version | Notes |
-|------------|---------|-------|
-| Python | ≥ 3.10 | Required for type hints and async runtime |
-| Virtual environment | venv or equivalent | Strongly recommended to avoid dependency conflicts |
-| OpenClaw Gateway | Latest stable | For agent session lifecycle management |
-| Ollama | ≥ 0.4.x | For local model serving (fallback) |
-
-### Network Requirements
-
-- Access to your DSH API endpoint (`DSH_API_BASE`) from the machine running DS-EO
-- If using OpenClaw integration: local `localhost` access to the Gateway port (default 18789)
-
----
-
-## 2. Quick Start
-
-```bash
-# 1. Clone and enter the workspace
-git clone <repo-url>
-cd ds_eo_dsh
-
-# 2. Create and activate a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Configure your environment
-cp .env.example .env
-# Edit .env to set DSH_API_BASE and DSH_API_TOKEN
-
-# 5. Start OpenClaw Gateway (if using agent integration)
-openclaw gateway start
-
-# 6. Run the system
-python -m ds_eo_dsh.dispatcher.dispatch
+```
+┌─────────────────────────────────────────────┐
+│              DS-EO DSH Edition               │
+│                                             │
+│  ┌───────────┐    ┌──────────────────────┐  │
+│  │ RuntimeAPI │◄──►│ DshRuntimeAdapter    │  │
+│  │ Protocol   │    │ (HTTP client to DSH) │  │
+│  └───────────┘    └──────────────────────┘  │
+│           ▲                    │             │
+│           │                    ▼             │
+│  ┌──────────────┐    ┌──────────────────┐   │
+│  │ session_spawn│    │ ModelRegistry     │   │
+│  │ (OpenClaw /  │    │ + SHA256 checksum │   │
+│  │  DSH REST)   │    └──────────────────┘   │
+│  └──────────────┘                            │
+└─────────────────┬───────────────────────────┘
+                  │ HTTPS
+                  ▼
+          ┌───────────────┐
+          │  DSH API      │
+          │ (your host)   │
+          │ port/endpoint │
+          └───────────────┘
 ```
 
+DS-EO DSH is a **standalone Python runtime**. It connects to any DeepSeek Harness-compatible backend over HTTP(S). OpenClaw is entirely optional — it's just one way to get agent session management for free.
+
 ---
 
-## 3. Environment Variables
+## 1. Deployment Options
 
-All environment variables are defined in `.env.example`. Here's what each one does:
+### Option A: Production (DSH Backend Configured) ✅
 
-### Required
+You have a live DSH API endpoint. Set the environment variables and run:
+
+```bash
+export DSH_API_BASE="http://your-dsh-host/api"
+export DSH_API_TOKEN="your-token"
+cd /home/deepsim/ds_eo_dsh
+python3 -m ds_eo_dsh.dispatcher.dispatch
+```
+
+All 10 RuntimeAPI methods will work end-to-end against your backend.
+
+### Option B: Development (No DSH Backend) ✅
+
+You don't have a DSH endpoint yet. Leave it unset — the code runs in simulation mode:
+
+```bash
+unset DSH_API_BASE
+cd /home/deepsim/ds_eo_dsh
+python3 -m ds_eo_dsh.dispatcher.dispatch
+```
+
+Methods return graceful errors instead of crashing. Perfect for testing the orchestration layer, adapter wiring, and session lifecycle logic without a live backend.
+
+### Option C: Production + OpenClaw Integration ✅
+
+You have both a DSH endpoint AND want to run agent sessions inside OpenClaw:
+
+```bash
+export DSH_API_BASE="http://your-dsh-host/api"
+export DSH_API_TOKEN="your-token"
+openclaw gateway start
+cd /home/deepsim/ds_eo_dsh
+python3 -m ds_eo_dsh.dispatcher.dispatch
+```
+
+The dispatcher auto-detects OpenClaw availability and uses it for agent session management (Path A). If OpenClaw isn't available, it falls back to DSH REST directly (Path B).
+
+---
+
+## 2. Environment Variables
+
+### Required for Production
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DSH_API_BASE` | Base URL for the DeepSeek Harness API. **Set to an empty string or unset to run without DSH API** (all adapter methods return graceful errors). | `https://dsh.example.com/api` |
+| `DSH_API_BASE` | Your DeepSeek Harness API base URL | `http://localhost:3080/api` |
+| `DSH_API_TOKEN` | Bearer token for DSH auth | (your token) |
 
-### Optional — Authentication
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DSH_API_TOKEN` | Bearer token for DSH API authentication. Used by `DshHttpClient` to set the `Authorization: Bearer <token>` header. | None (unauthenticated requests) |
-
-### Optional — Fallback Models
+### Optional
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `OLLAMA_HOST` | Host and port of the Ollama instance. Used when model_info() cannot reach a DSH model catalog. | `localhost:11434` |
+| `OLLAMA_HOST` | Fallback model server URL | `localhost:11434` |
+| `WORKSPACE_ROOT` | DS-EO data directory | Auto-detected |
+| `LOG_LEVEL` | Python logging level | `INFO` |
 
-### Optional — Runtime Behavior
-
-| Variable | Description | Default |
-|----------|-----------|---------|
-| `WORKSPACE_ROOT` | Directory where DS-EO stores task artifacts, state, and reports. | Auto-detected from workspace structure |
-| `LOG_LEVEL` | Python logging level: `DEBUG`, `INFO`, `WARNING`, or `ERROR`. | `INFO` |
-
-### Setting Environment Variables
-
-**Persistent (recommended):** Create `.env` file in the workspace root (auto-loaded by most frameworks).
+### Quick Set
 
 ```bash
-DSH_API_BASE=https://dsh.example.com/api
-DSH_API_TOKEN=your-secret-token-here
-LOG_LEVEL=DEBUG
-```
+# Production
+export DSH_API_BASE="http://your-host/api"
+export DSH_API_TOKEN="your-token"
 
-**Per-session:** Export directly before running.
+# Development (no DSH)
+unset DSH_API_BASE  # All methods return graceful errors
 
-```bash
-export DSH_API_BASE="https://dsh.example.com/api"
-export DSH_API_TOKEN="your-secret-token-here"
-python -m ds_eo_dsh.dispatcher.dispatch
+# With OpenClaw (optional)
+openclaw gateway start
 ```
 
 ---
 
-## 4. Agent Model Configuration
+## 3. Runtime API Methods (10 Total)
 
-DS-EO uses four agent models with specific roles. Models are configured in your `openclaw.json` under `agents.list[]`.
+All implemented in `ds_eo_dsh/adapter/dsh_adapter.py`:
 
-| Agent | ID | Default Placeholder | Purpose |
-|-------|----|--------------------|---------|
-| CTO / Architect 🏗️ | `cto` | `<MODEL_CTO>` | Architecture review, task planning |
-| Code Implementer 💻 | `implementer` | `<MODEL_IMPLEMENTER>` | Implementation of approved plans |
-| Senior Code Reviewer 🔍 | `reviewer` | `<MODEL_REVIEWER>` | Independent code verification |
-| Project Manager 📋 | `pm` | `<MODEL_PM>` | Process oversight and task lifecycle |
+| Method | HTTP Verb / Path | Description |
+|--------|-----------------|-------------|
+| `compact_session()` | `POST /sessions/{key}/compact` | Trigger LLM context compaction |
+| `archive_session()` | `POST /sessions/{key}/archive` | Archive a session to cold storage |
+| `close_session()` | `POST /sessions/{key}/close` | Mark session closed |
+| `get_session_info()` | `GET /sessions/{key}` | Get session metadata (status, turns, context size) |
+| `spawn_session()` | `POST /sessions/spawn` | Create a new agent session |
+| `submit_task()` | `POST /tasks` | Submit a task for execution |
+| `run_tools()` | `POST /tools/{session_key}/invoke` | Execute tool calls within a session |
+| `model_info()` | `GET /models/{id}` | Get model metadata (context window, etc.) |
+| `available_models()` | `GET /models` | List all available models |
+| `run_task()` | `POST /hooks/{tool_name}` | Run a single hook/tool with args |
 
-### Updating Models
-
-1. Open your `openclaw.json`
-2. Find each agent entry in `agents.list[]`
-3. Replace the placeholder with your actual model:
-   ```json
-   {
-     "id": "cto",
-     "model": "ollama/qwen3.6:35b",  // was "<MODEL_CTO>"
-     ...
-   }
-   ```
-4. Pull models locally before use:
-   ```bash
-   ollama pull qwen3.6:35b
-   ollama pull qwen3.8:27b
-   ollama pull laguna-xs-2.1:q4_K_M
-   ollama pull ornith-1.5:35b
-   ```
+**When `DSH_API_BASE` is unset:** Each method returns a clear error or placeholder instead of crashing. The adapter layer works correctly; the backend just isn't there.
 
 ---
 
-## 5. DSH Endpoint Configuration
-
-### Production Setup
-
-For production deployments, configure a real DSH API endpoint:
+## 4. Testing
 
 ```bash
-# In .env or system environment:
-DSH_API_BASE=https://dsh-prod.example.com/api
-DSH_API_TOKEN=dsh_live_sk_xxxxxxxxxxxxxxxx
+cd /home/deepsim/ds_eo_dsh
+
+# Verify package imports
+python3 -c "from ds_eo_dsh import __version__; print(__version__)"
+
+# Run all adapter tests (25/25 pass)
+python3 -m pytest tests/test_adapter/ -v
+
+# Verify factory wiring
+python3 -c "
+import os; os.environ['DSH_API_BASE'] = 'http://localhost:3080'
+from ds_eo_dsh import RuntimeAdapterFactory
+api = RuntimeAdapterFactory.create(runtime='dsh')
+print(f'{type(api).__name__} created OK')
+"
 ```
 
-When `DSH_API_BASE` is set:
-- All 10 RuntimeAPI methods attempt real DSH API calls
-- Session lifecycle (create, compact, close, info) works end-to-end
-- Task submission and tool execution route through DSH
-- Model catalog queries return live data
+---
 
-### Development / Standalone Setup
+## 5. Model Configuration (Optional — OpenClaw Only)
 
-For local development without a live DSH endpoint:
+If you're running DS-EO agents inside OpenClaw, configure the four agent models in `openclaw.json`:
 
-```bash
-# Leave DSH_API_BASE empty or unset
-DSH_API_BASE=
-```
+| Agent | ID | Example Model |
+|-------|----|---------------|
+| CTO / Architect | `cto` | `ollama/qwen3.6:35b` |
+| Code Implementer | `implementer` | `ollama/qwen3.8:27b` |
+| Senior Reviewer | `reviewer` | `ollama/laguna-xs-2.1:q4_K_M` |
+| Project Manager | `pm` | `ollama/ornith-1.5:35b` |
 
-When no DSH API is configured:
-- `get_session_info()` → returns `None`
-- `compact_session()`, `close_session()`, `archive_session()` → clear error messages
-- `spawn_session()` → validation errors (no session creation)
-- `submit_task()` → graceful error
-- `run_tools()` → policy gate still enforced, DSH call fails with error
-- `available_models()` → returns empty list `[]`
-- `model_info()` → returns placeholder RuntimeModel with zeroed fields
-
-**This is expected behavior.** The adapter infrastructure is production-ready; it just needs an endpoint to activate.
+These are the agent models for **build-time engineering**, not the runtime DSH model catalog. They're only relevant if you run DS-EO agents inside OpenClaw. The DSH backend manages its own model routing independently.
 
 ---
 
-## 6. OpenClaw Integration Paths
+## 6. Troubleshooting
 
-DS-EO supports two deployment modes:
-
-### Path A: Within an OpenClaw Agent Session (Recommended for subagents)
-
-When DS-EO runs as a subagent within an OpenClaw gateway session, `session_spawn.py` uses the `sessions_spawn` integration to create real agent sessions. This is the preferred path for multi-agent workflows.
-
-**No configuration needed.** The path is auto-detected by checking for OpenClaw CLI availability and active gateway connection.
-
-### Path B: Standalone REST API Mode (Fallback)
-
-When DS-EO runs as a standalone library, `session_spawn.py` falls back to the OpenClaw Gateway REST API (`/tools/invoke` endpoint). This path requires:
-- OpenClaw Gateway running locally on default port
-- Valid gateway authentication configured
-
-**Configuration:** Set up your OpenClaw credentials in `~/.openclaw/` per OpenClaw documentation.
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `"DSH API unavailable (no base_url configured)"` | `DSH_API_BASE` unset | Set it or run in dev mode intentionally |
+| `"HTTP 401 Unauthorized"` | Wrong `DSH_API_TOKEN` | Verify your DSH auth token |
+| `"HTTP 405 Method Not Allowed"` | Endpoint doesn't support that method | Check your DSH backend version/API spec |
+| Import fails | `ds_eo_dsh/VERSION` file missing | It's committed to the repo — if deleted, recreate with `echo "0.1.0-pre" > ds_eo_dsh/VERSION` |
 
 ---
-
-## 7. Security Notes
-
-### DSH API Token
-- Treat `DSH_API_TOKEN` as a secret — never commit to version control
-- Use `.env` files (added to `.gitignore`) or system environment variables
-- Rotate tokens per deployment environment
-
-### Network Exposure
-- If `DSH_API_BASE` points to an internal service, ensure firewall rules restrict access
-- Never expose DSH endpoints to the public internet without proper auth and rate limiting
-
-### Ollama Security
-- Default `OLLAMA_HOST=localhost:11434` binds only to localhost
-- For remote Ollama access, use SSH tunnels or TLS termination proxies
-
----
-
-## 8. Troubleshooting
-
-### "DSH API unavailable (no base_url configured)"
-→ Set `DSH_API_BASE` to your DSH endpoint URL in `.env`.
-
-### Model loading failures / compaction timeouts
-→ Only load models needed for the current phase. Use `ollama ps` to check loaded models. Never load more than 3 large models simultaneously on resource-constrained hosts.
-
-### Import errors after migration from `ds_eo_openclaw`
-→ See `UPGRADE_FROM_OPENCLAW_EDITION.md` in this directory.
-
----
-
-## Next Steps
-
-After deployment, proceed to:
-1. Run the test suite: `python3 -m pytest tests/ -v`
-2. Verify agent models load correctly: check gateway logs
-3. Configure your task workflows and channel integrations
 
 <!-- project: github.com/Deepsim-AI/DS-EO -->

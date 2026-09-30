@@ -1,198 +1,116 @@
-# DS-EO Installation Guide — OpenClaw Edition
+# DS-EO DSH Edition — Installation Guide
 
-## Prerequisites
-
-1. **OpenClaw** installed and running (minimum version: `2026.7.1`)
-2. Access to `~/.openclaw/openclaw.json`
-3. **Git** (optional, for the repository)
-4. **Python 3** with `pyyaml` (`pip install pyyaml`) — needed for verification tests
-
-## Installation Methods
-
-## Platform Installation Options
-
-### Linux / macOS / WSL2
-
-Use the bash installer:
-
-```bash
-bash scripts/install.sh
-```
-
-For Windows (native PowerShell):
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\install.ps1
-```
-
-Both installers provide the same 7-step installation flow with interactive prompts, rollback support, and verification. The bash version is recommended for Linux/macOS; the PowerShell version is native to Windows. WSL2 on Windows also supports `bash scripts/install.sh` directly.
+**Package:** `ds_eo_dsh` (DeepSeek Harness Edition)  
+**Version:** 0.1.0-pre  
+**Repository:** /home/deepsim/ds_eo_dsh  
 
 ---
 
-### Method 1: Manual Installation (Step by Step)
+## What is DS-EO DSH?
 
-If you prefer full control, follow these steps manually. Each step includes rollback instructions.
+DS-EO DSH (Deepsim Engineering Organization — DeepSeek Harness Edition) is the **standalone runtime product**. It implements the `RuntimeAPI` protocol and connects to a live DeepSeek Harness (DSH) backend to orchestrate agent sessions, task dispatch, and model routing.
+
+### What it is NOT
+
+- ❌ Not an OpenClaw plugin or extension
+- ❌ Not something you "install into" OpenClaw
+- ✅ A Python package (`ds_eo_dsh`) that runs independently
+
+OpenClaw is one **optional** deployment target — if your runtime agent sessions need to live inside OpenClaw. But the code itself has no dependency on OpenClaw being installed.
 
 ---
 
-#### Pre-flight Checks
+## 1. Prerequisites (Required)
 
-Before doing anything:
+| Requirement | Version | Notes |
+|------------|---------|-------|
+| Python | ≥ 3.10 | Standard library only (no pip install needed for core runtime) |
+| DSH API Endpoint | Any running instance | Set via `DSH_API_BASE` env var; leave empty for dev mode |
+
+## 2. Optional Prerequisites (For OpenClaw Integration)
+
+Only if you want DS-EO to manage agent sessions **through OpenClaw**:
+
+| Requirement | Version | Notes |
+|------------|---------|-------|
+| OpenClaw Gateway | Latest stable | For OpenClaw session lifecycle support |
+| OpenClaw CLI | Installed | For `openclaw gateway start` and subagent spawning |
+
+## 3. Installation (Zero Steps Needed)
+
+The package is **already installed** — it lives in your workspace at `/home/deepsim/ds_eo_dsh/`. No `pip install`, no system-wide setup. Just verify:
+
 ```bash
-# Verify openclaw.json is valid JSON
-python3 -c "import json; json.load(open('$HOME/.openclaw/openclaw.json'))" && echo "Config OK" || echo "Config INVALID — aborting"
+cd /home/deepsim/ds_eo_dsh
+python3 -c "from ds_eo_dsh import __version__; print(f'DS-EO DSH Edition v{__version__}')"
+# Expected output: DS-EO DSH Edition v0.1.0-pre
+```
 
-# Check disk space (need >50MB free)
-df -h ~/.openclaw/ | tail -1 | awk '{print $4}'
+If it prints the version, you're done.
 
-# Verify no existing DS-EO installation
-grep -l "ds-eo-openclaw" ~/.openclaw/openclaw.json 2>/dev/null && echo "DS-EO already installed" || echo "Clean install"
+## 4. Configuration
+
+### Required: Set DSH_API_BASE
+
+To actually use DS-EO (not just run in simulation mode), set your DSH endpoint:
+
+```bash
+export DSH_API_BASE="http://your-dsh-endpoint/api"
+export DSH_API_TOKEN="your-api-token"
+python3 -c "from ds_eo_dsh import RuntimeAdapterFactory; api = RuntimeAdapterFactory.create(runtime='dsh'); print(f'Success: {type(api).__name__}')"
+```
+
+### Development Mode (No Endpoint)
+
+If you don't have a DSH endpoint yet, just leave `DSH_API_BASE` unset. All adapter methods return graceful errors instead of crashing — useful for testing the orchestration layer without a backend.
+
+```bash
+unset DSH_API_BASE
+python3 -c "from ds_eo_dsh import RuntimeAdapterFactory; api = RuntimeAdapterFactory.create(runtime='dsh')"
+# Works fine. Methods like available_models() return [] and model_info() returns placeholder data.
+```
+
+## 5. Running DS-EO
+
+### Standalone (no OpenClaw)
+
+```bash
+cd /home/deepsim/ds_eo_dsh
+python3 -m ds_eo_dsh.dispatcher.dispatch
+```
+
+This runs the dispatcher with your configured DSH endpoint (or graceful errors if none configured).
+
+### With OpenClaw Integration (optional)
+
+If you also have OpenClaw installed and want multi-agent session support:
+
+```bash
+openclaw gateway start  # Start the Gateway
+cd /home/deepsim/ds_eo_dsh
+python3 -m ds_eo_dsh.dispatcher.dispatch
+```
+
+The dispatcher auto-detects whether OpenClaw is available. If it is, it uses OpenClaw for agent session management (Path A). If not, it falls back to the DSH REST API directly (Path B).
+
+## 6. Testing
+
+```bash
+cd /home/deepsim/ds_eo_dsh
+python3 -m pytest tests/ -v    # Adapter unit tests (25/25 pass)
 ```
 
 ---
 
-#### Step 1: Backup Existing Config
+## FAQ
 
-```bash
-# Create timestamped backup of openclaw.json
-TIMESTAMP=$(date +%Y%m%dT%H%M%S)
-mkdir -p ~/.openclaw/backups
-cp ~/.openclaw/openclaw.json ~/.openclaw/backups/ds-eo-openclaw-${TIMESTAMP}.json.bak
+**Q: Do I need OpenClaw to use DS-EO DSH?**  
+No. OpenClaw is optional. The runtime works entirely independently with just a DSH API endpoint.
 
-# Verify backup exists
-ls -la ~/.openclaw/backups/ds-eo-openclaw-*.json.bak | tail -1
-```
+**Q: What if I don't have a DSH endpoint yet?**  
+Leave `DSH_API_BASE` unset. The adapter returns graceful errors instead of crashing — perfect for development and testing.
 
-**Rollback**: If anything goes wrong, restore: `cp ~/.openclaw/backups/ds-eo-openclaw-LATEST.json.bak ~/.openclaw/openclaw.json`
+**Q: Where does this install to?**  
+Nowhere. It's already in your workspace. Just `cd /home/deepsim/ds_eo_dsh && python3 -m ds_eo_dsh.dispatcher.dispatch`.
 
----
-
-#### Step 2: Generate Agent Config Entries
-
-The installer prompts for model names (defaults shown in brackets):
-
-```bash
-# Run the config generator interactively
-bash scripts/generate_openclaw_config.sh --generate
-
-# It will prompt you for:
-│   CTO model name [ollama/qwen3.6:35b]: _your_input_or_enter_for_default_
-│   Implementer model name [ollama/qwen3.8:27b]: _your_input_or_enter_for_default_
-│   Reviewer model name [ollama/laguna-xs-2.1:q4_K_M]: _your_input_or_enter_for_default_
-│   Workspace path [/home/deepsim/agent_system]: _your_project_path_
-# Output: agents_list.json (valid JSON array of 3 agent config objects)
-```
-
-**Manual alternative**: If you know the exact models, copy from `config-templates/example_openclaw_config.json` and adjust model names.
-
----
-
-#### Step 3: Merge Agent Config into openclaw.json
-
-```bash
-# Merge the generated agents into your openclaw.json
-bash scripts/generate_openclaw_config.sh --merge agents_list.json
-
-# Verify the merge produced valid JSON
-python3 -c "import json; json.load(open('$HOME/.openclaw/openclaw.json'))" && echo "JSON OK" || echo "JSON INVALID — rollback needed"
-
-# Check that all 3 DS-EO agents are present
-python3 -c "
-import json
-config = json.load(open('$HOME/.openclaw/openclaw.json'))
-agents = [a['id'] for a in config.get('agents', {}).get('list', [])]
-for role in ['cto', 'implementer', 'reviewer']:
-    status = '✓' if role in agents else '✗ MISSING'
-    print(f'{role}: {status}')
-"
-```
-
-**Rollback**: `cp ~/.openclaw/backups/ds-eo-openclaw-LATEST.json.bak ~/.openclaw/openclaw.json`
-
----
-
-#### Step 4: Deploy Protocol Files (Global)
-
-```bash
-# Deploy to global OpenClaw protocols directory
-bash scripts/deploy_protocols.sh --target ~/.openclaw/protocols/
-```
-
-This copies all 7 protocol files (including GATE_AUTHORITY_MATRIX.md) from `ds-eo-openclaw/protocols/` to `~/.openclaw/protocols/`. Existing files are backed up with `.ds-eo-bak` suffix before overwriting.
-
----
-
-#### Step 5: Deploy Protocol Files (Per-Project, Optional)
-
-```bash
-# Deploy to your project's development protocols directory
-PROJECT_PATH="/path/to/your/project"
-bash scripts/deploy_protocols.sh --target "${PROJECT_PATH}/docs/development/protocols/"
-```
-
-Skip this step if you only want global protocols. Multi-project setups benefit from deploying the same 7 protocol files per-project for customization.
-
----
-
-#### Step 6: Deploy Agent Prompt Files (Per-Project)
-
-```bash
-# Deploy prompt files to your project workspace
-PROJECT_PATH="/path/to/your/project"
-bash scripts/deploy_agents.sh --target "${PROJECT_PATH}/docs/prompts/"
-```
-
-This copies `agents/*.md` to `<project>/docs/prompts/`, overwriting any existing CTO/Implementer/Reviewer prompts. Existing files are backed up with `.ds-eo-bak`.
-
----
-
-#### Step 7: Verify Installation
-
-```bash
-# Run full verification suite
-bash scripts/verify_installation.sh
-
-# Or run individual checks:
-python3 -m pytest tests/test_manifest_schema.py        # Manifest validation
-python3 -m pytest tests/test_protocol_extraction.py    # Protocol completeness
-python3 -m pytest tests/test_template_completeness.py  # Template sections
-python3 -m pytest tests/test_config_merge_safety.py    # Config safety
-bash tests/test_installation_flow.sh                    # End-to-end smoke test (on clean host)
-```
-
-If verification fails, the script automatically rolls back to your pre-install backup.
-
----
-
-## Uninstallation
-
-To remove DS-EO and restore original state:
-
-```bash
-# Restore from most recent backup
-LATEST_BACKUP=$(ls -t ~/.openclaw/backups/ds-eo-openclaw-*.json.bak | head -1)
-cp "$LATEST_BACKUP" ~/.openclaw/openclaw.json
-
-# Remove DS-EO protocol files (optional — keeps .ds-eo-bak originals)
-bash scripts/deploy_protocols.sh --rollback
-
-# Clean up backup directory if desired
-rm -rf ~/.openclaw/backups/ds-eo-openclaw-*
-```
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| `openclaw.json` is not valid JSON after merge | Rollback and check which step introduced the issue. Try manual merge with Python's json module. |
-| Agent fails to start after install | Verify model names are correct (`ollama list`). Check that models exist on your host. |
-| Protocol files conflict with existing versions | DS-EO overwrites global protocols. Per-project deployment is safer for custom setups. |
-| Verification fails at Step 7 | Review error output — rollback was automatic. Fix the underlying issue and re-run installer. |
-| "No backup found" during rollback | Ensure Step 1 (backup) completed successfully before proceeding. |
-
-## Next Steps After Installation
-
-1. **Restart OpenClaw** to load new agent configurations
-2. **Verify agents appear** in your OpenClaw session list
-3. **Create your first task**: Send an implementation request and watch the workflow execute
-4. **Review the examples**: See `examples/minimal-workflow.md` for a walkthrough
+<!-- project: github.com/Deepsim-AI/DS-EO -->
