@@ -88,7 +88,7 @@ class ReleaseManager:
     def __init__(self, workspace_root: str | Path):
         self.workspace_root = Path(workspace_root)
         self.manifest_path = self.workspace_root / "ds_eo_manifest.yaml"
-        self.init_py_path = self.workspace_root / "ds_eo_openclaw/__init__.py"
+        self.init_py_path = self.workspace_root / "ds_eo_dsh/__init__.py"
         self.state = ReleaseState.PENDING
         self.current_version = ""
         self.next_version = ""
@@ -150,7 +150,7 @@ class ReleaseManager:
             return ver
 
     def read_python_version(self) -> ReleaseVerdict:
-        """Read version from ds_eo_openclaw/__init__.py."""
+        """Read version from ds_eo_dsh/__init__.py."""
         ver = ReleaseVerdict(success=False)
         
         if not self.init_py_path.exists():
@@ -289,7 +289,7 @@ class ReleaseManager:
         ver = ReleaseVerdict(success=False)
         
         # git add
-        rc1, _ = self._run_git("add", "ds_eo_manifest.yaml", "ds_eo_openclaw/__init__.py")
+        rc1, _ = self._run_git("add", "ds_eo_manifest.yaml", "ds_eo_dsh/__init__.py")
         if rc1 != 0:
             ver.block("git add failed")
             return ver

@@ -13,8 +13,8 @@ import tempfile
 import unittest
 from datetime import datetime, timezone
 
-from ds_eo_openclaw.workflow.audit_log import AuditEntry, AuditLog, ProjectAuditIndex
-from ds_eo_openclaw.workflow.state_engine import StateEngine, State
+from ds_eo_dsh.workflow.audit_log import AuditEntry, AuditLog, ProjectAuditIndex
+from ds_eo_dsh.workflow.state_engine import StateEngine, State
 
 
 # --------------------------------------------------------------------------- #

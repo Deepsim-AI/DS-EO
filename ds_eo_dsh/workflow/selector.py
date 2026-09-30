@@ -14,8 +14,8 @@ Safe-switching rules (§4.5):
   5. No auto-resolve of state machine errors — if state is invalid, reject the switch
 
 Usage:
-    from ds_eo_openclaw.workflow.selector import ModeSelector
-    from ds_eo_openclaw.workflow.config import WorkflowConfig
+    from ds_eo_dsh.workflow.selector import ModeSelector
+    from ds_eo_dsh.workflow.config import WorkflowConfig
 
     config = WorkflowConfig()
     selector = ModeSelector(config)

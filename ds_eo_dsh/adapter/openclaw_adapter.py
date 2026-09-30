@@ -1,7 +1,7 @@
 """OpenClawRuntimeAdapter — Legacy backend adapter wrapping existing OpenClawAPI.
 
 Phase 1+ implementation of the RuntimeAPI interface for the OpenClaw runtime.
-All logic is delegated to the existing OpenClawAPI class (ds_eo_openclaw/session_health/openclaw_api.py).
+All logic is delegated to the existing OpenClawAPI class (ds_eo_dsh/session_health/openclaw_api.py).
 This adapter's sole purpose: convert between ds_eo/ types and openclaw_api.py dict-based returns.
 
 Architecture Decision: The adapter wraps, not replaces, the existing OpenClawAPI.

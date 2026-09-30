@@ -21,8 +21,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # Ensure project root is on path for bare dispatcher imports
 if os.path.join(os.path.dirname(__file__), "..") not in sys.path:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-if "ds_eo_openclaw" not in sys.path and os.path.join(os.path.dirname(__file__), "ds_eo_openclaw") not in sys.path:
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "ds_eo_openclaw"))
+if "ds_eo_dsh" not in sys.path and os.path.join(os.path.dirname(__file__), "ds_eo_dsh") not in sys.path:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "ds_eo_dsh"))
 
 from dispatcher.session_dispatch.supervisor import (
     WorkflowSupervisor,

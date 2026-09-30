@@ -1,4 +1,4 @@
-"""Tests for ds_eo_openclaw.intake.task_intake — TASK_DS_EO_029.
+"""Tests for ds_eo_dsh.intake.task_intake — TASK_DS_EO_029.
 
 All tests use temporary directories via `tmp_path` fixture from conftest.py.
 No integration with live gateway — purely filesystem simulation.
@@ -15,8 +15,8 @@ from pathlib import Path
 import pytest
 import re
 
-from ds_eo_openclaw.intake import TaskIntakeManager
-from ds_eo_openclaw.intake.task_intake import (
+from ds_eo_dsh.intake import TaskIntakeManager
+from ds_eo_dsh.intake.task_intake import (
     _jaccard_similarity,
     _normalize_text,
 )

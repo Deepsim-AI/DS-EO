@@ -166,7 +166,7 @@ if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
         proj_id = sys.argv[1]
-        tid_manager = TaskIDManager(proj_id, workspace_root="/home/deepsim/ds_eo_openclaw")
+        tid_manager = TaskIDManager(proj_id, workspace_root="/home/deepsim/ds_eo_dsh")
         next_tid = tid_manager.next_id()
         print(f"Next task ID for project '{proj_id}': {next_tid}")
 

@@ -7,17 +7,17 @@ This engine is platform-neutral and can be used by any DS-EO edition
 
 States: S0–S10 as defined in EXECUTION_MODE_ARCHITECTURE.md §2
 Transitions: 12 transitions as defined in EXECUTION_MODE_ARCHITECTURE.md §3.4
-Audit Trail: Phase 2 integration via ds_eo_openclaw.workflow.audit_log module.
-Mode Configuration: Phase 3 integration via ds_eo_openclaw.workflow.config module.
+Audit Trail: Phase 2 integration via ds_eo_dsh.workflow.audit_log module.
+Mode Configuration: Phase 3 integration via ds_eo_dsh.workflow.config module.
 Stall Detection: Phase 4 — auto-detects STALLED state from timeout config.
 
 Usage:
-    from ds_eo_openclaw.workflow.state_engine import StateEngine, State
+    from ds_eo_dsh.workflow.state_engine import StateEngine, State
 
     # With explicit mode (Phase 1)
     engine = StateEngine("/path/to/task/dir", execution_mode="automatic")
     # With WorkflowConfig (Phase 3 — reads global + applies per-task override)
-    from ds_eo_openclaw.workflow.config import WorkflowConfig
+    from ds_eo_dsh.workflow.config import WorkflowConfig
     config = WorkflowConfig(execution_mode="manual")
     engine = StateEngine("/path/to/task/dir", execution_mode=config.get_task_mode("TASK_DS_EO_021"))
 """

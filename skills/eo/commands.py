@@ -4,8 +4,8 @@ Wraps the existing ModeSelector API with clean function interfaces
 for use by the OpenClaw skill handler.
 """
 
-from ds_eo_openclaw.workflow.selector import ModeSelector, create_selector
-from ds_eo_openclaw.workflow.config import WorkflowConfig
+from ds_eo_dsh.workflow.selector import ModeSelector, create_selector
+from ds_eo_dsh.workflow.config import WorkflowConfig
 
 
 def get_current_mode() -> dict:

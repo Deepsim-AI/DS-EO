@@ -422,7 +422,7 @@ if __name__ == "__main__":
     parser.add_argument("--task-id", "-T", default="TASK_20260805_TEST")
     args = parser.parse_args()
 
-    sd = SessionDispatcher(workspace_root="/home/deepsim/ds_eo_openclaw")
+    sd = SessionDispatcher(workspace_root="/home/deepsim/ds_eo_dsh")
 
     if args.action == "spawn":
         prompt = "Test dispatch for review."

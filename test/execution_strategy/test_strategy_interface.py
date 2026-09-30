@@ -28,7 +28,7 @@ class TestABCContract:
 
     def test_concurrent_implements_prepare_for_agent(self):
         """prepare_for_agent must be async and return StrategyResult."""
-        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_openclaw")
+        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_dsh")
         result = asyncio.get_event_loop().run_until_complete(
             s.prepare_for_agent("test_agent")
         )
@@ -36,7 +36,7 @@ class TestABCContract:
 
     def test_concurrent_implements_release_agent(self):
         """release_agent must be async and return StrategyResult."""
-        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_openclaw")
+        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_dsh")
         result = asyncio.get_event_loop().run_until_complete(
             s.release_agent("test_agent")
         )
@@ -44,13 +44,13 @@ class TestABCContract:
 
     def test_concurrent_implements_can_support_concurrent_agents(self):
         """can_support_concurrent_agents must return bool."""
-        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_openclaw")
+        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_dsh")
         result = s.can_support_concurrent_agents()
         assert isinstance(result, bool)
 
     def test_concurrent_implements_assess_capability(self):
         """assess_capability must return CapabilityReport."""
-        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_openclaw")
+        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_dsh")
         report = s.assess_capability()
         assert isinstance(report, CapabilityReport)
 
@@ -105,14 +105,14 @@ class TestConcurrentStrategyBehavior:
     """Additional behavioral tests for ConcurrentStrategy ABC compliance."""
 
     def test_prepare_returns_strategy_field(self):
-        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_openclaw")
+        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_dsh")
         result = asyncio.get_event_loop().run_until_complete(
             s.prepare_for_agent("implementer")
         )
         assert result.strategy == Strategy.CONCURRENT.value
 
     def test_release_returns_strategy_field(self):
-        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_openclaw")
+        s = ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_dsh")
         result = asyncio.get_event_loop().run_until_complete(
             s.release_agent("implementer")
         )

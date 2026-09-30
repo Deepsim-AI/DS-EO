@@ -100,7 +100,7 @@ class SessionHealthAuditLog:
     Persistent per-cycle audit log for session health monitoring.
 
     Stores one JSON file per cycle containing all events from that iteration.
-    Follows the same patterns as ds_eo_openclaw.workflow.audit_log but scoped
+    Follows the same patterns as ds_eo_dsh.workflow.audit_log but scoped
     to session health decisions.
 
     File layout:

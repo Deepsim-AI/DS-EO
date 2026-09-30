@@ -23,17 +23,17 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
-from ds_eo_openclaw.session_health.enums import (
+from ds_eo_dsh.session_health.enums import (
     SessionHealthState,
     LifecycleAction,
     MonitorStatus,
 )
-from ds_eo_openclaw.session_health.config import SessionHealthConfig, get_default_config
-from ds_eo_openclaw.session_health.discoverer import SessionDiscoverer, SessionHealthData
-from ds_eo_openclaw.session_health.classifier import HealthClassifier, ClassificationResult, SignalEvidence
-from ds_eo_openclaw.session_health.policy import HealthPolicy, PolicyDecision
-from ds_eo_openclaw.session_health.openclaw_api import OpenClawAPI
-from ds_eo_openclaw.session_health.executor import SessionHealthExecutor
+from ds_eo_dsh.session_health.config import SessionHealthConfig, get_default_config
+from ds_eo_dsh.session_health.discoverer import SessionDiscoverer, SessionHealthData
+from ds_eo_dsh.session_health.classifier import HealthClassifier, ClassificationResult, SignalEvidence
+from ds_eo_dsh.session_health.policy import HealthPolicy, PolicyDecision
+from ds_eo_dsh.session_health.openclaw_api import OpenClawAPI
+from ds_eo_dsh.session_health.executor import SessionHealthExecutor
 
 
 # --------------------------------------------------------------------------- #

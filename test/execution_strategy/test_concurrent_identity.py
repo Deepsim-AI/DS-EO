@@ -16,7 +16,7 @@ from dispatcher.execution_strategy.strategy_base import StrategyResult
 
 @pytest.fixture
 def strategy():
-    return ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_openclaw")
+    return ConcurrentStrategy(workspace_root="/home/deepsim/ds_eo_dsh")
 
 
 class TestConcurrentIdentity:

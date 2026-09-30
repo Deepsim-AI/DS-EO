@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 def test_runtime_api_protocol_exists():
     """RuntimeAPI Protocol is importable and has all 10 required methods."""
-    from ds_eo_openclaw.adapter.runtime_api import RuntimeAPI
+    from ds_eo_dsh.adapter.runtime_api import RuntimeAPI
 
     # Verify Protocol has all required methods (10 total)
     required_methods = {
@@ -31,7 +31,7 @@ def test_runtime_api_protocol_exists():
 
 def test_runtime_model_dataclass():
     """RuntimeModel dataclass has all required fields."""
-    from ds_eo_openclaw.adapter.runtime_api import RuntimeModel
+    from ds_eo_dsh.adapter.runtime_api import RuntimeModel
 
     model = RuntimeModel(
         id="test/model", context_window=131072, max_tokens=8192,
@@ -44,7 +44,7 @@ def test_runtime_model_dataclass():
 
 def test_runtime_session_dataclass():
     """RuntimeSession dataclass has all required fields."""
-    from ds_eo_openclaw.adapter.runtime_api import RuntimeSession
+    from ds_eo_dsh.adapter.runtime_api import RuntimeSession
 
     session = RuntimeSession(key="test-key", agent_id="cto", status="running")
     assert session.key == "test-key"
@@ -54,7 +54,7 @@ def test_runtime_session_dataclass():
 
 def test_action_result_dataclass():
     """ActionResult dataclass defaults and fields."""
-    from ds_eo_openclaw.adapter.runtime_api import ActionResult
+    from ds_eo_dsh.adapter.runtime_api import ActionResult
 
     ok = ActionResult(success=True)
     assert ok.success is True
@@ -69,7 +69,7 @@ def test_action_result_dataclass():
 
 def test_dsh_adapter_satisfies_protocol():
     """DshRuntimeAdapter has all required methods (interface compliance)."""
-    from ds_eo_openclaw.adapter.dsh_adapter import DshRuntimeAdapter
+    from ds_eo_dsh.adapter.dsh_adapter import DshRuntimeAdapter
 
     adapter = DshRuntimeAdapter()
 
@@ -86,7 +86,7 @@ def test_dsh_adapter_satisfies_protocol():
 
 def test_openclaw_adapter_satisfies_protocol():
     """OpenClawRuntimeAdapter has all required methods (interface compliance)."""
-    from ds_eo_openclaw.adapter.openclaw_adapter import OpenClawRuntimeAdapter
+    from ds_eo_dsh.adapter.openclaw_adapter import OpenClawRuntimeAdapter
 
     adapter = OpenClawRuntimeAdapter()
 
@@ -103,9 +103,9 @@ def test_openclaw_adapter_satisfies_protocol():
 def test_openclaw_adapter_delegates_compact():
     """OpenClawRuntimeAdapter.compact_session delegates to OpenClawAPI."""
     from unittest.mock import patch, MagicMock
-    from ds_eo_openclaw.adapter.openclaw_adapter import OpenClawRuntimeAdapter
+    from ds_eo_dsh.adapter.openclaw_adapter import OpenClawRuntimeAdapter
 
-    with patch("ds_eo_openclaw.adapter.openclaw_adapter.OpenClawAPI") as MockAPI:
+    with patch("ds_eo_dsh.adapter.openclaw_adapter.OpenClawAPI") as MockAPI:
         mock_api_instance = MagicMock()
         MockAPI.return_value = mock_api_instance
         mock_api_instance.compact_session.return_value = {
@@ -123,8 +123,8 @@ def test_openclaw_adapter_delegates_compact():
 
 def test_factory_returns_dsh():
     """RuntimeAdapterFactory.create(runtime='dsh') returns DshRuntimeAdapter."""
-    from ds_eo_openclaw.adapter.runtime_api import RuntimeAdapterFactory
-    from ds_eo_openclaw.adapter.dsh_adapter import DshRuntimeAdapter
+    from ds_eo_dsh.adapter.runtime_api import RuntimeAdapterFactory
+    from ds_eo_dsh.adapter.dsh_adapter import DshRuntimeAdapter
 
     adapter = RuntimeAdapterFactory.create(runtime="dsh")
     assert isinstance(adapter, DshRuntimeAdapter)
@@ -132,8 +132,8 @@ def test_factory_returns_dsh():
 
 def test_factory_returns_openclaw():
     """RuntimeAdapterFactory.create(runtime='openclaw') returns OpenClawRuntimeAdapter."""
-    from ds_eo_openclaw.adapter.runtime_api import RuntimeAdapterFactory
-    from ds_eo_openclaw.adapter.openclaw_adapter import OpenClawRuntimeAdapter
+    from ds_eo_dsh.adapter.runtime_api import RuntimeAdapterFactory
+    from ds_eo_dsh.adapter.openclaw_adapter import OpenClawRuntimeAdapter
 
     adapter = RuntimeAdapterFactory.create(runtime="openclaw")
     assert isinstance(adapter, OpenClawRuntimeAdapter)
@@ -141,7 +141,7 @@ def test_factory_returns_openclaw():
 
 def test_factory_raises_on_unknown():
     """RuntimeAdapterFactory.create(runtime='unknown') raises ValueError."""
-    from ds_eo_openclaw.adapter.runtime_api import RuntimeAdapterFactory
+    from ds_eo_dsh.adapter.runtime_api import RuntimeAdapterFactory
 
     try:
         RuntimeAdapterFactory.create(runtime="nonexistent")
@@ -152,7 +152,7 @@ def test_factory_raises_on_unknown():
 
 def test_dsh_adapter_stubs_raise_not_implemented():
     """All DSH stub methods raise NotImplementedError (not silently pass)."""
-    from ds_eo_openclaw.adapter.dsh_adapter import DshRuntimeAdapter
+    from ds_eo_dsh.adapter.dsh_adapter import DshRuntimeAdapter
 
     adapter = DshRuntimeAdapter()
 

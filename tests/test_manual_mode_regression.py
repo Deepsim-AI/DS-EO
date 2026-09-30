@@ -12,10 +12,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ds_eo_openclaw.workflow.config import WorkflowConfig
-from ds_eo_openclaw.workflow.selector import ModeSelector
-from ds_eo_openclaw.workflow.state_engine import StateEngine, State
-from ds_eo_openclaw.workflow.audit_log import AuditLog
+from ds_eo_dsh.workflow.config import WorkflowConfig
+from ds_eo_dsh.workflow.selector import ModeSelector
+from ds_eo_dsh.workflow.state_engine import StateEngine, State
+from ds_eo_dsh.workflow.audit_log import AuditLog
 
 
 # --------------------------------------------------------------------------- #
@@ -226,7 +226,7 @@ class TestManualModeNotifications:
 
     def test_auto_mode_notifications_not_triggered_in_manual(self):
         """AUTO_MODE_NOTIFICATIONS lookup in manual context should not fire."""
-        from ds_eo_openclaw.workflow.notifications import AUTO_MODE_NOTIFICATIONS, get_auto_mode_notification
+        from ds_eo_dsh.workflow.notifications import AUTO_MODE_NOTIFICATIONS, get_auto_mode_notification
 
         # The notification dict exists regardless of mode — what matters is that
         # the engine doesn't dispatch them in manual mode.

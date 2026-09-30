@@ -9,6 +9,6 @@ Available Commands:
 * /eo mode override TASK_<id> <mode|off> - Set or remove per-task override
 
 Implementation Notes:
-All commands use the existing ModeSelector API from ds_eo_openclaw.workflow.selector.
+All commands use the existing ModeSelector API from ds_eo_dsh.workflow.selector.
 No production code changes were made for this skill. It only adds user-facing presentation logic.
 """

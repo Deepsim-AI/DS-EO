@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ds_eo_openclaw.workflow.audit_log import AuditLog, ProjectAuditIndex
+from ds_eo_dsh.workflow.audit_log import AuditLog, ProjectAuditIndex
 
 
 class TestCrossTaskReconstruction:

@@ -28,7 +28,7 @@ def selector(override_path):
     """Fresh selector with isolated override path."""
     # Clear singleton state
     ExecutionStrategySelector._instance = None
-    s = ExecutionStrategySelector(workspace_root="/home/deepsim/ds_eo_openclaw")
+    s = ExecutionStrategySelector(workspace_root="/home/deepsim/ds_eo_dsh")
     s._override_path = override_path
     return s
 

@@ -493,7 +493,7 @@ class SessionHealthExecutor:
         if self.recovery_engine is not None and health_data is not None:
             # Delegate to RecoveryEngine
             try:
-                from ds_eo_openclaw.workflow.recovery_engine import FailureInfo, RecoveryAction as REAction
+                from ds_eo_dsh.workflow.recovery_engine import FailureInfo, RecoveryAction as REAction
 
                 task_id = (health_data.associated_task_id or "unknown")
                 failure_info = FailureInfo(

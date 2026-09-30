@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from dispatcher.engine import WorkflowEngine, TransitionResult
 from dispatcher.execution_strategy import ExecutionStrategyManager, StrategyResult
 
-WORKSPACE = "/home/deepsim/ds_eo_openclaw"
+WORKSPACE = "/home/deepsim/ds_eo_dsh"
 AGENT = "implementer"
 
 

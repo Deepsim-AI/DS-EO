@@ -11,7 +11,7 @@ import os
 import tempfile
 import unittest
 
-from ds_eo_openclaw.workflow.state_engine import State, StateEngine
+from ds_eo_dsh.workflow.state_engine import State, StateEngine
 
 
 class TestStateDetection(unittest.TestCase):

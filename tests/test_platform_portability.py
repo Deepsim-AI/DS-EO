@@ -9,10 +9,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ds_eo_openclaw.workflow.config import WorkflowConfig
-from ds_eo_openclaw.workflow.selector import ModeSelector
-from ds_eo_openclaw.workflow.state_engine import StateEngine, State
-from ds_eo_openclaw.workflow.audit_log import AuditLog, AuditEntry
+from ds_eo_dsh.workflow.config import WorkflowConfig
+from ds_eo_dsh.workflow.selector import ModeSelector
+from ds_eo_dsh.workflow.state_engine import StateEngine, State
+from ds_eo_dsh.workflow.audit_log import AuditLog, AuditEntry
 
 
 class TestDesignDecisionD1:
@@ -121,11 +121,11 @@ class TestDesignDecisionD6:
 
     def test_state_engine_no_openclaw_imports(self):
         """StateEngine module has no imports from openclaw packages."""
-        import ds_eo_openclaw.workflow.state_engine as se_module
+        import ds_eo_dsh.workflow.state_engine as se_module
         source = __import__("inspect").getsource(se_module)
 
         # Check for any OpenClaw-specific imports (besides the standard library and our own package)
-        assert "from openclaw" not in source or True  # The package itself is ds_eo_openclaw, not openclaw
+        assert "from openclaw" not in source or True  # The package itself is ds_eo_dsh, not openclaw
         # Verify no external framework dependencies beyond standard library + our workflow modules
 
     def test_state_engine_uses_only_standard_library(self):
@@ -212,7 +212,7 @@ class TestModuleStructure:
 
     def test_all_phases_exported(self):
         """All four phases are exported via workflow.__init__.py."""
-        from ds_eo_openclaw.workflow import (
+        from ds_eo_dsh.workflow import (
             # Phase 1
             StateEngine, State,
             # Phase 2
@@ -239,7 +239,7 @@ class TestArchitectureSpecCompliance:
 
     def test_spec_section_6_3_notifications_match(self):
         """§6.3 notifications match the architecture specification."""
-        from ds_eo_openclaw.workflow.notifications import AUTO_MODE_NOTIFICATIONS
+        from ds_eo_dsh.workflow.notifications import AUTO_MODE_NOTIFICATIONS
 
         expected_states = {"G1_WAITING", "REVIEW", "G3_PENDING", "COMPLETED",
                           "CHANGES_REQD", "BLOCKED", "STALLED"}
@@ -249,14 +249,14 @@ class TestArchitectureSpecCompliance:
 
     def test_spec_section_9_2_escalation_chain(self):
         """§9.2 escalation chain (PM→CTO→User) is implemented."""
-        from ds_eo_openclaw.workflow.escalation import EscalationChain
+        from ds_eo_dsh.workflow.escalation import EscalationChain
         chain = EscalationChain()
         result = chain.escalate("TEST_TASK", "Test blocker")
         assert result["level"] == "CTO"
 
     def test_spec_section_9_6_failure_detector(self):
         """§9.6 failure detector with threshold-based escalation is implemented."""
-        from ds_eo_openclaw.workflow.failure_detector import FailureDetector
+        from ds_eo_dsh.workflow.failure_detector import FailureDetector
         detector = FailureDetector()
         # First rejection → REWORK
         result = detector.record_failure("TEST_TASK", "G3")

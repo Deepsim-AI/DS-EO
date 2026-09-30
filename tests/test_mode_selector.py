@@ -12,13 +12,13 @@ import os
 import tempfile
 import unittest
 
-from ds_eo_openclaw.workflow.config import WorkflowConfig, DEFAULT_CONFIG
-from ds_eo_openclaw.workflow.selector import ModeSelector, create_selector
-from ds_eo_openclaw.workflow.notifications import (
+from ds_eo_dsh.workflow.config import WorkflowConfig, DEFAULT_CONFIG
+from ds_eo_dsh.workflow.selector import ModeSelector, create_selector
+from ds_eo_dsh.workflow.notifications import (
     AUTO_MODE_NOTIFICATIONS, MODE_NOTIFICATIONS,
     get_mode_switch_notification, get_auto_mode_notification,
 )
-from ds_eo_openclaw.workflow.state_engine import StateEngine, State
+from ds_eo_dsh.workflow.state_engine import StateEngine, State
 
 
 # --------------------------------------------------------------------------- #
@@ -163,7 +163,7 @@ class TestModeSelector(unittest.TestCase):
 
     def test_no_gate_bypass_in_any_mode(self):
         """Mode change does not affect transition validation (gates preserved)."""
-        from ds_eo_openclaw.workflow.state_engine import StateEngine, State
+        from ds_eo_dsh.workflow.state_engine import StateEngine, State
 
         # Manual mode
         eng_manual = StateEngine("/fake", execution_mode="manual")

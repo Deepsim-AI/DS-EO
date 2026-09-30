@@ -5,7 +5,7 @@ Manages persistence of recovery state to survive process interruptions.
 Stores recovery-specific information alongside existing dispatcher state.
 
 Usage:
-    from ds_eo_openclaw.workflow.recovery_state import RecoveryStateManager
+    from ds_eo_dsh.workflow.recovery_state import RecoveryStateManager
     mgr = RecoveryStateManager(task_dir)
     mgr.save(task_id, mode, current_gate, status, failure, recovery)
 """

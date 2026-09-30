@@ -2,7 +2,7 @@
 
 import pytest
 
-from ds_eo_openclaw.run_reliability.recovery_protocol import (
+from ds_eo_dsh.run_reliability.recovery_protocol import (
     RecoveryAction,
     get_recovery_steps,
     get_recovery_procedure,

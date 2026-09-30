@@ -9,10 +9,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ds_eo_openclaw.workflow.timeout_config import TimeoutConfig
-from ds_eo_openclaw.workflow.stall_detection import StallDetector
-from ds_eo_openclaw.workflow.escalation import EscalationChain
-from ds_eo_openclaw.workflow.failure_detector import FailureDetector
+from ds_eo_dsh.workflow.timeout_config import TimeoutConfig
+from ds_eo_dsh.workflow.stall_detection import StallDetector
+from ds_eo_dsh.workflow.escalation import EscalationChain
+from ds_eo_dsh.workflow.failure_detector import FailureDetector
 
 
 # --------------------------------------------------------------------------- #

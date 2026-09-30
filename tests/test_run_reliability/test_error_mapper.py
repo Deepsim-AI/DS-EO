@@ -2,12 +2,12 @@
 
 import pytest
 
-from ds_eo_openclaw.run_reliability.error_mapper import (
+from ds_eo_dsh.run_reliability.error_mapper import (
     ERROR_PATTERNS,
     map_raw_message_to_classification,
     format_structured_error,
 )
-from ds_eo_openclaw.run_reliability.reconciler import ErrorClassification
+from ds_eo_dsh.run_reliability.reconciler import ErrorClassification
 
 
 class TestErrorMapper:

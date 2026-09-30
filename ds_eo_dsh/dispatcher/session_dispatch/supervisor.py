@@ -878,7 +878,7 @@ if __name__ == "__main__":
     parser.add_argument("--mode", "-m", default="automatic", choices=["automatic", "manual"])
     args = parser.parse_args()
 
-    supervisor = WorkflowSupervisor(workspace_root="/home/deepsim/ds_eo_openclaw")
+    supervisor = WorkflowSupervisor(workspace_root="/home/deepsim/ds_eo_dsh")
 
     if args.action == "start":
         ok = supervisor.start_supervising(args.task_id, args.mode)

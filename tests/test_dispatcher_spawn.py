@@ -11,7 +11,7 @@ import json
 import os
 import tempfile
 from unittest import TestCase
-from ds_eo_openclaw.dispatcher.session_spawn import (
+from ds_eo_dsh.dispatcher.session_spawn import (
     SessionSpawnManager, 
     spawn_agent, 
     SpawnOutcome,

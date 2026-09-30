@@ -8,10 +8,10 @@ import os
 from unittest.mock import patch, MagicMock
 import json
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ds_eo_openclaw"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ds_eo_dsh"))
 
-from ds_eo_openclaw.adapter.dsh_http_client import DshHttpClient
-from ds_eo_openclaw.adapter.dsh_adapter import DshRuntimeAdapter
+from ds_eo_dsh.adapter.dsh_http_client import DshHttpClient
+from ds_eo_dsh.adapter.dsh_adapter import DshRuntimeAdapter
 
 
 class TestDshHttpClient:
@@ -73,10 +73,10 @@ class TestDshHttpClient:
     def test_get_session_info_dsh_path(self):
         """DSH get_session_info returns RuntimeSession when API available."""
         # Use a mock DSH client directly
-        from ds_eo_openclaw.adapter.dsh_adapter import DshRuntimeAdapter
+        from ds_eo_dsh.adapter.dsh_adapter import DshRuntimeAdapter
         
         # Patch the HTTP client's get method directly via monkeypatch
-        from ds_eo_openclaw.adapter.dsh_http_client import DshHttpClient
+        from ds_eo_dsh.adapter.dsh_http_client import DshHttpClient
         original_init = DshHttpClient.__init__
         
         def mock_init(self, base_url="", auth_token=None, timeout=30):
@@ -109,7 +109,7 @@ class TestDshHttpClient:
 
     def test_compact_session_dsh_path(self):
         """DSH compact_session succeeds when API available."""
-        from ds_eo_openclaw.adapter.dsh_adapter import DshRuntimeAdapter
+        from ds_eo_dsh.adapter.dsh_adapter import DshRuntimeAdapter
         
         mock_client = MagicMock()
         mock_client.is_available.return_value = True
@@ -130,7 +130,7 @@ class TestDshHttpClient:
 
     def test_close_session_dsh_path(self):
         """DSH close_session succeeds when API available."""
-        from ds_eo_openclaw.adapter.dsh_adapter import DshRuntimeAdapter
+        from ds_eo_dsh.adapter.dsh_adapter import DshRuntimeAdapter
         
         mock_client = MagicMock()
         mock_client.is_available.return_value = True

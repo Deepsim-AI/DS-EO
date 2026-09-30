@@ -6,7 +6,7 @@ Demonstrates the three core modules: reconciler, error_mapper, and recovery_prot
 Installation: pip install pytest (for tests); no external dependencies for usage.
 Usage: python examples/run_reliability/usage.py
 
-See ds_eo_openclaw/run_reliability/ for implementation details.
+See ds_eo_dsh/run_reliability/ for implementation details.
 """
 
 # ──────────────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ See ds_eo_openclaw/run_reliability/ for implementation details.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from ds_eo_openclaw.run_reliability.reconciler import detect_orphaned_runs, find_active_sessions, classify_run_state
+from ds_eo_dsh.run_reliability.reconciler import detect_orphaned_runs, find_active_sessions, classify_run_state
 
 def example_orphaned_detection():
     """Detect orphaned runs by comparing gateway-side run state against agent sessions."""
@@ -68,7 +68,7 @@ def example_orphaned_detection():
 # 2. Structured Error Classification (error_mapper)
 # ──────────────────────────────────────────────────────────────────────
 
-from ds_eo_openclaw.run_reliability.error_mapper import classify_error, ERROR_PATTERNS
+from ds_eo_dsh.run_reliability.error_mapper import classify_error, ERROR_PATTERNS
 
 def example_error_classification():
     """Classify raw error strings into structured DS-EO error categories."""
@@ -101,7 +101,7 @@ def example_error_classification():
 # 3. Recovery Protocol (recovery_protocol)
 # ──────────────────────────────────────────────────────────────────────
 
-from ds_eo_openclaw.run_reliability.recovery_protocol import get_recovery_steps, RecoveryStep
+from ds_eo_dsh.run_reliability.recovery_protocol import get_recovery_steps, RecoveryStep
 
 def example_recovery():
     """Get executable recovery steps for a detected orhpahed run."""

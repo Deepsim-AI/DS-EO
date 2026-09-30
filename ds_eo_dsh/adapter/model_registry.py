@@ -4,7 +4,7 @@ Replaces hardcoded ollama/* model references with a registry that
 can resolve models for any target runtime (DSH, OpenClaw, etc.).
 
 Usage:
-    from ds_eo_openclaw.adapter.model_registry import get_registry
+    from ds_eo_dsh.adapter.model_registry import get_registry
 
     registry = get_registry()
     default_model = registry.default_model_for_role("cto")        # e.g., "ollama/qwen3.6:35b"
@@ -60,7 +60,7 @@ class ModelRegistry:
 
     def _find_manifest(self) -> Path:
         """Locate ds_eo_manifest.yaml relative to this package."""
-        pkg_dir = Path(__file__).resolve().parent.parent  # ds_eo_openclaw/
+        pkg_dir = Path(__file__).resolve().parent.parent  # ds_eo_dsh/
         cwd_manifest = Path.cwd() / "ds_eo_manifest.yaml"
         if cwd_manifest.exists():
             return cwd_manifest

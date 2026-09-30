@@ -28,14 +28,14 @@ from unittest.mock import MagicMock, patch
 # Ensure the package is importable from tests/
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from ds_eo_openclaw.workflow.state_engine import StateEngine, State
-from ds_eo_openclaw.workflow.recovery_engine import (
+from ds_eo_dsh.workflow.state_engine import StateEngine, State
+from ds_eo_dsh.workflow.recovery_engine import (
     RecoveryEngine,
     RecoveryAction,
     FailureInfo,
     _POLICY_TABLE,
 )
-from ds_eo_openclaw.workflow.recovery_state import (
+from ds_eo_dsh.workflow.recovery_state import (
     RecoveryStateManager,
     create_recovery_state_manager,
 )
@@ -419,12 +419,12 @@ class TestRecoveryNotificationTypes(unittest.TestCase):
     """Verify new recovery notification types are defined in notifications module."""
 
     def test_all_recovery_notifications_defined(self):
-        from ds_eo_openclaw.workflow.notifications import RECOVERY_NOTIFICATIONS
+        from ds_eo_dsh.workflow.notifications import RECOVERY_NOTIFICATIONS
         expected_types = {"retry_initiated", "retry_exhausted", "workflow_escalated", "recovery_resumed"}
         self.assertEqual(set(RECOVERY_NOTIFICATIONS.keys()), expected_types)
 
     def test_recovery_notification_lookup(self):
-        from ds_eo_openclaw.workflow.notifications import get_recovery_notification
+        from ds_eo_dsh.workflow.notifications import get_recovery_notification
         msg = get_recovery_notification("retry_initiated")
         self.assertIsNotNone(msg)
         self.assertIn("message", msg)
@@ -434,13 +434,13 @@ class TestRecoveryNotificationTypes(unittest.TestCase):
 class TestRecoveryEngineFactory(unittest.TestCase):
 
     def test_create_recovery_engine(self):
-        from ds_eo_openclaw.workflow.recovery_engine import create_recovery_engine
+        from ds_eo_dsh.workflow.recovery_engine import create_recovery_engine
         engine = create_recovery_engine(max_retries=3)
         self.assertEqual(engine.max_retries, 3)
 
     def test_create_recovery_state_manager(self):
         tmpdir = tempfile.mkdtemp()
-        from ds_eo_openclaw.workflow.recovery_state import create_recovery_state_manager
+        from ds_eo_dsh.workflow.recovery_state import create_recovery_state_manager
         mgr = create_recovery_state_manager(tmpdir)
         self.assertEqual(mgr.task_dir, tmpdir)
 
@@ -449,7 +449,7 @@ class TestExportsFromPackage(unittest.TestCase):
     """Verify all new classes are exported from the workflow package."""
 
     def test_import_from_package(self):
-        from ds_eo_openclaw.workflow import (
+        from ds_eo_dsh.workflow import (
             RecoveryEngine, RecoveryAction, FailureInfo,
             RecoveryStateManager, RECOVERY_NOTIFICATIONS,
             create_recovery_engine, create_recovery_state_manager,

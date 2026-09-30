@@ -133,7 +133,7 @@ class ReleaseCheckProtocol:
 
     def check_init_version_read(self) -> ChecklistItem:
         """MANDATORY: Read version from __init__.py and compare to manifest."""
-        init_path = self.workspace_root / "ds_eo_openclaw/__init__.py"
+        init_path = self.workspace_root / "ds_eo_dsh/__init__.py"
         try:
             content = init_path.read_text()
             match = re.search(r'__version__\s*=\s*"([^"]+)"', content)

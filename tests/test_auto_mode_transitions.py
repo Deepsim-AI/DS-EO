@@ -11,8 +11,8 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ds_eo_openclaw.workflow.config import WorkflowConfig
-from ds_eo_openclaw.workflow.state_engine import StateEngine, State
+from ds_eo_dsh.workflow.config import WorkflowConfig
+from ds_eo_dsh.workflow.state_engine import StateEngine, State
 
 
 # --------------------------------------------------------------------------- #

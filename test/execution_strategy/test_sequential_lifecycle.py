@@ -24,7 +24,7 @@ from dispatcher.execution_strategy.sequential_strategy import (
     SequentialStrategy, _ModelLifecycleManager,
 )
 
-WORKSPACE = "/home/deepsim/ds_eo_openclaw"
+WORKSPACE = "/home/deepsim/ds_eo_dsh"
 
 
 def _reg(agent_id="implementer", model="ollama/qwen3.8:27b", success=True):

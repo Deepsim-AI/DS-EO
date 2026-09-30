@@ -379,7 +379,7 @@ if __name__ == "__main__":
     }
 
     if args.workspace_root is None:
-        # Default to the project root (parent of ds_eo_openclaw/)
+        # Default to the project root (parent of ds_eo_dsh/)
         import os as _os
         args.workspace_root = _os.path.dirname(
             _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))

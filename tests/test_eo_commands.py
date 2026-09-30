@@ -195,7 +195,7 @@ class TestArchitecturePreservation:
 
     def test_d1_mode_in_config_not_protocol(self):
         # Verify ModeSelector is used (config-based), not protocol modification
-        from ds_eo_openclaw.workflow.selector import ModeSelector
+        from ds_eo_dsh.workflow.selector import ModeSelector
         assert hasattr(ModeSelector, 'switch_mode')
         
         # Verify skill uses the existing API
@@ -231,11 +231,11 @@ class TestArchitecturePreservation:
         # Verify no OpenClaw-specific imports in commands.py
         import inspect
         source = inspect.getsource(switch_to) + inspect.getsource(format_status)
-        assert 'openclaw' not in source.lower() or 'ds_eo_openclaw' in source
+        assert 'openclaw' not in source.lower() or 'ds_eo_dsh' in source
 
     def test_d7_g2_auto_safe(self):
         # Verify ModeSelector.is_safe_to_switch exists and returns True
-        from ds_eo_openclaw.workflow.selector import create_selector
+        from ds_eo_dsh.workflow.selector import create_selector
         selector = create_selector()
         assert selector.is_safe_to_switch() is True
 

@@ -5,7 +5,7 @@ Every transition (manual or automatic) produces a fully reconstructable record:
 14 required fields, UUIDv4 auditId, ISO-8601 UTC timestamps, integrity chain.
 
 Usage:
-    from ds_eo_openclaw.workflow.audit_log import AuditLog, ProjectAuditIndex
+    from ds_eo_dsh.workflow.audit_log import AuditLog, ProjectAuditIndex
 
     # Per-task log (auto-created at first append)
     log = AuditLog.create("/path/to/task/dir", "TASK_DS_EO_021")

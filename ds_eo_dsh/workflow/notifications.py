@@ -7,7 +7,7 @@ Phase 4 additions: failure notification types for blocker, stalled, and
 repeated failure escalation paths (§9.2–§9.6).
 
 Usage:
-    from ds_eo_openclaw.workflow.notifications import AUTO_MODE_NOTIFICATIONS, MODE_NOTIFICATIONS, FAILURE_NOTIFICATIONS
+    from ds_eo_dsh.workflow.notifications import AUTO_MODE_NOTIFICATIONS, MODE_NOTIFICATIONS, FAILURE_NOTIFICATIONS
 
     # Look up state notification
     msg = AUTO_MODE_NOTIFICATIONS.get("G1_WAITING")

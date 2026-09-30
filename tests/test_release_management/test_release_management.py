@@ -25,7 +25,7 @@ import yaml
 
 # ─── Import under test ───────────────────────────────────────────────────────
 
-from ds_eo_openclaw.release_manager import (
+from ds_eo_dsh.release_manager import (
     ReleaseManager,
     ReleaseState,
     ReleaseVerdict,
@@ -33,7 +33,7 @@ from ds_eo_openclaw.release_manager import (
     parse_semver,
     verify_pre_release,
 )
-from ds_eo_openclaw.release_check_protocol import (
+from ds_eo_dsh.release_check_protocol import (
     ChecklistItem,
     CheckResult,
     PreReleaseChecklist,
@@ -56,8 +56,8 @@ def _make_workspace(tmp_path, version="1.2.3") -> Path:
     }
     (ws / "ds_eo_manifest.yaml").write_text(yaml.dump(manifest))
 
-    # ds_eo_openclaw/__init__.py
-    pkg = ws / "ds_eo_openclaw"
+    # ds_eo_dsh/__init__.py
+    pkg = ws / "ds_eo_dsh"
     pkg.mkdir()
     (pkg / "__init__.py").write_text(f'__version__ = "{version}"\n')
     (pkg / "__main__.py").write_text("pass\n")
@@ -75,7 +75,7 @@ def _make_workspace_with_mismatch(tmp_path) -> Path:
     }
     (ws / "ds_eo_manifest.yaml").write_text(yaml.dump(manifest))
 
-    pkg = ws / "ds_eo_openclaw"
+    pkg = ws / "ds_eo_dsh"
     pkg.mkdir()
     (pkg / "__init__.py").write_text('__version__ = "1.2.4"\n')
     return ws
@@ -213,7 +213,7 @@ class TestReleaseManagerVersionReading:
     def test_read_python_version_missing_file(self, tmp_path):
         ws = tmp_path / "no_init_ws"
         ws.mkdir()
-        pkg = ws / "ds_eo_openclaw"
+        pkg = ws / "ds_eo_dsh"
         pkg.mkdir()
         rm = ReleaseManager(ws)
         result = rm.read_python_version()
@@ -221,7 +221,7 @@ class TestReleaseManagerVersionReading:
 
     def test_read_python_version_missing__version__(self, tmp_path):
         ws = _make_workspace(tmp_path)
-        (ws / "ds_eo_openclaw" / "__init__.py").write_text("# no version here\n")
+        (ws / "ds_eo_dsh" / "__init__.py").write_text("# no version here\n")
         rm = ReleaseManager(ws)
         result = rm.read_python_version()
         assert result.success is False
@@ -250,7 +250,7 @@ class TestVersionMatchDetection:
     def test_missing_init_before_verify(self, tmp_path):
         ws = _make_workspace(tmp_path)
         # Remove __init__.py so current_version_init won't be set
-        (ws / "ds_eo_openclaw" / "__init__.py").unlink()
+        (ws / "ds_eo_dsh" / "__init__.py").unlink()
         rm = ReleaseManager(ws)
         rm.read_manifest_version()
         result = rm.verify_versions_match()
@@ -284,7 +284,7 @@ class TestVersionBump:
 
         rm.apply_version_bump(rm.next_version)
 
-        content = (ws / "ds_eo_openclaw" / "__init__.py").read_text()
+        content = (ws / "ds_eo_dsh" / "__init__.py").read_text()
         assert '__version__ = "1.3.0"' in content
 
 
@@ -373,7 +373,7 @@ class TestPreReleaseVerify:
     def test_pre_release_missing_manifest(self, tmp_path):
         ws = tmp_path / "no_manifest_repo"
         ws.mkdir()
-        pkg = ws / "ds_eo_openclaw"
+        pkg = ws / "ds_eo_dsh"
         pkg.mkdir()
         (pkg / "__init__.py").write_text('__version__ = "1.0.0"\n')
 
@@ -445,7 +445,7 @@ class TestFullChecklist:
     def test_full_checklist_manifest_missing(self, tmp_path):
         ws = tmp_path / "no_manifest_ws"
         ws.mkdir()
-        pkg = ws / "ds_eo_openclaw"
+        pkg = ws / "ds_eo_dsh"
         pkg.mkdir()
         (pkg / "__init__.py").write_text('__version__ = "1.0.0"\n')
 

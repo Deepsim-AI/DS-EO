@@ -5,7 +5,7 @@ A small, reliable operational layer around OpenClaw's existing session capabilit
 Provides health discovery → classification → policy.
 
 Usage:
-    from ds_eo_openclaw.session_health import (
+    from ds_eo_dsh.session_health import (
         HealthClassifier,
         MonitorStatus,
         get_default_config,

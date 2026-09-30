@@ -8,9 +8,9 @@ import os
 from unittest.mock import patch, MagicMock
 import json
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ds_eo_openclaw"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ds_eo_dsh"))
 
-from ds_eo_openclaw.adapter.dsh_adapter import DshRuntimeAdapter
+from ds_eo_dsh.adapter.dsh_adapter import DshRuntimeAdapter
 
 
 class TestArchiveSession:

@@ -6,7 +6,7 @@ Sits between StateEngine and Supervisor to unify detection, decision-making,
 persistence, and resume logic without refactoring existing modules.
 
 Usage:
-    from ds_eo_openclaw.workflow.recovery_engine import RecoveryEngine, RecoveryAction, FailureInfo
+    from ds_eo_dsh.workflow.recovery_engine import RecoveryEngine, RecoveryAction, FailureInfo
 
     recovery = RecoveryEngine()
     action = recovery.determine_recovery(failure_info)

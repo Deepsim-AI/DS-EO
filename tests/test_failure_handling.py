@@ -16,12 +16,12 @@ import time
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from ds_eo_openclaw.workflow.timeout_config import TimeoutConfig, DEFAULT_TIMEOUT_CONFIG
-from ds_eo_openclaw.workflow.stall_detection import StallDetector, create_stall_detector
-from ds_eo_openclaw.workflow.escalation import EscalationChain, create_escalation_chain
-from ds_eo_openclaw.workflow.failure_detector import FailureDetector, create_failure_detector
-from ds_eo_openclaw.workflow.notifications import FAILURE_NOTIFICATIONS, get_failure_notification
-from ds_eo_openclaw.workflow.state_engine import StateEngine, State
+from ds_eo_dsh.workflow.timeout_config import TimeoutConfig, DEFAULT_TIMEOUT_CONFIG
+from ds_eo_dsh.workflow.stall_detection import StallDetector, create_stall_detector
+from ds_eo_dsh.workflow.escalation import EscalationChain, create_escalation_chain
+from ds_eo_dsh.workflow.failure_detector import FailureDetector, create_failure_detector
+from ds_eo_dsh.workflow.notifications import FAILURE_NOTIFICATIONS, get_failure_notification
+from ds_eo_dsh.workflow.state_engine import StateEngine, State
 
 
 # --------------------------------------------------------------------------- #
@@ -332,7 +332,7 @@ class TestAuditLogRotation(unittest.TestCase):
 
     def _create_large_log(self, count=600):
         """Helper: create an audit log with many entries (>500 threshold)."""
-        from ds_eo_openclaw.workflow.audit_log import AuditLog
+        from ds_eo_dsh.workflow.audit_log import AuditLog
         log = AuditLog.create(self.tmpdir, "TASK_DS_EO_021")
         for i in range(count):
             log.append_entry(
@@ -354,7 +354,7 @@ class TestAuditLogRotation(unittest.TestCase):
         self._create_large_log(600)
 
         # Verify the original log has many entries
-        from ds_eo_openclaw.workflow.audit_log import AuditLog
+        from ds_eo_dsh.workflow.audit_log import AuditLog
         log = AuditLog.create(self.tmpdir, "TASK_DS_EO_021")
         entries = log.get_entries()
         self.assertGreater(len(entries), 500)
@@ -376,7 +376,7 @@ class TestAuditLogRotation(unittest.TestCase):
         self._create_large_log(600)
 
         # Read the current (latest) audit log
-        from ds_eo_openclaw.workflow.audit_log import AuditLog
+        from ds_eo_dsh.workflow.audit_log import AuditLog
         log = AuditLog.create(self.tmpdir, "TASK_DS_EO_021")
         entries = log.get_entries()
         self.assertGreater(len(entries), 0, "Latest log should contain entries")
@@ -386,7 +386,7 @@ class TestAuditLogRotation(unittest.TestCase):
         self._create_large_log(600)
 
         # Verify all entries are reconstructable — check hash chain integrity
-        from ds_eo_openclaw.workflow.audit_log import AuditLog
+        from ds_eo_dsh.workflow.audit_log import AuditLog
         log = AuditLog.create(self.tmpdir, "TASK_DS_EO_021")
         entries = log.get_entries()
 
@@ -404,7 +404,7 @@ class TestModuleExports(unittest.TestCase):
 
     def test_phase_4_classes_exported(self):
         """TimeoutConfig, StallDetector, EscalationChain, FailureDetector all exported."""
-        from ds_eo_openclaw.workflow import (
+        from ds_eo_dsh.workflow import (
             TimeoutConfig, StallDetector, EscalationChain, FailureDetector,
         )
         self.assertIsNotNone(TimeoutConfig)
@@ -414,7 +414,7 @@ class TestModuleExports(unittest.TestCase):
 
     def test_phase_4_failure_notifications_exported(self):
         """FAILURE_NOTIFICATIONS and get_failure_notification exported."""
-        from ds_eo_openclaw.workflow import FAILURE_NOTIFICATIONS, get_failure_notification
+        from ds_eo_dsh.workflow import FAILURE_NOTIFICATIONS, get_failure_notification
         self.assertIsInstance(FAILURE_NOTIFICATIONS, dict)
         self.assertTrue(callable(get_failure_notification))
 

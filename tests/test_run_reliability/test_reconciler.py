@@ -4,7 +4,7 @@
 
 import pytest
 
-from ds_eo_openclaw.run_reliability.reconciler import (
+from ds_eo_dsh.run_reliability.reconciler import (
     RunState,
     ErrorClassification,
     Diagnosis,

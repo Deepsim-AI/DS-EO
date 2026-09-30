@@ -573,7 +573,7 @@ if __name__ == "__main__":
 
     task_id = sys.argv[1] if len(sys.argv) > 1 else "TASK_20260805_001"
     
-    sm = TaskStateManager(task_id, workspace_root="/home/deepsim/ds_eo_openclaw")
+    sm = TaskStateManager(task_id, workspace_root="/home/deepsim/ds_eo_dsh")
     
     print(f"Task: {task_id}")
     print(f"Base path: {sm.base_path}")
