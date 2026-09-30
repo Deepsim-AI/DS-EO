@@ -13,7 +13,7 @@ from .runtime_api import (
     RuntimeAdapterFactory,
 )
 from .dsh_adapter import DshRuntimeAdapter
-from .openclaw_adapter import OpenClawRuntimeAdapter
+from .openclaw_bridge import OpenClawRuntimeAdapter
 
 __all__ = [
     "RuntimeAPI",

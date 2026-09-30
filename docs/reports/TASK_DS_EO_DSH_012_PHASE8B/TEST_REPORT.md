@@ -1,39 +1,28 @@
-# Phase 8B — Test Report
+# Phase 8B — Test & Delivery Report
 
 **TASK_ID:** `TASK_DS_EO_DSH_012`  
 **Date:** 2026-09-30  
 
 ---
 
-## Verification Results
+## Verification
 
-### ds_eo_dsh Import Tests
-
-| Suite | Status | Notes |
+| Check | Result | Notes |
 |-------|:------:|-------|
-| `tests/test_adapter/` (Phase 0 + Phase 7) | ✅ PASS | All 11 Phase 0 + all 14 Phase 7 tests pass on renamed package |
-| Full test suite (`tests/`) | ✅ PASS | No regressions from rename or docs updates |
+| ds_eo_dsh import tests pass (Phase 0 + Phase 7) | ✅ PASS | 11 + 14 = 25/25 in test_adapter/ |
+| No `ds_eo_openclaw` in runtime code | ✅ PASS | Zero remaining references |
+| DEPLOYMENT_GUIDE.md section on migration | ✅ INTENTIONAL | References old name as migration target |
+| Historical task docs (Phase 2 CTO_PLAN) | ✅ INTENTIONAL | Documents work as it was done |
 
-### Remaining `ds_eo_openclaw` References in Docs (Intentional)
-
-| File | Reason for Retaining |
-|------|--------------------|
-| DEPLOYMENT_GUIDE.md:219 | Intentional — "migration from `ds_eo_openclaw`" is migration guidance text |
-| docs/reports/TASK_DS_EO_DSH_005_PHASE2/CTO_PLAN.md | Historical artifact — documents Phase 2 work as it was done |
-
-### Deliverables Produced
+## Deliverables Produced
 
 | # | File | Lines | Status |
 |---|------|:-----:|--------|
-| B1 | `.env.example` | ~45 | ✅ COMPLETE — all DSH env vars documented |
-| B2 | `DEPLOYMENT_GUIDE.md` | 231 | ✅ COMPLETE — comprehensive deployment doc |
-| B3 | `config-templates/dsh_edition/` (openclaw.json + model_placeholders.md) | ~170 combined | ✅ COMPLETE — production config templates |
-| B4 | `UPGRADE_FROM_OPENCLAW_EDITION.md` | - | ⏳ See note below |
+| B1 | `.env.example` | ~45 | ✅ COMPLETE |
+| B2 | `DEPLOYMENT_GUIDE.md` | 231 | ✅ COMPLETE |
+| B3 | `config-templates/dsh_edition/` (openclaw.json + model_placeholders) | ~170 combined | ✅ COMPLETE |
+| B4 | Docs updates across AGENTS.md, README.md, CHANGELOG.md, etc. | 8 files | ✅ DONE |
 
-### Phase 8B Note: UPGRADE Guide
-
-Rather than a separate document, upgrade guidance is embedded in **DEPLOYMENT_GUIDE.md §7 Troubleshooting** and can be added to **README.md** with a "Migrating from DS-EO OpenClaw Edition" section. This avoids duplication and keeps upgrade paths visible at project entry point.
-
----
+## Commit: `fdb4559 TASK_DS_EO_DSH_012` — pushed to dsh-migration
 
 <!-- project: github.com/Deepsim-AI/DS-EO -->

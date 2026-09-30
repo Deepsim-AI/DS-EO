@@ -4,9 +4,9 @@ DS-EO Dispatcher — Real Session Spawn via OpenClaw Gateway API
 Replaces the stub spawn in session_dispatch/engine.py with actual
 OpenClaw sessions_spawn integration. Two implementation paths:
 
-  Path A (preferred): Run inside an OpenClaw agent session — uses the
+  OpenClaw mode (preferred): Run inside an OpenClaw agent session — uses the
                        gateway's internal tool_call mechanism directly.
-  Path B (fallback):  Standalone library mode — calls the OpenClaw Gateway
+  DSH API mode (fallback):  Standalone library mode — calls the OpenClaw Gateway
                        REST API endpoint for sessions spawn.
 
 Both return the same (success, result) tuple so callers don't need branch logic.
@@ -69,7 +69,7 @@ class SessionSpawnManager:
     Responsibilities:
       1. Resolve target model from role mapping or override
       2. Write dispatcher state BEFORE attempting spawn (for tracking/cleanup)
-      3. Invoke sessions_spawn via Path A or B
+      3. Invoke sessions_spawn via OpenClaw mode or B
       4. Verify spawned session exists and is running
       5. Return usable session reference for downstream agents
 
@@ -104,7 +104,7 @@ class SessionSpawnManager:
         Flow:
           1. Determine target model (override or role default)
           2. Write dispatcher state BEFORE spawning (for tracking/verification)
-          3. Invoke OpenClaw sessions_spawn (Path A or B)
+          3. Invoke OpenClaw sessions_spawn (OpenClaw mode or B)
           4. Verify session exists if spawn succeeded
           5. Return SpawnOutcome with session key on success, error on failure
 
@@ -289,7 +289,7 @@ class SessionSpawnManager:
                 pass
 
     # ==================================================================
-    # Internal: OpenClaw Integration (Path A and Path B)
+    # Internal: OpenClaw Integration (OpenClaw mode and DSH API mode)
     # ==================================================================
 
     def _invoke_sessions_spawn(
@@ -304,12 +304,12 @@ class SessionSpawnManager:
         """
         Invoke OpenClaw sessions_spawn to create a real session.
 
-        Attempts Path A first (running inside an OpenClaw agent session),
-        falls back to Path B (standalone REST API) if that fails or isn't available.
+        Attempts OpenClaw mode first (running inside an OpenClaw agent session),
+        falls back to DSH API mode (standalone REST API) if that fails or isn't available.
 
         CRITICAL: This is the method being implemented in TASK_DS_EO_038 Phase 8.
         """
-        # Try Path A first: detect if we're running inside an OpenClaw agent session
+        # Try OpenClaw mode first: detect if we're running inside an OpenClaw agent session
         # by checking for the gateway socket or environment variable
         gateway_socket = os.environ.get("OPENCLAW_GATEWAY_SOCKET", "")
 
@@ -319,7 +319,7 @@ class SessionSpawnManager:
                 task_id=task_id, agent_role=agent_role,
             )
 
-        # Path B: Standalone REST API call to OpenClaw Gateway
+        # DSH API mode: Standalone REST API call to OpenClaw Gateway
         return self._invoke_path_b(
             prompt=prompt, model=model, context=context, runtime=runtime,
             task_id=task_id, agent_role=agent_role,
@@ -327,13 +327,13 @@ class SessionSpawnManager:
 
     def _invoke_path_a(self, **kwargs) -> SpawnOutcome:
         """
-        Path A: Run inside an OpenClaw agent session.
+        OpenClaw mode: Run inside an OpenClaw agent session.
 
         Uses the gateway's internal tool_call mechanism to invoke sessions_spawn.
         This is the preferred path when running as a subagent within OpenClaw.
         """
         # In production, this would use the gateway socket to make an internal call.
-        # Since we're implementing this now, we'll attempt the REST API (Path B)
+        # Since we're implementing this now, we'll attempt the REST API (DSH API mode)
         # which works in both contexts.
 
         # The actual implementation uses:
@@ -344,7 +344,7 @@ class SessionSpawnManager:
 
     def _invoke_path_b(self, prompt, model, context, runtime, task_id, agent_role):
         """
-        Path B: Standalone library mode — Gateway HTTP /tools/invoke.
+        DSH API mode: Standalone library mode — Gateway HTTP /tools/invoke.
 
         Uses the OpenClaw Gateway /tools/invoke endpoint to call sessions_spawn.
 

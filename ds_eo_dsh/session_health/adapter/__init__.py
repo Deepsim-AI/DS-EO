@@ -6,7 +6,7 @@ This package is the sole seam between DS-EO business logic (discoverer,
 classifier, monitor, executor, audit) and any concrete agent runtime.
 
 The primary runtime is :class:`.dsh_adapter.DshRuntimeAdapter`; the read-only
-legacy backend is :class:`.openclaw_adapter.OpenClawRuntimeAdapter`. DS-EO core
+legacy backend is :class:`.openclaw_bridge.OpenClawRuntimeAdapter`. DS-EO core
 code imports from this package and depends on the :class:`.runtime_api.RuntimeAPI`
 contract — never on ``subprocess`` or OpenClaw primitives directly.
 
@@ -24,7 +24,7 @@ from .runtime_api import (
     ToolPolicy,
     ToolResult,
 )
-from .openclaw_adapter import OpenClawRuntimeAdapter
+from .openclaw_bridge import OpenClawRuntimeAdapter
 from .dsh_adapter import DshRuntimeAdapter
 
 __all__ = [

@@ -6,7 +6,7 @@ DS-EO session-health logic (discoverer, classifier, monitor, executor, audit)
 must no longer depend on OpenClaw primitives directly. All such dependencies go
 through the abstract runtime interface defined here. Concrete runtime bindings
 implement :class:`RuntimeAPI`; see :mod:`.dsh_adapter` (primary) and
-:mod:`.openclaw_adapter` (legacy).
+:mod:`.openclaw_bridge` (legacy).
 """
 
 from __future__ import annotations

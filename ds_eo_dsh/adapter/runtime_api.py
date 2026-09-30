@@ -195,7 +195,7 @@ class RuntimeAdapterFactory:
         Args:
             runtime: "dsh" | "openclaw" | "auto".
                      "auto" checks ds_eo_manifest.yaml → dsh_default_runtime config.
-                     Default is "openclaw" (backward compatible).
+                     Default is "dsh".
 
         Returns:
             RuntimeAPI instance — either DshRuntimeAdapter or OpenClawRuntimeAdapter.
@@ -207,16 +207,23 @@ class RuntimeAdapterFactory:
         if runtime == "auto":
             try:
                 from ..manifest_loader import get_default_runtime
-                runtime = get_default_runtime() or "openclaw"
+                runtime = get_default_runtime() or "dsh"
             except ImportError:
                 # manifest_loader may not exist yet in early Phase 0 — use default
                 runtime = "openclaw"
 
         if runtime == "dsh":
             from .dsh_adapter import DshRuntimeAdapter
+            # Verify DSH API is accessible before returning this adapter
+            if not os.environ.get("DSH_API_BASE"):
+                raise RuntimeError(
+                    "DshRuntimeAdapter selected but DSH_API_BASE is not set. "
+                    "Set the DSH_API_BASE environment variable to your DSH endpoint URL, "
+                    "or configure runtime='openclaw' for OpenClaw fallback."
+                )
             return DshRuntimeAdapter()
         elif runtime == "openclaw":
-            from .openclaw_adapter import OpenClawRuntimeAdapter
+            from .openclaw_bridge import OpenClawRuntimeAdapter
             return OpenClawRuntimeAdapter()
         else:
             raise ValueError(f"Unknown runtime '{runtime}'. Must be 'dsh', 'openclaw', or 'auto'.")
