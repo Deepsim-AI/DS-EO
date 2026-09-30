@@ -60,6 +60,14 @@ Implementation complete: model_registry.py module created + all hardcoded ollama
   - `capability_assessor.py` — ollama-specific replace() replaced with generic re.sub() provider prefix stripping
 - Fix: executor.py adapter import moved to lazy load in __init__() to resolve circular import chain
 
+### ✅ TASK_DS_EO_DSH_006 — Phase 3: Bindings Replacement (G5 DONE)
+
+Configuration-only housekeeping pass. Zero Python source code changes.
+- Deliverables:
+  - `config-templates/example_openclaw_config.json` → renamed to `example_config.json`
+  - `binding_defs/entry_points.yaml` — header rewritten to clarify generic DS-EO bindings (platform-adaptable)
+  - `.github/workflows/release.yml` — verified no OpenClaw-specific CLI calls; paths remain valid for DSH Edition
+
 ---
 
 ## Source Tree Bootstrap
@@ -74,39 +82,24 @@ DSH Edition workspace was bootstrapped from the reference workspace (`ds_eo_open
 
 ---
 
-## Next Task
+## Remaining Tasks
 
-### TASK_DS_EO_DSH_006 — Phase 3: Bindings Replacement (D2)
+### TASK_DS_EO_DSH_007 — Phase 4: Discovery Swap (A3) ⏳ PENDING
 
-This phase replaces OpenClaw slash command bindings with DSH hooks in the config layer. It's a configuration-layer change that doesn't touch core Python logic.
+**What this phase covers:** The discoverer.py adapter swap to DSH session registry. Currently discoverer.py uses `RuntimeAdapterFactory.create(runtime="openclaw")` for session discovery and health data fetching. Phase 4 replaces the OpenClaw-specific discovery path with DSH's native session registry API.
 
-**Scope:**
-- `openclaw.json` → DSH equivalent config format (if applicable)
-- Gateway entry-point bindings (`binding_defs/entry_points.yaml`) → DSH hook equivalents
-- Any `.github/workflows/` references to OpenClaw-specific tooling
-- Config template files in `config-templates/`
+**Key targets:**
+- `ds_eo_openclaw/session_health/discoverer.py` — Session discovery logic
+- `ds_eo_openclaw/adapter/dsh_adapter.py` — Discover sessions via DSH registry
+- Any health data format differences between OpenClaw and DSH
 
-**Target Files:**
-- `ds_eo_openclaw/dispatcher/binding_defs/entry_points.yaml` — Gateway binding definitions
-- `config-templates/*.json` — Template configs that reference OpenClaw-specific bindings
-- `.github/workflows/release.yml` — CI pipeline tooling references
-- `scripts/install.sh` / `install.ps1` — Installer binding deployment logic
+**Risk:** Medium — requires verifying DSH session metadata format matches what discoverer.py expects. May need adapter-level mapping if field names differ.
 
-**Risk:** Medium (configuration change, but low behavioral risk). Tests pass if model resolution works.
+### TASK_DS_EO_DSH_008 — Smoke Tests + Reliability Comparison + Go-Live ⏳ PENDING
 
-**PENDING:** Awaiting CTO plan production.
-
----
-
-## Pending Tasks
-
-### TASK_DS_EO_DSH_007 — Phase 4: Discovery Swap (A3)
-- discoverer.py adapter swap to DSH session registry
-- Status: PENDING
-
-### TASK_DS_EO_DSH_008 — Smoke Tests + Reliability Comparison + Go-Live
-- Full test suite pass, Deliverable E comparison matrix, default runtime flip
-- Status: PENDING
+- Full test suite pass against DSH runtime
+- Deliverable E comparison matrix (DSH vs OpenClaw behavior)
+- Default runtime flip: dsh_adapter.py → production primary
 
 ---
 
@@ -119,6 +112,7 @@ ds_eo_dsh/
 ├── docs/reports/TASK_DS_EO_DSH_003_PHASE0/      ✅ Complete (G5)
 ├── docs/reports/TASK_DS_EO_DSH_004_PHASE1/      ✅ Complete (G5)
 ├── docs/reports/TASK_DS_EO_DSH_005_PHASE2/      ✅ Complete (G5)
+├── docs/reports/TASK_DS_EO_DSH_006_PHASE3/      ✅ Complete (G5)
 ├── PROJECT_STATUS.md                              ← This file
 ├── README.md                                      ← Naming anchor (DSH Edition)
 ├── RUNTIME_ADAPTER_DESIGN.md                      ← Design reference
@@ -137,6 +131,7 @@ ds_eo_dsh/
 │   ├── session_spawn.py
 │   ├── workflow_defs/default.yaml
 │   └── execution_strategy/capability_assessor.py
+├── config-templates/example_config.json            ← Renamed in Phase 3 (was example_openclaw_config.json)
 ├── tests/test_adapter/test_phase0.py             ← Phase 0 test suite
 ├── agents/                                         ← Governance docs
 ├── protocols/                                      ← Protocols
@@ -154,7 +149,7 @@ ds_eo_dsh/
 |------|--------|-------------|
 | R1: No ~/.openclaw access | ✅ | Gate checks |
 | R2: No real session operations | ✅ | Gate checks |
-| R3: No production repo modification | ✅ | Phase 0/1/2 rules, planning only |
+| R3: No production repo modification | ✅ | Phase 0/1/2/3 rules, planning only |
 | R4: DS-EO governance unchanged | ✅ | Planned enforcement per G4 |
 | R5: Full test suite per phase | ✅ | Required at each G4/G5 |
 | R6: OpenClaw adapter retained | ✅ | Post-migration architecture |

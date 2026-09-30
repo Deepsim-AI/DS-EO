@@ -92,7 +92,7 @@ class SessionDiscoverer:
 
         self.workspace_root = os.path.abspath(workspace_root)
         # Phase 7: real OpenClaw API client for context size queries
-        self.api_client = RuntimeAdapterFactory.create(runtime="openclaw")
+        self.api_client = RuntimeAdapterFactory.create(runtime="dsh")
 
     def _get_real_context_size(self, session_key: str) -> Optional[int]:
         """Query the actual session store for precise byte counts.
