@@ -36,8 +36,9 @@
 
 ### G5 (PM Closure) — COMPLETE ✅
 - [x] Update PROJECT_STATUS.md in ds_eo_dsh
-- [x] Commit approved work to `dsh-migration` branch (2026-09-29)
-- [ ] **PENDING: user confirms remote push target for git push**
+- [x] Commit approved work to `dsh-migration` branch (2026-09-29, commit `3edc920`)
+- [x] Remote configured + pushed: origin `https://github.com/Deepsim-AI/DS-EO`, branch `dsh-migration`
+- [x] Remote branch renamed `dsh-migration-new` → `dsh-migration` on GitHub (2026-09-29); local `dsh-migration-new` removed, local tracking restored to `origin/dsh-migration`
 
 ## Summary
 

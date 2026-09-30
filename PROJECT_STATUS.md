@@ -19,73 +19,83 @@ DS-EO DSH Edition migrates the primary runtime from OpenClaw to DeepSeek Harness
 
 ---
 
-## Current Task Status
+## Completed Tasks
 
-### TASK_DS_EO_DSH_001 — Project Bootstrap and Migration Definition ✅ DONE (G5)
+### ✅ TASK_DS_EO_DSH_001 — Project Bootstrap and Migration Definition (G5 DONE)
 
-| Gate | Status | Date |
-|------|--------|------|
-| G0–G5 | ✅ COMPLETE | 2026-09-29 |
+Phase 0: project bootstrap, migration scope, boundary definitions, task sequence.
+- Deliverables: `CTO_PLAN.md`, `PROJECT_STATUS.md`, `README.md` in ds_eo_dsh root
 
-**Deliverables:** `reports/TASK_DS_EO_DSH_001_PLAN/CTO_PLAN.md`, `PROJECT_STATUS.md`, `README.md`
+### ✅ TASK_DS_EO_DSH_002 — Technical Architecture and Implementation Plan (G5 DONE)
 
-### TASK_DS_EO_DSH_002 — Technical Architecture and Implementation Plan ✅ DONE (G5)
+RuntimeAPI interface fully specified (10 methods + 3 data types). DSH adapter stub design. OpenClaw thinning plan with exact file/line changes for 5 target files.
+- Deliverables: `CTO_PLAN.md` in TASK_DS_EO_DSH_002_TECH_ARCH
 
-| Gate | Status | Date |
-|------|--------|------|
-| G0–G1 | ✅ COMPLETE | 2026-09-29 |
-| G2–G5 | ✅ COMPLETE | 2026-09-29 (user approved) |
+### ✅ TASK_DS_EO_DSH_003 — Phase 0: Adapter Interface + DSH Adapter (G5 DONE)
 
-**Deliverables:** `reports/TASK_DS_EO_DSH_002_TECH_ARCH/`  
-- RuntimeAPI Protocol spec (10 methods, exact Python signatures)  
-- DSH adapter stub design (all methods with TODO comments)  
-- OpenClaw thinning plan (exact file/line changes for 5 files)  
-- Migration mapping (§3a–§3i) covering all 5 phases  
+Implementation complete: 5 new files created under `ds_eo_openclaw/adapter/`. Zero behavioral change.
+- Deliverables:
+  - `runtime_api.py` (222 lines) — RuntimeAPI Protocol + data types + factory
+  - `dsh_adapter.py` (141 lines) — DSH stubs with TODO per method
+  - `openclaw_adapter.py` (113 lines) — OpenClaw thin wrapper
+  - `__init__.py` (26 lines) — Package exports
+  - `test_phase0.py` (190 lines) — 11 interface compliance tests
 
-### TASK_DS_EO_DSH_003 — Phase 0: Adapter Interface + DSH Adapter ✅ DONE (G5)
+### ✅ TASK_DS_EO_DSH_004 — Phase 1: OpenClaw Adapter Thinning (G5 DONE)
 
-| Gate | Status | Date |
-|------|--------|------|
-| G0–G4 | ✅ APPROVED | 2026-09-29 |
-| G5 | ✅ COMPLETE | 2026-09-29 (committed to dsh-migration) |
+Implementation complete: 3 session_health files refactored to use RuntimeAdapterFactory instead of direct OpenClawAPI imports. Zero behavioral change.
+- Deliverables:
+  - `session_health/__init__.py` — added RuntimeAPI import + __all__ exports (backward compatible)
+  - `session_health/discoverer.py` — line 18 (import swap), line 95 (instantiation swap to adapter factory)
+  - `session_health/executor.py` — line 23 (import swap), line 90 (type hint → object), line 97 (instantiation swap to adapter factory)
+- Phase 1 boundary: release_manager.py and dispatcher/session_spawn.py deferred to Phase 2+
 
-**Deliverables:** `reports/TASK_DS_EO_DSH_003_PHASE0/` + 5 new files:
-- `ds_eo_openclaw/adapter/runtime_api.py` (222 lines) — RuntimeAPI Protocol + factory
-- `ds_eo_openclaw/adapter/dsh_adapter.py` (141 lines) — DSH stubs with per-method TODO
-- `ds_eo_openclaw/adapter/openclaw_adapter.py` (113 lines) — thin wrapper over OpenClawAPI
-- `ds_eo_openclaw/adapter/__init__.py` (26 lines) — package exports
-- `tests/test_adapter/test_phase0.py` (190 lines) — 11-interface-compliance tests
+---
 
-**Gate check:** Zero existing files modified (Phase 0 rule). Minor docstring/cleanup
-items flagged by Reviewer (Issue 1 & 2) deferred to Phase 1 pre-start — non-blocking.
+## Source Tree Bootstrap
 
-**Next task: TASK_DS_EO_DSH_004 — Phase 1: OpenClaw Adapter Thinning**
+DSH Edition workspace was bootstrapped from the reference workspace (`ds_eo_openclaw_test/`) before Phase 1. Files imported via `rsync`:
+- **Python source tree**: `session_health/`, `dispatcher/`, `intake/`, `run_reliability/`, `workflow/`, `release_manager.py`, `release_check_protocol.py`
+- **Governance**: `agents/`, `protocols/`, `templates/`
+- **Config/data**: `ds_eo_manifest.yaml`, `config-templates/`, `.github/workflows/`, `skills/`, `benchmarks/`, `examples/`, `tests/`, `test/execution_strategy/`
+- **Key docs**: `AGENTS.md`, `ARCHITECTURE.md`, `BASELINE_AUDIT.md`, `CHANGELOG.md`, `INSTALLATION.md`, `.gitignore`, `ds_eo_execution_strategy_example.yaml`, `agents_list.json`
+
+**Not imported**: `~/.openclaw` state, OpenClaw sessions, runtime data, credentials/secrets, experimental runtime state, `.memory/`, `.pytest_cache/`.
+
+---
+
+## Next Task
+
+### TASK_DS_EO_DSH_005 — Phase 2: Model Registry Swap (D1) (Implementer)
+
+**Input:** CTO_PLAN.md from TASK_DS_EO_DSH_002 (§3.3f: exact line ranges for session_spawn.py and related files)
+
+**Scope:** Replace hardcoded `ollama/*` model references with runtime-agnostic model resolution via adapter. The highest-leverage win — makes the runtime genuinely pluggable (no `ollama` hardcoding).
+
+**Key target files:**
+- `ds_eo_openclaw/dispatcher/session_spawn.py` lines 48-51 — hardcoded MODELS dict
+- `dispatcher/execution_strategy/capability_assessor.py` — ollama capability probes (A9)
+- `ds_eo_manifest.yaml` — model registry entries
+
+**Risk:** High (core dispatch logic changes). Requires all tests pass at G4.
+
+**PENDING:** Awaiting user signal to begin.
 
 ---
 
 ## Pending Tasks
 
-### TASK_DS_EO_DSH_003 — Phase 0: Adapter Interface + DSH Adapter ✅ DONE (G5)
-- **Input:** TASK 002 CTO_PLAN.md (RuntimeAPI spec, adapter designs, file-by-file plan)
-- **Scope:** Create 5 new files in `ds_eo/adapter/`: runtime_api.py, dsh_adapter.py, openclaw_adapter.py, __init__.py, plus tests
-- **Risk:** Zero — all new files, no existing code modified
-- **Status:** DONE — committed to dsh-migration 2026-09-29
-
-### TASK_DS_EO_DSH_004 — Phase 1: OpenClaw Adapter Thinning (Implementer)
-- **Scope:** Refactor 5 existing files to use adapter pattern instead of direct OpenClawAPI imports
-- **Status:** PENDING (after TASK 003 G4)
-
-### TASK_DS_EO_DSH_005 — Phase 2: Model Registry Swap (D1) (Implementer)
-- **Scope:** Runtime-agnostic model resolution via adapter, remove hardcoded ollama references
-
 ### TASK_DS_EO_DSH_006 — Phase 3: Bindings Replacement (D2) (Implementer)
-- **Scope:** Replace OpenClaw slash bindings with DSH hooks in config layer
+- Replace OpenClaw slash bindings with DSH hooks in config layer
+- Status: PENDING
 
 ### TASK_DS_EO_DSH_007 — Phase 4: Discovery Swap (A3) (Implementer)
-- **Scope:** discoverer.py adapter swap to DSH session registry
+- discoverer.py adapter swap to DSH session registry
+- Status: PENDING
 
 ### TASK_DS_EO_DSH_008 — Smoke Tests + Reliability Comparison + Go-Live
-- **Scope:** Full test suite pass, Deliverable E comparison matrix, default runtime flip
+- Full test suite pass, Deliverable E comparison matrix, default runtime flip
+- Status: PENDING
 
 ---
 
@@ -93,23 +103,30 @@ items flagged by Reviewer (Issue 1 & 2) deferred to Phase 1 pre-start — non-bl
 
 ```
 ds_eo_dsh/
-├── docs/reports/TASK_DS_EO_DSH_001_PLAN/
-│   ├── CTO_PLAN.md                    ← Migration plan (415 lines)
-│   └── TASK_COMPLETION_AUDIT.md       ← Gate tracking
-├── docs/reports/TASK_DS_EO_DSH_002_TECH_ARCH/
-│   ├── TASK_DS_EO_DSH_002_CTO_PLAN.md  ← Tech plan (709 lines)
-│   └── TASK_COMPLETION_AUDIT.md       ← Gate tracking
-├── docs/reports/TASK_DS_EO_DSH_003_PHASE0/
-│   ├── CTO_PLAN.md                    ← Phase 0 spec (222-line RuntimeAPI + 5 files)
-│   ├── CTO_APPROVAL.md                 ← G4 approval
-│   ├── REVIEW_REPORT.md                ← G3 review (APPROVED, 2 minor items deferred)
-│   └── TASK_COMPLETION_AUDIT.md        ← Gate tracking (G0–G5)
-├── PROJECT_STATUS.md                  ← This file
-├── README.md                          ← Naming anchor
-├── RUNTIME_ADAPTER_DESIGN.md          ← Design reference
-├── INSPECTION_REPORT.md              ← Test baseline (631 cases)
-├── ds_eo_openclaw/                    ← DS-EO core package
-├── tests/                             ← Test suite
+├── docs/reports/TASK_DS_EO_DSH_001_PLAN/        ✅ Complete (G5)
+├── docs/reports/TASK_DS_EO_DSH_002_TECH_ARCH/   ✅ Complete (G5)
+├── docs/reports/TASK_DS_EO_DSH_003_PHASE0/      ✅ Complete (G5)
+├── docs/reports/TASK_DS_EO_DSH_004_PHASE1/      ✅ Complete (G5)
+├── PROJECT_STATUS.md                              ← This file
+├── README.md                                      ← Naming anchor
+├── RUNTIME_ADAPTER_DESIGN.md                      ← Design reference
+├── INSPECTION_REPORT.md                          ← Test baseline (631 cases)
+├── ds_eo_openclaw/adapter/                        ← Phase 0 implementation
+│   ├── runtime_api.py
+│   ├── dsh_adapter.py
+│   ├── openclaw_adapter.py
+│   └── __init__.py
+├── ds_eo_openclaw/session_health/discoverer.py    ← Phase 1 modified
+├── ds_eo_openclaw/session_health/executor.py      ← Phase 1 modified
+├── ds_eo_openclaw/session_health/__init__.py       ← Phase 1 modified
+├── tests/test_adapter/test_phase0.py             ← Phase 0 test suite
+├── agents/                                         ← Governance docs
+├── protocols/                                      ← Protocols
+├── templates/                                      ← Templates
+├── .github/workflows/                              ← CI (release.yml)
+├── skills/                                         ← Agent skills
+├── benchmarks/                                     ← Benchmark suite
+├── config-templates/                               ← Config examples
 └── .git/ (branch: dsh-migration)
 ```
 
@@ -119,7 +136,7 @@ ds_eo_dsh/
 |------|--------|-------------|
 | R1: No ~/.openclaw access | ✅ | Gate checks |
 | R2: No real session operations | ✅ | Gate checks |
-| R3: No production repo modification | ✅ | Planning only so far |
+| R3: No production repo modification | ✅ | Phase 0/1 rules, planning only |
 | R4: DS-EO governance unchanged | ✅ | Planned enforcement per G4 |
 | R5: Full test suite per phase | ✅ | Required at each G4/G5 |
 | R6: OpenClaw adapter retained | ✅ | Post-migration architecture |

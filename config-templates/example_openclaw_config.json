@@ -1,0 +1,116 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "<MODEL_CTO>",
+        "fallbacks": [
+          "ollama/gemma4:31b"
+        ]
+      }
+    },
+    "list": [
+      {
+        "default": true,
+        "id": "cto",
+        "name": "CTO / Architect",
+        "identity": {
+          "emoji": "\ud83c\udfd7\ufe0f",
+          "name": "CTO"
+        },
+        "model": "<MODEL_CTO>",
+        "workspace": "<WORKSPACE_PATH>",
+        "tools": {
+          "allow": [
+            "group:fs",
+            "web_search",
+            "web_fetch",
+            "sessions_list",
+            "session_status",
+            "memory_search",
+            "memory_get",
+            "exec",
+            "process"
+          ],
+          "deny": [
+            "write",
+            "edit",
+            "apply_patch"
+          ]
+        }
+      },
+      {
+        "default": false,
+        "id": "implementer",
+        "name": "Code Implementer",
+        "identity": {
+          "emoji": "\ud83d\udcbb",
+          "name": "Implementer"
+        },
+        "model": "<MODEL_IMPLEMENTER>",
+        "workspace": "<WORKSPACE_PATH>",
+        "tools": {
+          "allow": [
+            "group:fs",
+            "group:runtime",
+            "group:web",
+            "group:sessions",
+            "group:memory"
+          ],
+          "profile": "coding"
+        }
+      },
+      {
+        "default": false,
+        "id": "reviewer",
+        "name": "Senior Code Reviewer",
+        "identity": {
+          "emoji": "\ud83d\udd0d",
+          "name": "Reviewer"
+        },
+        "model": "<MODEL_REVIEWER>",
+        "workspace": "<WORKSPACE_PATH>",
+        "tools": {
+          "allow": [
+            "group:fs",
+            "web_search",
+            "web_fetch",
+            "exec",
+            "process",
+            "sessions_list",
+            "session_status",
+            "memory_search",
+            "memory_get"
+          ],
+          "deny": [
+            "write",
+            "edit",
+            "apply_patch"
+          ]
+        }
+      },
+      {
+        "default": false,
+        "id": "pm",
+        "name": "Project Manager",
+        "identity": {
+          "emoji": "\ud83d\udccb",
+          "name": "PM"
+        },
+        "model": "<MODEL_PM>",
+        "workspace": "<WORKSPACE_PATH>",
+        "tools": {
+          "allow": [
+            "write",
+            "apply_patch",
+            "web_search",
+            "web_fetch"
+          ],
+          "deny": [
+            "exec",
+            "process"
+          ]
+        }
+      }
+    ]
+  }
+}

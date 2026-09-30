@@ -1,0 +1,185 @@
+# DS-EO Completion Protocol (Global Standard)
+
+**Version**: 1.0  
+**Status**: Active  
+**Scope**: All OpenClaw workspaces using DS-EO  
+
+---
+
+## Purpose
+
+Defines role-specific completion checklists and quality gates for each phase of the development workflow. This protocol ensures every agent knows exactly what constitutes a complete, handoff-ready deliverable.
+
+---
+
+## Roles: CTO, Implementer, Reviewer, PM
+
+### Required Artifacts
+
+See **G2 Gate Checklist** in `approval_protocol.md` for the authoritative pre-G2 requirements.
+
+### Agent-Specific Notes
+
+- Follow existing project coding conventions
+- Document all design decisions and rationale
+- Ensure no unresolved TODOs or FIXMEs that block verification
+
+### Quality Gate
+
+- All acceptance criteria from `CTO_PLAN.md` are addressed in the report
+- No unresolved TODOs or FIXMEs left behind (document if unavoidable)
+- Code follows existing project conventions (see relevant coding standards)
+
+---
+
+## Role: Reviewer Completion Checklist
+
+Before declaring review complete, the Development Reviewer must have all of the following:
+
+### Required Artifacts
+
+- [ ] `git diff` analysis against original spec
+- [ ] Regression test run on existing tests
+- [ ] `REVIEW_REPORT.md` written to the task directory with:
+  - [ ] Spec compliance matrix (requirement → implementation status)
+  - [ ] Code quality assessment (naming, structure, patterns)
+  - [ ] Architecture adherence check
+  - [ ] Regression analysis (what broke, if anything)
+  - [ ] Scoring rubric completed (see `review_protocol.md`)
+  - [ ] Clear recommendation: APPROVE / APPROVE_WITH_COMMENTS / REQUEST_CHANGES / REJECT
+- [ ] Artifact metadata present (`agent_id`, `produced_at`)
+
+### Quality Gate
+
+- Review is independent — reviewer does not validate their own work
+- All spec requirements are checked, even if they appear trivially met
+- Findings cite specific file locations and line references where possible
+
+---
+
+## Role: CTO Completion Checklist
+
+Before issuing final approval (Gate G4), the CTO must have all of the following:
+
+### Required Actions
+
+- [ ] Received and reviewed Reviewer's report
+- [ ] Verified Implementer's implementation report is complete
+- [ ] Confirmed Reviewer's recommendation against own assessment
+- [ ] `CTO_APPROVAL.md` written with:
+  - [ ] Decision (APPROVE / REJECT)
+  - [ ] Rationale referencing both reports
+  - [ ] If rejected: specific issues to address and next steps
+
+### Quality Gate
+
+- Approval must reference the Reviewer's report by name/ID
+- Rejection must include actionable feedback, not just "not approved"
+
+---
+
+## Post-G4: PM Completion Checklist (Project Manager)
+
+After Gate G4 approval is issued, the Project Manager runs the following completion checklist. This phase occurs **after** the CTO's technical decision and is purely administrative.
+
+### Artifact Verification
+
+- [ ] `CTO_PLAN.md` exists in task directory
+- [ ] `IMPLEMENTATION_REPORT.md` exists in task directory
+- [ ] `REVIEW_REPORT.md` exists in task directory (written by Reviewer)
+- [ ] `CTO_APPROVAL.md` exists with APPROVE decision
+- [ ] All spec requirements addressed per review report
+
+### Project Status Update
+
+- [ ] `PROJECT_STATUS.md` updated with completed work summary
+- [ ] Task status changed to "completed" in project tracker
+- [ ] Any dependency references updated (specs, related TASKs)
+
+### Changelog Entry
+
+- [ ] `CHANGELOG.md` entry added for user-facing changes:
+  - [ ] Date and task ID referenced
+  - [ ] Brief description of what was implemented
+  - [ ] Link to CTO_APPROVAL.md or review report if relevant
+
+
+### Git Commit (Post-G4 only)
+
+After completing all administrative updates above, the PM must commit approved work to the local Git repository:
+
+- [ ] All changes from this task are staged and committed
+- [ ] Commit message references the TASK_ID (e.g., `TASK_DS_EO_XXX`)
+- [ ] Commit includes status/changelog updates and any new protocol/artifact files
+- [ ] Commit does NOT include unreviewed WIP or partial implementations
+
+**Constraint**: PM commits only after G4 approval. Never during active implementation or review phases.
+
+
+### Git Push to Remote (Post-G4 only)
+
+After completing all local commits above, the PM may push approved work to the remote GitHub repository:
+
+- [ ] User has confirmed target repository URL and branch name
+- [ ] `git push <remote> <branch>` executed with verified credentials
+- [ ] No uncommitted changes remain in working directory
+- [ ] Push includes all task artifacts, status updates, changelog, and new governance files
+
+**Constraint**: PM pushes only after explicit user confirmation of the target repository URL and branch. Never auto-push without confirmation. Credentials are read from local secrets or environment variables — never embedded in commit messages or protocol files.
+
+### Milestone Flagging
+
+- [ ] If task contributes to a milestone → flag in `PROJECT_STATUS.md`
+- [ ] Summarize cumulative progress toward next milestone
+- [ ] Notify relevant parties of milestone completion via `PM_STATUS_UPDATE` message
+
+### Final Notification
+
+- Send `PM_CLOSED` message (see `communication_protocol.md`) with verification summary.
+
+---
+
+## PM Role Boundaries
+
+The Project Manager operates **only in the post-decision lifecycle**:
+
+1. PM does not make gate decisions — that is the CTO's role.
+2. PM does not write technical content — `CTO_PLAN.md` content is written by the CTO.
+3. PM only verifies, records, and communicates process state after technical work is complete.
+
+---
+
+## Completion Message Format
+
+Agents should use this format when announcing completion:
+
+```markdown
+**COMPLETION** — Task: <taskId>
+
+**Phase**: <phase name>
+
+**Artifacts Produced**:
+- `<artifact_name>` at `<path>`
+
+**Status**: All acceptance criteria met / Partially met (details below)
+
+**Notes**: <any context for the next agent or user>
+```
+
+---
+
+## Rules
+
+1. A phase is not "complete" until all required artifacts exist in the task directory.
+2. Incomplete submissions are returned to the originating agent — do not proceed to the next gate.
+3. The Reviewer produces `REVIEW_REPORT.md` directly (has write capability, scoped behaviorally to current task directory).
+4. Completion checklists are minimum requirements — agents should exceed them when possible.
+5. **PM completes administrative duties only after Gate G4 approval** — it does not participate in technical gates.
+
+---
+
+## Related Protocols
+
+- `communication_protocol.md` — Message format standards
+- `delegation_protocol.md` — How tasks are assigned
+- `handoff_protocol.md` — What must exist before the next phase starts
