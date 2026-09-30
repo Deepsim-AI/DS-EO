@@ -6,7 +6,7 @@ description: 'The canonical DS-EO development workflow with four gates (G1-G4) a
   '
 agents:
   cto:
-    model: ollama/qwen3.6:35b
+    model: <MODEL_CTO>
     role: architect
     label: CTO / Architect
     emoji: "\U0001F3D7\uFE0F"
@@ -16,7 +16,7 @@ agents:
 
       '
   implementer:
-    model: ollama/qwen3.8:27b
+    model: <MODEL_IMPLEMENTER>
     role: coder
     label: Code Implementer
     emoji: "\U0001F4BB"
@@ -25,7 +25,7 @@ agents:
     description: "Execute approved plans with full file system access. Follows CTO\
       \ plan exactly \u2014 no independent architectural decisions.\n"
   reviewer:
-    model: ollama/laguna-xs-2.1:q4_K_M
+    model: <MODEL_REVIEWER>
     role: auditor
     label: Senior Code Reviewer
     emoji: "\U0001F50D"
@@ -35,7 +35,7 @@ agents:
 
       '
   pm:
-    model: ollama/ornith:35b
+    model: <MODEL_PM>
     role: coordinator
     label: Project Manager
     emoji: "\U0001F4CB"

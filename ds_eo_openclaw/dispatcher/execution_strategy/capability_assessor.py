@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import subprocess
+import re
 from typing import Optional
 
 from .constants import (
@@ -199,7 +200,8 @@ class CapabilityAssessor:
 
         # Map registry names (ollama/model:name) to listed names and fill gaps with estimates
         for model in model_names:
-            short_name = model.replace("ollama/", "")
+            # Strip any single-segment provider prefix (ollama/, dsh://model/, etc.)
+            short_name = re.sub(r"^([a-z][a-z0-9]*)/", "", model)
             if short_name in sizes:
                 sizes[model] = sizes[short_name]  # use detected size
             elif model in sizes:

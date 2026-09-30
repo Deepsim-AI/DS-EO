@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import subprocess
 from typing import Optional
+from ..adapter.model_registry import get_registry, legacy_default_model
 
 
 @dataclass
@@ -44,7 +45,7 @@ class SpawnOutcome:
 
 
 # Agent role → default model mapping (from AGENTS.md)
-DEFAULT_MODEL_MAP = {
+_LEGACY_DEFAULT_MODEL_MAP = {
     "implementer": "ollama/qwen3.6:27b",
     "reviewer": "ollama/laguna-xs-2.1:q4_K_M",
     "cto": "ollama/qwen3.6:35b",
@@ -72,7 +73,8 @@ class SessionSpawnManager:
         self.dispatcher_state_dir = os.path.join(
             self.workspace_root, "docs", "dispatchers"
         )
-        self._agent_model_map = dict(DEFAULT_MODEL_MAP)
+        # Model lookup now uses get_registry().default_model_for_role() with legacy fallback
+        self._agent_model_map = dict(_LEGACY_DEFAULT_MODEL_MAP)  # Backward compat for legacy code paths
 
     # ==================================================================
     # Public API
@@ -107,7 +109,10 @@ class SessionSpawnManager:
             SpawnOutcome with session_key on success, error on failure.
         """
         # Step 1: Determine target model
-        target_model = model_override or self._agent_model_map.get(agent_role)
+        registry = get_registry()
+        target_model = (model_override or
+                       registry.default_model_for_role(agent_role) or
+                       legacy_default_model(agent_role))
         if not target_model:
             return SpawnOutcome(
                 success=False,
