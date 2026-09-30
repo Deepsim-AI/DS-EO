@@ -123,11 +123,36 @@ Phase 6 delivered configurable HTTP client infrastructure and P1 adapter methods
 
 **Deferred to TASK_DS_EO_DSH_010+**: archive_session, spawn_session, submit_task, run_tools, available_models, run_task (per Deliverable E priority plan)
 
-### Future: TASK_DS_EO_DSH_010+ — DSH Native Features Continued ⏳ PENDING
+### ✅ TASK_DS_EO_DSH_010 — Phase 7: DSH Adapter P2+ Methods (G5 DONE)
 
-After Phase 7 completes remaining stubs:
-- Realize remaining DSH adapter stubs (session registry, hooks)
-- Remove OpenClaw-specific code paths that are no longer needed
+**Phase 7 achieved a major milestone: ALL 10 RuntimeAPI methods now have configurable DSH implementations.**
+
+Phase 7 deliverables produced and verified:
+- **dsh_adapter.py updated** (368 lines, was 194): P2+ methods implemented as configurable DSH calls with graceful fallback
+  - archive_session(): Configurable POST → output_path mapping
+  - spawn_session(): Config validation + POST → session_key/run_id mapping
+  - submit_task(): Task queue POST → task_id mapping
+  - run_tools(): **Full policy gate** (allow/deny semantics) + DSH call
+  - available_models(): Configurable catalog list query
+  - run_task(): Configurable hook wrapper
+- **dsh_adapter_p2_test.py** (NEW, 14/14 pass): All P2+ method tests including policy gate scenarios
+- **Parity milestone**: configurable impls 4→10, stub-only 6→0
+- **36/36 adapter tests pass** (Phase 0 + Phase 6 + Phase 7), zero regressions
+
+| Deliverable | Location | Status |
+|------------|----------|--------|
+| dsh_adapter.py (all 10 methods configurable) | ds_eo_openclaw/adapter/ | ✅ MODIFIED (368 lines) |
+| dsh_adapter_p2_test.py | tests/test_adapter/ | ✅ NEW (14/14 pass) |
+| TEST_REPORT.md | TASK_DS_EO_DSH_010_PHASE7/ | ✅ PRODUCED |
+| DELIVERABLE_E_DELTA.md | TASK_DS_EO_DSH_010_PHASE7/ | ✅ PRODUCED |
+
+**Infrastructure production-ready:** When DSH API ships and base_url is configured, all 10 methods activate automatically with zero code redesign.
+
+### Next: Post-Parity Cleanup ⏳ PENDING
+
+With full adapter infrastructure complete:
+- Remove OpenClaw-specific code paths no longer needed
+- Phase 8+: Production deployment planning
 - Release v1.0 of DS-EO DSH Edition
 
 ---
