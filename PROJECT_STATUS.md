@@ -105,9 +105,27 @@ Phase 5 produced all required deliverables:
 | DELIVERABLE_E_COMPARISON.md | Same dir | ✅ PRODUCED (120 lines) |
 | GOLIVE_CHECKLIST.md | Same dir | ✅ PRODUCED (72 lines) |
 
-### Future: TASK_DS_EO_DSH_009+ — DSH Native Features ⏳ PENDING
+### ✅ TASK_DS_EO_DSH_009 — Phase 6: DSH Adapter P1 Implementation (G5 DONE)
 
-After smoke tests pass and runtime is confirmed stable:
+Phase 6 delivered configurable HTTP client infrastructure and P1 adapter methods:
+- **dsh_http_client.py** (NEW, 157 lines): Configurable base_url/auth/timeout HTTP client with error mapping
+- **P1 methods updated**: get_session_info, compact_session, close_session, model_info — all attempt DSH API first, fall back gracefully
+- **Parity delta**: configurable impls 2→4 (model_info, register_binding, +get_session_info, compact_session)
+- **Test results**: 22/22 adapter tests pass (0 regressions from Phases 0–5)
+
+| Deliverable | Location | Status |
+|------------|----------|--------|
+| dsh_http_client.py | ds_eo_openclaw/adapter/ | ✅ NEW (157 lines) |
+| dsh_adapter.py (P1 updated) | ds_eo_openclaw/adapter/ | ✅ MODIFIED (194 lines) |
+| dsh_http_client_test.py | tests/test_adapter/ | ✅ NEW (11/11 pass) |
+| TEST_REPORT.md | TASK_DS_EO_DSH_009_PHASE6/ | ✅ PRODUCED |
+| DELIVERABLE_E_DELTA.md | TASK_DS_EO_DSH_009_PHASE6/ | ✅ PRODUCED |
+
+**Deferred to TASK_DS_EO_DSH_010+**: archive_session, spawn_session, submit_task, run_tools, available_models, run_task (per Deliverable E priority plan)
+
+### Future: TASK_DS_EO_DSH_010+ — DSH Native Features Continued ⏳ PENDING
+
+After Phase 7 completes remaining stubs:
 - Realize remaining DSH adapter stubs (session registry, hooks)
 - Remove OpenClaw-specific code paths that are no longer needed
 - Release v1.0 of DS-EO DSH Edition
