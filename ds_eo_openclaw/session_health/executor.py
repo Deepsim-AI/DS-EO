@@ -20,7 +20,6 @@ from typing import Optional
 
 from .enums import SessionHealthState, LifecycleAction, MonitorStatus
 from .config import SessionHealthConfig
-from ..adapter import RuntimeAdapterFactory, OpenClawRuntimeAdapter
 
 
 # --------------------------------------------------------------------------- #
@@ -90,6 +89,8 @@ class SessionHealthExecutor:
         api_client: object = None,
     ):
         self.config = config or SessionHealthConfig()
+        # Lazy import to avoid circular dependency with adapter package
+        from ..adapter import RuntimeAdapterFactory, OpenClawRuntimeAdapter
         self.monitor_status = monitor_status
         self.protected_sessions = protected_sessions or set()
         self.recovery_engine = recovery_engine
