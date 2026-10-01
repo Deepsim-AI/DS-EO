@@ -281,7 +281,7 @@ class WorkflowEngine:
         try:
             import asyncio
 
-            from dispatcher.execution_strategy import ExecutionStrategyManager
+            from ds_eo_dsh.dispatcher.execution_strategy import ExecutionStrategyManager
             ws = self.workspace_root or os.path.join(os.path.dirname(__file__), "..")
             strategy_mgr = ExecutionStrategyManager(workspace_root=ws)
             _exec_strategy_name = strategy_mgr.selector.current_strategy_name

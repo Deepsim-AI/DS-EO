@@ -18,9 +18,9 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from dispatcher.execution_strategy.strategy_base import StrategyResult, CapabilityReport
-from dispatcher.execution_strategy.constants import Strategy
-from dispatcher.execution_strategy.sequential_strategy import (
+from ds_eo_dsh.dispatcher.execution_strategy.strategy_base import StrategyResult, CapabilityReport
+from ds_eo_dsh.dispatcher.execution_strategy.constants import Strategy
+from ds_eo_dsh.dispatcher.execution_strategy.sequential_strategy import (
     SequentialStrategy, _ModelLifecycleManager,
 )
 

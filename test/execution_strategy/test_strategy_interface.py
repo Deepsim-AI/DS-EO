@@ -13,11 +13,11 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from dispatcher.execution_strategy.strategy_base import (
+from ds_eo_dsh.dispatcher.execution_strategy.strategy_base import (
     ExecutionStrategy, StrategyResult, CapabilityReport
 )
-from dispatcher.execution_strategy.constants import Strategy
-from dispatcher.execution_strategy.concurrent_strategy import ConcurrentStrategy
+from ds_eo_dsh.dispatcher.execution_strategy.constants import Strategy
+from ds_eo_dsh.dispatcher.execution_strategy.concurrent_strategy import ConcurrentStrategy
 
 
 class TestABCContract:

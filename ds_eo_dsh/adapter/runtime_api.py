@@ -214,14 +214,12 @@ class RuntimeAdapterFactory:
                 runtime = "openclaw"
 
         if runtime == "dsh":
-            from .dsh_adapter import DshRuntimeAdapter
-            # Verify DSH API is accessible before returning this adapter
             if not os.environ.get("DSH_API_BASE"):
-                raise RuntimeError(
-                    "DshRuntimeAdapter selected but DSH_API_BASE is not set. "
-                    "Set the DSH_API_BASE environment variable to your DSH endpoint URL, "
-                    "or configure runtime='openclaw' for OpenClaw fallback."
-                )
+                # DSH HTTP endpoint not configured — use the production headless adapter
+                # which executes roles via `dsh --profile <name>` subprocess calls.
+                from .dsh_headless_adapter import DshHeadlessAdapter
+                return DshHeadlessAdapter()
+            from .dsh_adapter import DshRuntimeAdapter
             return DshRuntimeAdapter()
         elif runtime == "openclaw":
             from .openclaw_bridge import OpenClawRuntimeAdapter

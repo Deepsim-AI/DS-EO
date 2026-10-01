@@ -24,7 +24,7 @@ if os.path.join(os.path.dirname(__file__), "..") not in sys.path:
 if "ds_eo_dsh" not in sys.path and os.path.join(os.path.dirname(__file__), "ds_eo_dsh") not in sys.path:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "ds_eo_dsh"))
 
-from dispatcher.session_dispatch.supervisor import (
+from ds_eo_dsh.dispatcher.session_dispatch.supervisor import (
     WorkflowSupervisor,
     SupervisorConfig,
     SupervisorEvent,
@@ -33,7 +33,7 @@ from dispatcher.session_dispatch.supervisor import (
     TaskSupervisorState,
     AgentState,
 )
-from dispatcher.session_dispatch.liveness import LivenessChecker, LivenessResult
+from ds_eo_dsh.dispatcher.session_dispatch.liveness import LivenessChecker, LivenessResult
 
 
 # ====================================================================

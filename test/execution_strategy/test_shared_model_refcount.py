@@ -19,8 +19,8 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from dispatcher.execution_strategy.constants import Strategy
-from dispatcher.execution_strategy.shared_model_strategy import SharedModelStrategy
+from ds_eo_dsh.dispatcher.execution_strategy.constants import Strategy
+from ds_eo_dsh.dispatcher.execution_strategy.shared_model_strategy import SharedModelStrategy
 
 WORKSPACE = "/home/deepsim/ds_eo_dsh"
 MODEL = "ollama/qwen3.8:27b"

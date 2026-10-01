@@ -16,8 +16,8 @@ from unittest.mock import patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from dispatcher.engine import WorkflowEngine, TransitionResult
-from dispatcher.execution_strategy import ExecutionStrategyManager, StrategyResult
+from ds_eo_dsh.dispatcher.engine import WorkflowEngine, TransitionResult
+from ds_eo_dsh.dispatcher.execution_strategy import ExecutionStrategyManager, StrategyResult
 
 WORKSPACE = "/home/deepsim/ds_eo_dsh"
 AGENT = "implementer"
@@ -40,7 +40,7 @@ def _fail_result():
 def _reset_singleton():
     """Reset ExecutionStrategyManager singleton so each test starts clean."""
     ExecutionStrategyManager._instance = None
-    from dispatcher.execution_strategy.shared_model_strategy import SharedModelStrategy
+    from ds_eo_dsh.dispatcher.execution_strategy.shared_model_strategy import SharedModelStrategy
     SharedModelStrategy._ref_counts.clear()
     SharedModelStrategy._active_agents.clear()
 

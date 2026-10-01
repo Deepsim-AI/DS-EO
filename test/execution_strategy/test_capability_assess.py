@@ -8,8 +8,8 @@ from unittest.mock import patch, MagicMock
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from dispatcher.execution_strategy.capability_assessor import CapabilityAssessor
-from dispatcher.execution_strategy.constants import Strategy
+from ds_eo_dsh.dispatcher.execution_strategy.capability_assessor import CapabilityAssessor
+from ds_eo_dsh.dispatcher.execution_strategy.constants import Strategy
 
 
 class TestCapabilityAssessor:

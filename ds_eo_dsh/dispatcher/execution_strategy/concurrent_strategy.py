@@ -39,7 +39,7 @@ class ConcurrentStrategy(ExecutionStrategy):
     @property
     def spawn_manager(self):
         if self._spawn_manager is None and self.workspace_root:
-            from dispatcher.session_spawn import SessionSpawnManager
+            from ds_eo_dsh.dispatcher.session_spawn import SessionSpawnManager
             self._spawn_manager = SessionSpawnManager(
                 workspace_root=self.workspace_root
             )
@@ -54,7 +54,7 @@ class ConcurrentStrategy(ExecutionStrategy):
         """
         # Resolve agent → model from the AgentRegistry
         try:
-            from dispatcher.registry import AgentRegistry
+            from ds_eo_dsh.dispatcher.registry import AgentRegistry
             registry = AgentRegistry(workspace_root=self.workspace_root)
             result = registry.load()
             if not result.success or not result.agent:

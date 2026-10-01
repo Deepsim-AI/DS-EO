@@ -10,8 +10,8 @@ from unittest.mock import MagicMock, patch
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from dispatcher.execution_strategy.concurrent_strategy import ConcurrentStrategy
-from dispatcher.execution_strategy.strategy_base import StrategyResult
+from ds_eo_dsh.dispatcher.execution_strategy.concurrent_strategy import ConcurrentStrategy
+from ds_eo_dsh.dispatcher.execution_strategy.strategy_base import StrategyResult
 
 
 @pytest.fixture

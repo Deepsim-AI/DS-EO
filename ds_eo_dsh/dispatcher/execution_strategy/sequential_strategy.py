@@ -389,7 +389,7 @@ class SequentialStrategy(ExecutionStrategy):
     def _resolve_model(self, agent_id: str) -> Optional[str]:
         """Resolve the model name for an agent from the registry."""
         try:
-            from dispatcher.registry import AgentRegistry
+            from ds_eo_dsh.dispatcher.registry import AgentRegistry
             registry = AgentRegistry(workspace_root=self.workspace_root)
             registry.load()
             reg_result = registry.resolve(agent_id)

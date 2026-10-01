@@ -12,8 +12,8 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from dispatcher.execution_strategy.selector import ExecutionStrategySelector
-from dispatcher.execution_strategy.constants import Strategy, SELECTION_SOURCE_AUTO, SELECTION_SOURCE_USER_OVERRIDE
+from ds_eo_dsh.dispatcher.execution_strategy.selector import ExecutionStrategySelector
+from ds_eo_dsh.dispatcher.execution_strategy.constants import Strategy, SELECTION_SOURCE_AUTO, SELECTION_SOURCE_USER_OVERRIDE
 
 
 @pytest.fixture
