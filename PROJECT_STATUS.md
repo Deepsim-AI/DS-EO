@@ -148,14 +148,165 @@ Phase 7 deliverables produced and verified:
 
 **Infrastructure production-ready:** When DSH API ships and base_url is configured, all 10 methods activate automatically with zero code redesign.
 
-### Next: Post-Parity Cleanup ⏳ PENDING
+### ✅ TASK_DS_EO_DSH_011 — Phase 8A: Package Renaming + Bridge Consolidation (G5 DONE)
 
-With full adapter infrastructure complete:
-- Remove OpenClaw-specific code paths no longer needed
-- Phase 8+: Production deployment planning
-- Release v1.0 of DS-EO DSH Edition
+Implementation summary for reference — see TASK_DS_EO_DSH_011_PHASE8A/CTO_APPROVAL.md.
+
+### ✅ TASK_DS_EO_DSH_012 — Phase 8B: Deployment Documentation (G5 DONE)
+
+Implementation summary for reference — see TASK_DS_EO_DSH_012_PHASE8B/TEST_REPORT.md.
+
+### ✅ TASK_DS_EO_DSH_013 — Phase 9: Production Readiness & OpenClaw Bridge Consolidation (G5 DONE)
+
+Implementation summary for reference — see TASK_DS_EO_DSH_013_PHASE9/CTO_PLAN.md + TEST_REPORT.md.
+
+### ✅ TASK_DS_EO_DSH_014 — Phase 10: DSH Headless Adapter + Baseline Repair (G5 DONE)
+
+Headless adapter implementation and test-suite baseline repair restored full parity. See TASK_DS_EO_DSH_014_PHASE10/CTO_APPROVAL.md. Summary:
+- **dsh_headless_adapter.py** (782 lines): Hardware-aware 3-model limiter, all 10 RuntimeAPI methods
+- **Test baseline**: 688 passed from 21 failing — full repair
+- **Deliverables**: Adapter + unit tests (32+1 sk) + smoke test + architecture doc
+
+### ✅ TASK_DS_EO_DSH_015 — Phase 11: Runtime Adapter Invocation Integration (G5 COMPLETE 2026-10-01)
+
+Phase 11 delivers the runtime dispatch bridge connecting `engine.execute_transition()` to a concrete RuntimeAdapter, completing the infrastructure trilogy.
+
+**Changes applied:**
+
+| File | Action | Lines |
+|------|--------|-------|
+| `ds_eo_dsh/dispatcher/dispatch_client.py` | NEW (WI-1) | 194 |
+| `ds_eo_dsh/dispatcher/engine.py` | MODIFIED (WI-2, +~80 lines wired; `_current_agent` fix) | 756 total |
+| `README.md` | MODIFIED (WI-3, Runtime Config table added to Quick Start) | 232 total |
+| `tests/test_adapter/test_dispatch_client.py` | NEW (WI-4) | 250 |
+
+**Key capabilities:**
+- **Non-fatal dispatch**: Gateway transitions now call `dispatch_client.run()` after strategy hooks, before validation. On exception → logged warning, gate proceeds. No file writes beyond adapter boundary.
+- **Auto-resolution of target_agent from workflow config**: When `execute_transition()` is called without an explicit `target_agent`, the workflow YAML `agent` field (e.g., `implementer`) resolves as the dispatch recipient.
+- **Env resolution table** added to README.md: `DSH_ADAPTER` (headless/dsh/openclaw) + `DSH_API_BASE` controls runtime target; "headless" is default when no env configured.
+- **Test suite**: 11 new tests covering headless resolution, dict construction, failure paths, lifecycle engine integration — all passing. Full suite: **700 passed, 6 skipped, 0 failed**.
+
+**Pre-existing fix during Phase 11:** `test_selector_override.py` assertion at line 103 now includes `"shared_model"` (gap from TASK_DS_EO_DSH_044). Verified green post-fix.
+
+| Deliverable | Location | Status |
+|------------|----------|--------|
+| CTO_PLAN.md | TASK_DS_EO_DSH_015_PHASE11/ | ✅ produced |
+| REVIEW_REPORT.md (independent) | Same dir — scored 4.2/5, **APPROVE** by laguna-xs-2.1:q4_K_M | ✅ reviewed |
+| CTO_APPROVAL.md | Same dir | ✅ approved after G3 review |
+| TASK_COMPLETION_AUDIT.md (all gates) | Same dir | ✅ complete |
+
+**Last Updated:** 2026-10-01  
+**Working Directory:** `/home/deepsim/ds_eo_dsh/`  
 
 ---
+
+## Migration Overview
+
+DS-EO DSH Edition migrates the primary runtime from OpenClaw to DeepSeek Harness via a Runtime Adapter layer. DS-EO governance remains unchanged.
+
+| Field | Value |
+|-------|-------|
+| Project | DS-EO (Deepsim Engineering Organization) — DSH Edition |
+| Canonical repo | `github.com/Deepsim-AI/DS-EO` |
+| Working branch | `dsh-migration` |
+| Primary runtime | DeepSeek Harness (DSH) |
+| Legacy runtime | OpenClaw (adapter retained as backward-compatible backend) |
+
+---
+
+## Completed Tasks
+
+### ✅ TASK_DS_EO_DSH_015 — Phase 11: Runtime Adapter Invocation Integration (G5 COMPLETE 2026-10-01)
+
+Phase 11 delivers the runtime dispatch bridge connecting `engine.execute_transition()` to a concrete RuntimeAdapter, completing the infrastructure trilogy.
+
+**Changes applied:**
+
+| File | Action | Lines |
+|------|--------|-------|
+| `ds_eo_dsh/dispatcher/dispatch_client.py` | NEW (WI-1) | 194 |
+| `ds_eo_dsh/dispatcher/engine.py` | MODIFIED (WI-2, +~80 lines wired; `_current_agent` fix) | 756 total |
+| `README.md` | MODIFIED (WI-3, Runtime Config table added to Quick Start) | 232 total |
+| `tests/test_adapter/test_dispatch_client.py` | NEW (WI-4) | 250 |
+
+**Key capabilities:**
+- **Non-fatal dispatch**: Gateway transitions now call `dispatch_client.run()` after strategy hooks, before validation. On exception → logged warning, gate proceeds. No file writes beyond adapter boundary.
+- **Auto-resolution of target_agent from workflow config**: When `execute_transition()` is called without an explicit `target_agent`, the workflow YAML `agent` field (e.g., `implementer`) resolves as the dispatch recipient.
+- **Env resolution table** added to README.md: `DSH_ADAPTER` (headless/dsh/openclaw) + `DSH_API_BASE` controls runtime target; "headless" is default when no env configured.
+- **Test suite**: 11 new tests covering headless resolution, dict construction, failure paths, lifecycle engine integration — all passing. Full suite: **700 passed, 6 skipped, 0 failed**.
+
+**Pre-existing fix during Phase 11:** `test_selector_override.py` assertion at line 103 now includes `"shared_model"` (gap from TASK_DS_EO_DSH_044). Verified green post-fix.
+
+| Deliverable | Location | Status |
+|------------|----------|--------|
+| CTO_PLAN.md | TASK_DS_EO_DSH_015_PHASE11/ | ✅ produced |
+| REVIEW_REPORT.md (independent) | Same dir — scored 4.2/5, **APPROVE** by laguna-xs-2.1:q4_K_M | ✅ reviewed |
+| CTO_APPROVAL.md | Same dir | ✅ approved after G3 review |
+| TASK_COMPLETION_AUDIT.md (all gates) | Same dir | ✅ complete |
+
+---
+
+### ✅ TASK_DS_EO_DSH_008 — Smoke Tests + Reliability Comparison + Go-Live (G5 DONE)
+
+
+Phase 5 produced all required deliverables:
+- **SMOKE_TEST_REPORT.md**: Adapter compliance tests 11/11 PASS. No regressions from Phases 1–4 verified.
+- **DELIVERABLE_E_COMPARISON.md**: Full parity analysis — 0/10 methods fully implemented, 2/10 partial (model_info, register_binding), 8/10 stubbed as expected.
+- **GOLIVE_CHECKLIST.md**: Migration infrastructure complete. Go-live for production DSH usage pending TASK_DS_EO_DSH_009+ adapter implementation.
+- **No behavioral regressions** from Phases 0–4 confirmed.
+
+| Deliverable | Location | Status |
+|------------|----------|--------|
+| SMOKE_TEST_REPORT.md | TASK_DS_EO_DSH_008_PHASE5/ | ✅ PRODUCED (114 lines) |
+| DELIVERABLE_E_COMPARISON.md | Same dir | ✅ PRODUCED (120 lines) |
+| GOLIVE_CHECKLIST.md | Same dir | ✅ PRODUCED (72 lines) |
+
+### ✅ TASK_DS_EO_DSH_009 — Phase 6: DSH Adapter P1 Implementation (G5 DONE)
+
+Phase 6 delivered configurable HTTP client infrastructure and P1 adapter methods:
+- **dsh_http_client.py** (NEW, 157 lines): Configurable base_url/auth/timeout HTTP client with error mapping
+- **P1 methods updated**: get_session_info, compact_session, close_session, model_info — all attempt DSH API first, fall back gracefully
+- **Parity delta**: configurable impls 2→4 (model_info, register_binding, +get_session_info, compact_session)
+- **Test results**: 22/22 adapter tests pass (0 regressions from Phases 0–5)
+
+| Deliverable | Location | Status |
+|------------|----------|--------|
+| dsh_http_client.py | ds_eo_openclaw/adapter/ | ✅ NEW (157 lines) |
+| dsh_adapter.py (P1 updated) | ds_eo_openclaw/adapter/ | ✅ MODIFIED (194 lines) |
+| dsh_http_client_test.py | tests/test_adapter/ | ✅ NEW (11/11 pass) |
+| TEST_REPORT.md | TASK_DS_EO_DSH_009_PHASE6/ | ✅ PRODUCED |
+| DELIVERABLE_E_DELTA.md | TASK_DS_EO_DSH_009_PHASE6/ | ✅ PRODUCED |
+
+**Deferred to TASK_DS_EO_DSH_010+**: archive_session, spawn_session, submit_task, run_tools, available_models, run_task (per Deliverable E priority plan)
+
+### ✅ TASK_DS_EO_DSH_010 — Phase 7: DSH Adapter P2+ Methods (G5 DONE)
+
+**Phase 7 achieved a major milestone: ALL 10 RuntimeAPI methods now have configurable DSH implementations.**
+
+Phase 7 deliverables produced and verified:
+- **dsh_adapter.py updated** (368 lines, was 194): P2+ methods implemented as configurable DSH calls with graceful fallback
+  - archive_session(): Configurable POST → output_path mapping
+  - spawn_session(): Config validation + POST → session_key/run_id mapping
+  - submit_task(): Task queue POST → task_id mapping
+  - run_tools(): **Full policy gate** (allow/deny semantics) + DSH call
+  - available_models(): Configurable catalog list query
+  - run_task(): Configurable hook wrapper
+- **dsh_adapter_p2_test.py** (NEW, 14/14 pass): All P2+ method tests including policy gate scenarios
+- **Parity milestone**: configurable impls 4→10, stub-only 6→0
+- **36/36 adapter tests pass** (Phase 0 + Phase 6 + Phase 7), zero regressions
+
+| Deliverable | Location | Status |
+|------------|----------|--------|
+| dsh_adapter.py (all 10 methods configurable) | ds_eo_openclaw/adapter/ | ✅ MODIFIED (368 lines) |
+| dsh_adapter_p2_test.py | tests/test_adapter/ | ✅ NEW (14/14 pass) |
+| TEST_REPORT.md | TASK_DS_EO_DSH_010_PHASE7/ | ✅ PRODUCED |
+| DELIVERABLE_E_DELTA.md | TASK_DS_EO_DSH_010_PHASE7/ | ✅ PRODUCED |
+
+**Infrastructure production-ready:** When DSH API ships and base_url is configured, all 10 methods activate automatically with zero code redesign.
+
+
+---
+
 
 ## Artifact Organization
 

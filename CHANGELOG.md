@@ -10,6 +10,33 @@ Delivered IA document (176 lines) and content migration matrix (92 lines) for th
 
 **Gates:** G0✅ G1✅ G2✅ G3✅ G4✅ G5✅ | Review Score: 4.9/5 | CTO Approval: 5.0/5
 
+## TASK_DS_EO_DSH_015: Phase 11 — Runtime Adapter Invocation Integration ✅ G5 Complete (2026-10-01)
+
+### Summary
+Phase 11 delivers the runtime dispatch bridge connecting `engine.execute_transition()` to a concrete RuntimeAdapter. This completes the infrastructure trilogy built over Phases 0–10: adapter spec (Phase 0), thinning (Phases 1–7), and baseline repair (Phase 10) — now wired into production workflow execution.
+
+**Changes applied:**
+
+- **dispatch_client.py (NEW, 194 lines)** — Production bridge importing only `RuntimeAdapterFactory`, never a concrete adapter. Handles `headless`/`dsh`/`openclaw` runtime resolution (env → default headless). Maps `ActionResult.success` onto `TransitionResult`.
+- **engine.execute_transition() wired (~80 lines added)** — Post-strategy-hook dispatch call, auto-resolves target_agent from workflow YAML config when omitted. Non-fatal: exceptions are logged but gates proceed. Added `_current_agent` safety guard via `getattr`.
+- **README.md Runtime Config table** (WI-3) — Documents `DSH_ADAPTER` + `DSH_API_BASE` env vars and their resolution order.
+- **test_dispatch_client.py (NEW, 11 tests)** — Headless default creation, task-dict construction, factory/submit_task failure paths, lifecycle engine integration smoke tests.
+
+**Pre-existing fix:** `test_selector_override.py:103` assertion now includes `"shared_model"` (gap from TASK_DS_EO_DSH_044). Full suite: **700 passed, 6 skipped, 0 failed**.
+
+### Deliverables
+| File | Status |
+|------|--------|
+| CTO_PLAN.md | ✅ produced |
+| REVIEW_REPORT.md (independent) | ✅ reviewed — score 4.2/5, APPROVE by laguna-xs-2.1:q4_K_M |
+| CTO_APPROVAL.md (post-G3) | ✅ approved with scope compliance verified |
+| TASK_COMPLETION_AUDIT.md | ✅ all gates passed |
+| tests/test_adapter/test_dispatch_client.py | ✅ 11/11 passing |
+
+### Gate Status
+**G0✅ G1✅ G2✅ G3✅ (reviewer: 4.2/5) G4✅ CTO APPROVED G5✅ PM CLOSED**
+
+
 ## TASK_DS_EO_046: PM Release Closure Failure Prevention ✅ CLOSED (G5 Complete 2026-08-16)
 
 ### Summary
