@@ -111,7 +111,7 @@ def run(dispatch_input: Dict[str, Any], runtime: Optional[str] = None) -> Dict[s
         payload = _build_transition_result(
             ok=False,
             error="dispatch input must be a non-empty dict",
-            runtime=_resolve_runtime(),
+            runtime_name=_resolve_runtime(),
         )
         return {"result": json.dumps(payload), "runtime": payload["runtime"]}
 
@@ -127,7 +127,7 @@ def run(dispatch_input: Dict[str, Any], runtime: Optional[str] = None) -> Dict[s
         logger.error("Failed to import RuntimeAdapterFactory during dispatch: %s", exc)
         payload = _build_transition_result(
             ok=False, error=f"RuntimeAdapterFactory import failed: {exc}",
-            runtime=runtime_name,
+            runtime_name=runtime_name,
         )
         return {"result": json.dumps(payload), "runtime": payload["runtime"]}
 
@@ -146,7 +146,7 @@ def run(dispatch_input: Dict[str, Any], runtime: Optional[str] = None) -> Dict[s
         logger.error("Failed to create runtime adapter (%s): %s", factory_runtime, exc)
         payload = _build_transition_result(
             ok=False, error=f"Failed to create runtime adapter: {exc}",
-            runtime=runtime_name,
+            runtime_name=runtime_name,
         )
         return {"result": json.dumps(payload), "runtime": payload["runtime"]}
 
@@ -162,7 +162,7 @@ def run(dispatch_input: Dict[str, Any], runtime: Optional[str] = None) -> Dict[s
     except Exception as exc:
         logger.error("submit_task raised for role=%s: %s", role, exc)
         payload = _build_transition_result(
-            ok=False, error=f"submit_task raised: {exc}", runtime=runtime_name,
+            ok=False, error=f"submit_task raised: {exc}", runtime_name=runtime_name,
         )
         return {"result": json.dumps(payload), "runtime": payload["runtime"]}
 
@@ -188,7 +188,7 @@ def run(dispatch_input: Dict[str, Any], runtime: Optional[str] = None) -> Dict[s
     payload = _build_transition_result(
         ok=bool(getattr(action_result, "success", False)),
         error=action_result.error,
-        runtime=runtime_name,
+        runtime_name=runtime_name,
         details=details,
     )
     return {"result": json.dumps(payload), "runtime": payload["runtime"]}
