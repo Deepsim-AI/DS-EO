@@ -10,11 +10,24 @@ gate: G4
 
 ## Decision: **APPROVE**
 
-## Rationale
+## Pre-G4 Verification (§11a AGENTS.md — Independent Review Check)
+
+| Verification | Result |
+|--------------|--------|
+| REVIEW_REPORT.md produced by different agent? | ✅ Yes — `laguna-xs-2.1:q4_K_M` (Reviewer), not CTO |
+| No self-authored review in this task? | ✅ CONFIRMED — Reviewer independent |
+
+## Rationale (Post-G3)
 
 Phase 11 delivers the runtime dispatch bridge that connects the workflow engine
 (`engine.execute_transition`) to a concrete RuntimeAdapter. All four work items in the
-CTO PLAN are complete and verified against acceptance criteria.
+CTO PLAN are complete and verified against acceptance criteria. The independent
+Reviewer's recommendation of **APPROVE** at 4.2/5 composite supports this decision.
+
+The Reviewer's two noted items are accepted as minor — no rejection necessary:
+
+1. **Duplicate dict key `instructions` in `_build_task_input` (line 68, 75)** — The second assignment wins cleanly in CPython; both values resolve to the same string (`payload or transition_name or task_id`). Will be cleaned as a future refactoring pass. Not blocking.
+2. **Docstring references `dispatch()` but function is `run()`** — Cosmetic only; no functional impact.
 
 ### Acceptance Verification
 
