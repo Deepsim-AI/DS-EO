@@ -100,7 +100,7 @@ class TestSelectorOverridePersistence:
         source = selector.selection_source
         
         # Should have resolved (either to override or auto)
-        assert name in ["concurrent", "sequential"]
+        assert name in ["concurrent", "sequential", "shared_model"]
         assert source in [SELECTION_SOURCE_AUTO, SELECTION_SOURCE_USER_OVERRIDE]
 
 

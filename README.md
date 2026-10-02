@@ -91,6 +91,16 @@ The installer will:
 3. Merge agent configurations into config
 4. Deploy protocol files to appropriate locations
 
+### Runtime Configuration
+
+| Env Var | Default | Effect |
+|---------|---------|--------|
+| `DSH_ADAPTER=headless` | `"headless"` | Headless adapter (no live DSH API) — **production default** |
+| `DSH_ADAPTER=dsh` | — | Real DSH HTTP adapter (requires `DSH_API_BASE`) |
+| `DSH_ADAPTER=openclaw` | — | OpenClaw legacy runtime adapter |
+| `DSH_API_BASE` | unset | If set with DSH_ADAPTER ∈ {dsh, headless}, uses the HTTP adapter; otherwise headless fallback applies |
+
+
 ---
 
 ### Changing Agent Models (Post-Install)

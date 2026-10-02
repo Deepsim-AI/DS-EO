@@ -321,30 +321,69 @@ class WorkflowEngine:
             logger.warning(f"Execution strategy hook unavailable (non-fatal): {_es_err}")
             _exec_strategy_name = "unknown"
         # ===== END TASK_DS_EO_044 Strategy Hooks =====
-        # Step 1: Validate transition
+
+        # Step 1: Resolve transition config & target_agent (needed for validation)
+        if transition_name not in self.transitions:
+            msg = f"Unknown transition: {transition_name}. Available: {', '.join(self.transitions.keys())}"
+            return TransitionResult(success=False, phase_from=from_phase, error=msg)
+        tconfig = self.transitions[transition_name]
+        to_phase_cfg = tconfig.get("to")
+
+        # Resolve target_agent from config if not supplied by caller.
+        _target_agent = (
+            str(target_agent)
+            if target_agent
+            else str(tconfig.get("agent", triggered_by_agent))
+        )
+
+        # Step 2: Validate transition (uses to_phase_cfg above)
         allowed, validation_msgs = self.can_transition(from_phase, transition_name)
         if not allowed:
-            return TransitionResult(success=False, phase_from=from_phase, 
+            return TransitionResult(success=False, phase_from=from_phase,
                                     error=f"Transition blocked: {'; '.join(validation_msgs)}",
                                     validation_messages=validation_msgs)
 
-        # Step 2: Resolve transition config
-        tconfig = self.transitions[transition_name]
-        to_phase = tconfig.get("to")
-        
-        if target_agent is None:
-            target_agent = tconfig.get("agent", triggered_by_agent)
-        if event_type is None:
-            event_type = tconfig.get("event", transition_name)
+        # Step 3: Runtime dispatch (Phase 11 — TASK_DS_EO_DSH_015)
+        # Dispatch is non-fatal: exceptions are logged but the gate proceeds.
+        if _target_agent:
+            try:
+                from ds_eo_dsh.dispatcher.dispatch_client import run as _dispatch_run
 
-        # Step 3: Verify required artifacts (if any)
+                dispatch_input = {
+                    "task_id": task_id,
+                    "target_agent": _target_agent,
+                    "transition_name": transition_name,
+                    "from_phase": from_phase,
+                    "to_phase": str(to_phase_cfg or ""),
+                    "payload": payload_summary or "",
+                }
+                _dispatch_result = _dispatch_run(dispatch_input)
+                if isinstance(_dispatch_result, dict):
+                    _parsed = json.loads(_dispatch_result.get("result", "{}"))
+                    if not _parsed.get("success", False):
+                        logger.warning(
+                            "Dispatch for %s (%s->%s to %s) reported failure: %s",
+                            task_id, from_phase, _target_agent, transition_name,
+                            _parsed.get("error", "unknown"),
+                        )
+            except Exception as _dx_err:
+                logger.warning(
+                    "Dispatch client call failed for=%s transition=%s (non-fatal): %s",
+                    _target_agent, transition_name, _dx_err,
+                )
+
+        # Step 4: Apply config values
+        target_agent = _target_agent
+        event_type = event_type or tconfig.get("event", transition_name)
+
+        # Step 5: Verify required artifacts (if any)
         required_artifacts = tconfig.get("requires_artifacts", [])
         missing_artifacts = [a for a in required_artifacts if a not in (artifacts_verified or [])]
-        
+
         # Note: In production, this would check the task directory on disk.
         # Here we accept the caller's artifacts_verified list but warn about gaps.
 
-        # Step 4: Build transition record
+        # Step 6: Build transition record
         now = datetime.now(timezone.utc).isoformat()
         txn_id = f"txn_{task_id}_{from_phase}_{transition_name[:8]}"
         
@@ -357,7 +396,7 @@ class WorkflowEngine:
             id=txn_id,
             transition_name=transition_name,
             from_phase=from_phase if from_phase != "null" else None,
-            to_phase=to_phase,
+            to_phase=to_phase_cfg,
             timestamp=now,
             triggered_by_agent=triggered_by_agent,
             event_type=event_type or tconfig.get("event", ""),
@@ -365,8 +404,8 @@ class WorkflowEngine:
             artifacts_verified=artifacts_verified or [],
         )
 
-        # Step 5: Update internal state
-        self._current_phase = to_phase
+        # Step 7: Update internal state
+        self._current_phase = to_phase_cfg
         if from_phase and not hasattr(self, '_phase_history'):
             self._phase_history = []
         if from_phase:
@@ -374,9 +413,9 @@ class WorkflowEngine:
                 phase=from_phase,
                 entered_at=getattr(self, '_last_enter_time', now),
                 left_at=now,
-                agent=self._current_agent or triggered_by_agent,
+                agent=getattr(self, '_current_agent', None) or triggered_by_agent,
             ))
-        if to_phase != from_phase:
+        if to_phase_cfg != from_phase:
             self._last_enter_time = now
             self._current_agent = tconfig.get("agent", target_agent)
 
@@ -384,7 +423,7 @@ class WorkflowEngine:
             success=True,
             record=record,
             phase_from=from_phase,
-            phase_to=to_phase,
+            phase_to=to_phase_cfg,
         )
 
     def get_prompt_template(self, transition_name: str) -> Optional[str]:
