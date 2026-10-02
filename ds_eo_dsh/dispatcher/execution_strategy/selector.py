@@ -119,7 +119,7 @@ class ExecutionStrategySelector:
         module_name = base.lower() + "_strategy"
         try:
             import importlib
-            mod = importlib.import_module(f".{module_name}", package="dispatcher.execution_strategy")
+            mod = importlib.import_module(f".{module_name}", package="ds_eo_dsh.dispatcher.execution_strategy")
             cls = getattr(mod, class_name)
             instance = cls(workspace_root=self.workspace_root) if hasattr(cls, '__init__') and 'workspace_root' in cls.__init__.__code__.co_varnames else cls()
             self._strategy_map[name] = instance
@@ -286,7 +286,7 @@ def _class_exists(class_name: str) -> bool:
     
     for variant in candidates:
         try:
-            mod = importlib.import_module(f".{variant}", package="dispatcher.execution_strategy")
+            mod = importlib.import_module(f".{variant}", package="ds_eo_dsh.dispatcher.execution_strategy")
             if hasattr(mod, class_name):
                 return True
         except (ImportError, ModuleNotFoundError):

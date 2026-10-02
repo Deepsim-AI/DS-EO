@@ -59,19 +59,19 @@ class TestRegistryResolution:
     def test_resolves_model_via_registry(self):
         s = SequentialStrategy(workspace_root=WORKSPACE)
         fake_reg = _reg()
-        with patch("dispatcher.registry.AgentRegistry", return_value=fake_reg):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=fake_reg):
             assert s._resolve_model("implementer") == "ollama/qwen3.8:27b"
         fake_reg.resolve.assert_called_once_with("implementer")
 
     def test_unknown_agent_returns_none_not_exception(self):
         s = SequentialStrategy(workspace_root=WORKSPACE)
         fake_reg = _reg(success=False)
-        with patch("dispatcher.registry.AgentRegistry", return_value=fake_reg):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=fake_reg):
             assert s._resolve_model("nonexistent") is None
 
     def test_registry_import_failure_returns_none(self):
         s = SequentialStrategy(workspace_root=WORKSPACE)
-        with patch("dispatcher.registry.AgentRegistry",
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry",
                    side_effect=ImportError("no module")):
             assert s._resolve_model("implementer") is None
 
@@ -80,7 +80,7 @@ class TestPrepareRelease:
     def test_prepare_unknown_agent_fails_typed(self):
         s = SequentialStrategy(workspace_root=WORKSPACE)
         fake_reg = _reg(success=False)
-        with patch("dispatcher.registry.AgentRegistry", return_value=fake_reg):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=fake_reg):
             result = _run(s.prepare_for_agent("ghost_agent"))
         assert isinstance(result, StrategyResult)
         assert result.success is False
@@ -90,7 +90,7 @@ class TestPrepareRelease:
     def test_release_unknown_agent_is_graceful(self):
         s = SequentialStrategy(workspace_root=WORKSPACE)
         fake_reg = _reg(success=False)
-        with patch("dispatcher.registry.AgentRegistry", return_value=fake_reg):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=fake_reg):
             result = _run(s.release_agent("ghost_agent"))
         # Nothing loaded → graceful no-op success (no exception)
         assert isinstance(result, StrategyResult)
@@ -132,7 +132,7 @@ class TestPrepareRelease:
                 }, notes=["mock unload ok"],
             )
 
-        with patch("dispatcher.registry.AgentRegistry", return_value=fake_reg), \
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=fake_reg), \
              patch.object(lifecycle, "ensure_ready", side_effect=fake_ensure_ready), \
              patch.object(lifecycle, "release_model", side_effect=fake_release):
             prep = _run(s.prepare_for_agent("implementer"))

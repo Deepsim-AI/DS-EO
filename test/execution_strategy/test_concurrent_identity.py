@@ -62,7 +62,7 @@ class TestConcurrentIdentity:
         mock_registry_result.agent = mock_agent_info
 
         with patch.object(type(strategy), 'spawn_manager', new_callable=lambda: mock_spawn_mgr):
-            with patch('dispatcher.registry.AgentRegistry') as MockReg:
+            with patch('ds_eo_dsh.dispatcher.registry.AgentRegistry') as MockReg:
                 instance = MockReg.return_value
                 instance.load.return_value = mock_registry_result
                 result = asyncio.get_event_loop().run_until_complete(

@@ -57,7 +57,7 @@ class TestRefCounting:
     def test_first_caller_triggers_load(self):
         _reset_class_state()
         s = SharedModelStrategy(workspace_root=WORKSPACE)
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("cto")), \
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("cto")), \
              patch.object(s, "_ensure_loaded", side_effect=_ensure_loaded_mock(True)) as mock_load:
             result = _run(s.prepare_for_agent("cto"))
         assert result.success is True
@@ -68,9 +68,9 @@ class TestRefCounting:
     def test_second_caller_no_second_load(self):
         _reset_class_state()
         s = SharedModelStrategy(workspace_root=WORKSPACE)
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("cto")):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("cto")):
             _run(s.prepare_for_agent("cto"))
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("implementer")), \
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("implementer")), \
              patch.object(s, "_ensure_loaded", side_effect=_ensure_loaded_mock(True)) as mock_load:
             result = _run(s.prepare_for_agent("implementer"))
         assert result.success is True
@@ -80,12 +80,12 @@ class TestRefCounting:
     def test_release_keeps_loaded_while_refs_remain(self):
         _reset_class_state()
         s = SharedModelStrategy(workspace_root=WORKSPACE)
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("cto")):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("cto")):
             _run(s.prepare_for_agent("cto"))
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("implementer")):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("implementer")):
             _run(s.prepare_for_agent("implementer"))
         # Two agents active → releasing one must NOT schedule unload.
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("implementer")), \
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("implementer")), \
              patch.object(s, "_schedule_unload", side_effect=_schedule_unload_mock()) as mock_unload:
             result = _run(s.release_agent("implementer"))
         assert result.success is True
@@ -96,9 +96,9 @@ class TestRefCounting:
     def test_last_release_schedules_unload(self):
         _reset_class_state()
         s = SharedModelStrategy(workspace_root=WORKSPACE)
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("reviewer")):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("reviewer")):
             _run(s.prepare_for_agent("reviewer"))
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("reviewer")), \
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("reviewer")), \
              patch.object(s, "_schedule_unload", side_effect=_schedule_unload_mock()) as mock_unload:
             result = _run(s.release_agent("reviewer"))
         assert result.success is True
@@ -109,7 +109,7 @@ class TestRefCounting:
     def test_release_unknown_agent_graceful(self):
         _reset_class_state()
         s = SharedModelStrategy(workspace_root=WORKSPACE)
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg(success=False)):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg(success=False)):
             result = _run(s.release_agent("ghost_agent"))
         assert result.success is True
         assert "nothing to release" in result.notes[-1] or "not found" in result.notes[-1]
@@ -117,7 +117,7 @@ class TestRefCounting:
     def test_prepare_unknown_agent_typed_failure(self):
         _reset_class_state()
         s = SharedModelStrategy(workspace_root=WORKSPACE)
-        with patch("dispatcher.registry.AgentRegistry", return_value=_reg("ghost", success=False)):
+        with patch("ds_eo_dsh.dispatcher.registry.AgentRegistry", return_value=_reg("ghost", success=False)):
             result = _run(s.prepare_for_agent("ghost"))
         assert result.success is False
         assert result.strategy == Strategy.SHARED_MODEL.value

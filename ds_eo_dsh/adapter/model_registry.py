@@ -107,10 +107,11 @@ class ModelRegistry:
         Returns:
             Model URI string from manifest or fallback.
         """
+        # Unknown role -> None (does not raise). Callers such as
+        # session_spawn.spawn_agent() treat None as "no model available"
+        # and fail gracefully with a descriptive error.
         if role not in _ROLE_TO_MANIFEST_KEY:
-            raise ValueError(
-                f"Unknown role: {role}. Valid roles: {list(_ROLE_TO_MANIFEST_KEY.keys())}"
-            )
+            return None
 
         key = _ROLE_TO_MANIFEST_KEY[role]
 
